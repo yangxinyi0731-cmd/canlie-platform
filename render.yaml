@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: canlie-platform
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd frontend && npm install && npx vite build && cd ../backend && npm install && npx prisma generate && npx prisma db push && npm run build
+    startCommand: cd backend && NODE_ENV=production node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: JWT_SECRET
+        value: canlie-secret-key-2024
+      - key: PORT
+        value: "10000"
