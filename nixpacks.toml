@@ -1,0 +1,13 @@
+# Nixpacks 配置 - Railway 使用此文件来构建项目
+
+[phases.setup]
+nixPkgs = ['...', 'nodejs_20']
+
+[phases.install]
+cmds = ['npm run install:all']
+
+[phases.build]
+cmds = ['npm run build']
+
+[start]
+cmd = 'npm run start'

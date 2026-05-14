@@ -1,0 +1,272 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  phone         String   @unique
+  password      String
+  name          String?
+  avatar        String?
+  role          String   @default("TALENT") // TALENT, ENTERPRISE, ADMIN
+  status        String   @default("ACTIVE") // ACTIVE, DISABLED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  enterprise    Enterprise?
+  talent        Talent?
+  sentMessages  ChatMessage[] @relation("senderMessages")
+  chatParticipants ChatParticipant[]
+}
+
+model Enterprise {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  companyName   String
+  companyLogo   String?
+  businessLicense String?
+  licenseVerified Boolean @default(false)
+  companySize   String?  // 1-50, 50-200, 200-500, 500-2000, 2000+
+  revenue       String?  // annual revenue range
+  description   String?
+  address       String?
+  city          String?
+  website       String?
+  contactName   String?
+  contactPhone  String?
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id])
+  jobs          Job[]
+}
+
+model Talent {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  realName        String?
+  gender          String?  // MALE, FEMALE
+  birthYear       Int?
+  city            String?
+  phone           String?
+  email           String?
+  avatar          String?
+  title           String?  // current job title
+  currentCompany  String?
+  minSalary       Int?     // expected min salary (monthly)
+  maxSalary       Int?     // expected max salary (monthly)
+  workYears       Int?     // years of experience
+  education       String?  // HIGH_SCHOOL, ASSOCIATE, BACHELOR, MASTER, DOCTOR
+  maritalStatus   String?  // SINGLE, MARRIED
+  hasChildren     Boolean?
+  hometown        String?  //籍贯
+  cuisineIds      String?  // cuisine IDs, comma separated
+  businessTypeIds String?  // business type IDs, comma separated
+  status          String   @default("ACTIVE")
+  privacyMode     String   @default("PUBLIC") // PUBLIC, STEALTH, PRIVATE
+  contactPrivacy  String   @default("AFTER_MATCH") // PUBLIC, AFTER_MATCH, PRIVATE
+  acceptPartner   Boolean  @default(false) // accept partnership introduction
+  starLevel       Int      @default(0) // 0=普通, 3=三星, 4=四星, 5=五星, 6=金牌
+  starLevelStr    String   @default("普通") // string representation
+  brandEndorsement String? //品牌背书 (Michelin, Black Pearl, etc.)
+  headBrandExp    String?  //头部品牌任职经历
+  projectExp      String?  //项目经验
+  selfIntro       String?  //自我介绍
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  resumes         Resume[]
+  verifications   Verification[]
+  jobApplications JobApplication[]
+  matches         Match[]
+  favorites       JobFavorite[]
+}
+
+model Resume {
+  id            String   @id @default(cuid())
+  talentId      String
+  title         String   // resume title
+  content       String   // rich text content
+  fileUrl       String?  // uploaded file URL
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  talent        Talent   @relation(fields: [talentId], references: [id])
+}
+
+model Verification {
+  id          String   @id @default(cuid())
+  talentId    String
+  type        String   // REFERENCE, CERTIFICATE, SALARY_FLOW
+  // REFERENCE: 提供上级/前任老板的姓名+职位+联系电话
+  refName     String?
+  refTitle    String?
+  refPhone    String?
+  // CERTIFICATE: 企业开具的离职证明/在职证明
+  certFileUrl String?
+  // SALARY_FLOW: 连续3个月以上的工资流水/收入证明
+  salaryFileUrl String?
+  status      String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  talent      Talent   @relation(fields: [talentId], references: [id])
+}
+
+model Job {
+  id              String   @id @default(cuid())
+  enterpriseId    String
+  title           String   //职位名称
+  department      String?  //部门
+  minSalary       Int      // 月薪下限 (≥8000)
+  maxSalary       Int      // 月薪上限
+  salaryMonth     Int      @default(12) // 年薪月数
+  city            String
+  district        String?  //区
+  address         String?  //详细地址
+  businessTypeIds String   //业态IDs, comma separated
+  cuisineIds      String?  //菜系IDs, comma separated
+  description     String   //职位描述
+  requirements    String   //任职要求
+  ageMin          Int?     //年龄要求下限
+  ageMax          Int?     //年龄要求上限
+  maritalReq      String?  //婚姻要求
+  childrenReq     String?  //子女要求
+  qualifications  String?  //资质要求
+  educationReq    String?  //学历要求
+  experienceReq   Int?     //经验要求(年)
+  headcount       Int      @default(1)
+  status          String   @default("ACTIVE") // ACTIVE, CLOSED, DRAFT
+  openPartner     Boolean  @default(false) // 开放合伙/投资洽谈
+  serviceType     String   @default("PLATFORM") // PLATFORM(自助), AGENT(人工顾问)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  enterprise      Enterprise @relation(fields: [enterpriseId], references: [id])
+  applications    JobApplication[]
+  matches         Match[]
+  favorites       JobFavorite[]
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  jobId       String
+  talentId    String
+  status      String   @default("PENDING") // PENDING, VIEWED, CONTACTED, REJECTED, ACCEPTED
+  matchScore  Float?   // AI matching score
+  matchReasons String? // matching reasons
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  job         Job      @relation(fields: [jobId], references: [id])
+  talent      Talent   @relation(fields: [talentId], references: [id])
+
+  @@unique([jobId, talentId])
+}
+
+model Match {
+  id          String   @id @default(cuid())
+  jobId       String
+  talentId    String
+  score       Float    // overall match score
+  hardFilterPassed Boolean @default(false) // passed 11 hard filters
+  cuisineMatch    Float    @default(0) // cuisine match score
+  salaryMatch     Float    @default(0)
+  cityMatch       Float    @default(0)
+  experienceMatch Float    @default(0)
+  educationMatch  Float    @default(0)
+  skillMatch      Float    @default(0)
+  brandMatch      Float    @default(0)
+  stabilityMatch  Float    @default(0) // stability score (marriage, children, age)
+  totalScore      Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  job         Job      @relation(fields: [jobId], references: [id])
+  talent      Talent   @relation(fields: [talentId], references: [id])
+
+  @@unique([jobId, talentId])
+}
+
+model ChatParticipant {
+  id        String   @id @default(cuid())
+  userId    String
+  chatWith  String   // the other user's ID
+  jobId     String?  // related job
+  unreadCount Int    @default(0)
+  lastMessage String?
+  lastTime    DateTime?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  jobId     String?  // related job context
+  content   String
+  type      String   @default("TEXT") // TEXT, IMAGE, SYSTEM
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  sender    User     @relation("senderMessages", fields: [senderId], references: [id])
+}
+
+model Cuisine {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "湘菜", "川菜"
+  level     Int      @default(1) // 1=一级菜系, 2=二级细分
+  parentId  String?  // parent cuisine ID (e.g. 湘菜→长沙菜)
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model BusinessType {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "社会餐饮", "高端餐饮", "茶饮", "烘焙"
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model JobFavorite {
+  id        String   @id @default(cuid())
+  jobId     String
+  talentId  String
+  createdAt DateTime @default(now())
+
+  job       Job      @relation(fields: [jobId], references: [id])
+  talent    Talent   @relation(fields: [talentId], references: [id])
+
+  @@unique([jobId, talentId])
+}
+
+// 消息通知表
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   // 接收通知的用户ID
+  type      String   // APPLICATION, MESSAGE, SYSTEM, VERIFICATION
+  title     String   // 通知标题
+  content   String   // 通知内容
+  data      String?  // JSON格式的附加数据
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}

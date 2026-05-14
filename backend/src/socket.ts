@@ -1,0 +1,134 @@
+import { Server, Socket } from 'socket.io';
+import { prisma } from './index.js';
+import { createNotification } from './routes/notifications.js';
+import { verifySocketToken } from './middleware/auth.js';
+
+const userSockets = new Map<string, string[]>();
+
+export function setupSocketHandlers(io: Server, socket: Socket) {
+  let currentUserId: string | null = null;
+
+  // 加入房间 - 需要验证token
+  socket.on('join', (data: { userId: string; token?: string }) => {
+    // 验证用户身份
+    if (data.token) {
+      const decoded = verifySocketToken(data.token);
+      if (decoded && decoded.userId === data.userId) {
+        currentUserId = data.userId;
+      }
+    } else {
+      // 兼容旧版本，但记录警告
+      currentUserId = data.userId;
+      console.warn(`Socket join without token: userId=${data.userId}`);
+    }
+
+    if (!currentUserId) return;
+
+    const existing = userSockets.get(currentUserId) || [];
+    if (!existing.includes(socket.id)) {
+      userSockets.set(currentUserId, [...existing, socket.id]);
+    }
+    socket.join(`user:${currentUserId}`);
+  });
+
+  // 发送消息
+  socket.on('sendMessage', async (data: {
+    senderId: string;
+    receiverId: string;
+    content: string;
+    jobId?: string;
+  }) => {
+    // 验证发送者身份
+    if (!currentUserId || currentUserId !== data.senderId) {
+      socket.emit('messageError', { error: '身份验证失败' });
+      return;
+    }
+
+    // 验证消息内容
+    if (!data.content?.trim() || !data.receiverId) {
+      socket.emit('messageError', { error: '消息内容不能为空' });
+      return;
+    }
+
+    if (data.content.length > 2000) {
+      socket.emit('messageError', { error: '消息内容过长' });
+      return;
+    }
+
+    try {
+      // 创建消息记录
+      const message = await prisma.chatMessage.create({
+        data: {
+          senderId: data.senderId,
+          receiverId: data.receiverId,
+          content: data.content.trim(),
+          jobId: data.jobId || null,
+        },
+        include: {
+          sender: { select: { id: true, name: true } },
+        },
+      });
+
+      // 发送给接收者
+      io.to(`user:${data.receiverId}`).emit('newMessage', message);
+
+      // 更新会话记录
+      for (const uid of [data.senderId, data.receiverId]) {
+        const chatWith = uid === data.senderId ? data.receiverId : data.senderId;
+        const existing = await prisma.chatParticipant.findFirst({
+          where: { userId: uid, chatWith },
+        });
+        if (existing) {
+          await prisma.chatParticipant.update({
+            where: { id: existing.id },
+            data: {
+              lastMessage: data.content,
+              lastTime: new Date(),
+              unreadCount: uid === data.receiverId ? { increment: 1 } : 0,
+            },
+          });
+        } else {
+          await prisma.chatParticipant.create({
+            data: {
+              userId: uid,
+              chatWith,
+              jobId: data.jobId || null,
+              lastMessage: data.content,
+              lastTime: new Date(),
+              unreadCount: uid === data.receiverId ? 1 : 0,
+            },
+          });
+        }
+      }
+
+      // 通知接收方
+      const sender = await prisma.user.findUnique({ where: { id: data.senderId }, select: { name: true } });
+      await createNotification(
+        data.receiverId,
+        'MESSAGE',
+        '收到新消息',
+        `${sender?.name || '用户'}：${data.content.length > 30 ? data.content.slice(0, 30) + '...' : data.content}`,
+        JSON.stringify({ chatWith: data.senderId })
+      );
+
+      // 确认发送成功
+      socket.emit('messageSent', message);
+    } catch (err) {
+      console.error('Socket message error:', err);
+      socket.emit('messageError', { error: '消息发送失败' });
+    }
+  });
+
+  // 断开连接
+  socket.on('disconnect', () => {
+    if (currentUserId) {
+      const sockets = userSockets.get(currentUserId) || [];
+      const updated = sockets.filter(id => id !== socket.id);
+      if (updated.length > 0) {
+        userSockets.set(currentUserId, updated);
+      } else {
+        userSockets.delete(currentUserId);
+      }
+    }
+  });
+}
