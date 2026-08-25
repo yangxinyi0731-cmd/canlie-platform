@@ -41,10 +41,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
       transports: ['websocket', 'polling'],
     });
 
-    socket.emit('join', { userId });
+    // join 必须携带 token，后端校验通过后才允许加入房间（防冒充）
+    const token = localStorage.getItem('token') || undefined;
+    socket.emit('join', { userId, token });
 
     socket.on('connect', () => {
       console.log('Socket connected:', socket.id);
+    });
+
+    socket.on('authError', (err: { error: string }) => {
+      console.error('Socket auth error:', err);
     });
 
     socket.on('newMessage', (message: ChatMessage) => {

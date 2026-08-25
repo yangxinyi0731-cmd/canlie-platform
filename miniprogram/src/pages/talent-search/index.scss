@@ -1,0 +1,394 @@
+// 人才搜索页（1:1 还原网页版 TalentSearch.tsx）
+.ts-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.ts-body {
+  padding: 32rpx;
+}
+
+// ========== 搜索行 ==========
+.ts-search-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+  gap: 16rpx;
+}
+
+.ts-search-box {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+}
+
+.ts-search-icon {
+  position: absolute;
+  left: 24rpx;
+  display: flex;
+  align-items: center;
+}
+
+.ts-search-input {
+  flex: 1;
+  height: 80rpx;
+  padding: 0 24rpx 0 72rpx;
+  font-size: 28rpx;
+}
+
+.ts-placeholder {
+  color: $gray-400;
+  font-size: 28rpx;
+}
+
+.ts-search-btn {
+  padding: 20rpx 32rpx;
+  background: $primary;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+  border-radius: 16rpx;
+}
+
+.ts-filter-btn {
+  padding: 18rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ts-filter-btn-active {
+  border-color: $primary;
+  background: $orange-50;
+}
+
+// ========== 筛选面板 ==========
+.ts-filter-panel {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+  margin-bottom: 32rpx;
+}
+
+.ts-filter-group {
+  margin-bottom: 24rpx;
+}
+
+.ts-filter-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-bottom: 12rpx;
+}
+
+.ts-chips {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.ts-chip {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid $gray-200;
+  background: #fff;
+  color: $gray-500;
+  margin: 0 12rpx 12rpx 0;
+}
+
+.ts-chip-active {
+  background: $primary;
+  color: #fff;
+  border-color: $primary;
+}
+
+// 下拉选择行
+.ts-select-row {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.ts-select-item {
+  flex: 1;
+}
+
+.ts-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  background: #fff;
+}
+
+.ts-select-text {
+  font-size: 24rpx;
+  color: $gray-700;
+}
+
+// 筛选操作
+.ts-filter-actions {
+  display: flex;
+  gap: 24rpx;
+  padding-top: 8rpx;
+}
+
+.ts-reset-btn {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 24rpx;
+  color: $gray-500;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+}
+
+.ts-apply-btn {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 24rpx;
+  color: #fff;
+  background: $primary;
+  border-radius: 16rpx;
+}
+
+// ========== 已选条件 chips ==========
+.ts-active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 24rpx;
+}
+
+.ts-active-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  background: $orange-50;
+  color: $primary;
+  font-size: 24rpx;
+  border-radius: 999rpx;
+  margin: 0 12rpx 12rpx 0;
+}
+
+.ts-active-x {
+  margin-left: 8rpx;
+  color: rgba(255, 107, 0, 0.6);
+}
+
+// ========== 结果 ==========
+.ts-result-info {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 24rpx;
+}
+
+.ts-result-num {
+  color: $gray-600;
+  font-weight: 500;
+}
+
+.ts-error {
+  background: $red-50;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.ts-error-text {
+  color: $red-600;
+  font-size: 28rpx;
+}
+
+// 空态卡
+.ts-empty-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 80rpx 32rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+}
+
+.ts-empty-icon {
+  width: 128rpx;
+  height: 128rpx;
+  background: $gray-50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24rpx;
+}
+
+.ts-empty-text {
+  display: block;
+  color: $gray-500;
+  font-size: 28rpx;
+}
+
+.ts-empty-sub {
+  display: block;
+  color: $gray-400;
+  font-size: 24rpx;
+  margin-top: 8rpx;
+}
+
+// ========== 人才卡片（还原网页版）==========
+.talent-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: flex-start;
+}
+
+.talent-avatar-wrap {
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.talent-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B00, #FB923C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.talent-avatar-text {
+  color: #fff;
+  font-weight: 600;
+  font-size: 32rpx;
+}
+
+.talent-avatar-img {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+}
+
+.talent-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.talent-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.talent-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.talent-stars {
+  font-size: 24rpx;
+  color: $amber-400;
+}
+
+.talent-star-label {
+  font-size: 20rpx;
+  color: $gray-400;
+}
+
+.talent-title {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-top: 4rpx;
+}
+
+.talent-meta {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+}
+
+.talent-salary {
+  color: $primary;
+  font-weight: 500;
+}
+
+.talent-meta-item {
+  color: $gray-400;
+}
+
+// 小标签
+.talent-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 16rpx;
+}
+
+.mini-tag {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.mini-tag-blue {
+  background: $blue-50;
+  color: $blue-600;
+}
+
+.mini-tag-purple {
+  background: $purple-50;
+  color: $purple-500;
+}
+
+.mini-tag-green {
+  background: $green-50;
+  color: $green-600;
+}
+
+// 分页
+.ts-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  margin-top: 48rpx;
+  padding-bottom: 16rpx;
+}
+
+.ts-page-btn {
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  color: $gray-700;
+}
+
+.ts-page-btn-disabled {
+  opacity: 0.3;
+}
+
+.ts-page-info {
+  font-size: 24rpx;
+  color: $gray-500;
+}

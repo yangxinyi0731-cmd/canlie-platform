@@ -1,0 +1,186 @@
+// 供应分类商家列表（1:1 还原网页版 SupplyCategoryList.tsx）
+.scl-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.scl-header {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.scl-header-inner {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+}
+
+.scl-back {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scl-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $gray-900;
+  margin-left: 16rpx;
+}
+
+.scl-count {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-left: auto;
+}
+
+.scl-body {
+  padding: 32rpx;
+}
+
+.scl-error {
+  background: $red-50;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.scl-error-text {
+  color: $red-600;
+  font-size: 28rpx;
+}
+
+// 商家卡
+.scl-company-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: flex-start;
+}
+
+.scl-company-logo {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+}
+
+.scl-company-logo-text {
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.scl-company-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.scl-company-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scl-company-services {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-top: 8rpx;
+}
+
+.scl-company-meta {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.scl-product-count {
+  font-size: 24rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+.scl-contact {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+// 空态
+.scl-empty {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 80rpx 32rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scl-empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+}
+
+.scl-empty-text {
+  color: $gray-500;
+  font-size: 28rpx;
+}
+
+.scl-empty-link {
+  margin-top: 24rpx;
+  color: $primary;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+// 分页
+.scl-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  padding-top: 32rpx;
+}
+
+.scl-page-btn {
+  font-size: 28rpx;
+  padding: 16rpx 32rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  background: #fff;
+  color: $gray-700;
+}
+
+.scl-page-disabled {
+  opacity: 0.3;
+}
+
+.scl-page-info {
+  font-size: 28rpx;
+  color: $gray-500;
+}

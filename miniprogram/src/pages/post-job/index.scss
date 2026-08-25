@@ -1,0 +1,516 @@
+// 发布职位页（1:1 还原网页版 PostJob.tsx 五步表单）
+.pj-page {
+  min-height: 100vh;
+  background: $gray-50;
+  padding-bottom: 176rpx;
+}
+
+.pj-loading {
+  display: flex;
+  justify-content: center;
+  padding: 128rpx 0;
+}
+
+.pj-loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid $primary;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ========== 步骤条（还原网页版圆点 + 连接线）==========
+.pj-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 16rpx;
+}
+
+.pj-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+// 连接线
+.pj-step::after {
+  content: '';
+  position: absolute;
+  top: 28rpx;
+  left: calc(50% + 36rpx);
+  right: calc(-50% + 36rpx);
+  height: 2rpx;
+  background: $gray-200;
+}
+
+.pj-step:last-child::after {
+  display: none;
+}
+
+.pj-step-dot {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: $gray-200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.pj-step-num {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: $gray-500;
+}
+
+.pj-step-active {
+  background: $primary;
+
+  .pj-step-num {
+    color: #fff;
+  }
+}
+
+.pj-step-done {
+  background: $green-500;
+}
+
+.pj-step-label {
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 8rpx;
+}
+
+.pj-step-label-active {
+  color: $primary;
+  font-weight: 500;
+}
+
+// ========== 错误条 ==========
+.pj-error {
+  margin: 24rpx 32rpx 0;
+  background: $red-50;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.pj-error-text {
+  color: $red-600;
+  font-size: 28rpx;
+}
+
+// ========== 表单卡 ==========
+.pj-body {
+  padding: 32rpx;
+}
+
+.pj-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.pj-field {
+  margin-bottom: 32rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.pj-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-700;
+  margin-bottom: 12rpx;
+}
+
+.pj-required {
+  color: $red-500;
+}
+
+.pj-input {
+  width: 100%;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  height: 88rpx;
+}
+
+.pj-placeholder {
+  color: $gray-400;
+}
+
+.pj-textarea {
+  width: 100%;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  height: 240rpx;
+}
+
+// 选择行（还原网页版 select）
+.pj-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  background: #fff;
+}
+
+.pj-select-text {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+// 双列行
+.pj-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.pj-half {
+  flex: 1;
+  min-width: 0;
+}
+
+// ========== 业态/菜系 chips ==========
+.pj-bt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pj-bt-count {
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.pj-bt-count-good {
+  color: $green-600;
+}
+
+.pj-bt-count-bad {
+  color: $red-500;
+}
+
+.pj-bt-hint {
+  color: $gray-400;
+  font-weight: 400;
+}
+
+.pj-bt-warn {
+  display: block;
+  font-size: 24rpx;
+  color: #D97706;
+  margin-bottom: 12rpx;
+}
+
+.pj-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.pj-chip {
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid $gray-200;
+  background: #fff;
+  color: $gray-600;
+}
+
+.pj-chip-active {
+  background: $primary;
+  color: #fff;
+  border-color: $primary;
+}
+
+.pj-loading-text {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+// ========== 开关（还原网页版 w-11 h-6 toggle）==========
+.pj-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+}
+
+.pj-switch-label {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+.pj-switch {
+  position: relative;
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: 999rpx;
+  background: $gray-200;
+  transition: background 0.2s;
+}
+
+.pj-switch-on {
+  background: $primary;
+}
+
+.pj-switch-knob {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.pj-switch-knob-on {
+  transform: translateX(40rpx);
+}
+
+// ========== 方案卡（Step 5）==========
+.pj-plan-header {
+  margin-bottom: 24rpx;
+}
+
+.pj-plan-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin-bottom: 4rpx;
+}
+
+.pj-plan-sub {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+.pj-plan-card {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+  border-radius: 24rpx;
+  border: 4rpx solid $gray-100;
+  background: #fff;
+  margin-bottom: 24rpx;
+}
+
+.pj-plan-selected {
+  border-color: $primary;
+  background: $orange-50;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+// 单选圆
+.pj-radio {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  border: 2rpx solid $gray-300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.pj-radio-selected {
+  border-color: $primary;
+}
+
+.pj-radio-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: $primary;
+}
+
+.pj-plan-info {
+  flex: 1;
+  min-width: 0;
+  margin: 0 24rpx;
+}
+
+.pj-plan-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.pj-plan-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.pj-badge {
+  font-size: 20rpx;
+  color: #fff;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.pj-badge-red {
+  background: $red-500;
+}
+
+.pj-badge-blue {
+  background: $blue-500;
+}
+
+.pj-badge-green {
+  background: $green-500;
+}
+
+.pj-plan-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 4rpx;
+}
+
+.pj-plan-meta-text {
+  font-size: 24rpx;
+  color: $gray-500;
+}
+
+.pj-plan-meta-dot {
+  font-size: 24rpx;
+  color: $gray-300;
+}
+
+.pj-plan-tip {
+  display: block;
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+.pj-plan-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.pj-price {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $primary;
+}
+
+.pj-price-sub {
+  font-size: 20rpx;
+  color: $gray-400;
+}
+
+.pj-plan-loading {
+  display: block;
+  text-align: center;
+  padding: 32rpx 0;
+}
+
+// 提交按钮
+.pj-submit-btn {
+  width: 100%;
+  padding: 24rpx 0;
+  background: $primary;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8rpx;
+
+  &.pj-submit-disabled {
+    opacity: 0.5;
+  }
+}
+
+.pj-submit-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.pj-submit-loading {
+  display: flex;
+  align-items: center;
+}
+
+.pj-submit-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 4rpx solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  margin-right: 12rpx;
+  animation: spin 0.8s linear infinite;
+}
+
+.pj-agreement {
+  display: block;
+  text-align: center;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 24rpx;
+}
+
+// ========== 底部导航 ==========
+.pj-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-top: 1PX solid $gray-100;
+  padding: 24rpx 32rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  z-index: 20;
+}
+
+.pj-nav-btn {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  border-radius: 16rpx;
+}
+
+.pj-nav-gray {
+  color: $gray-600;
+  border: 2rpx solid $gray-200;
+}
+
+.pj-nav-primary {
+  color: #fff;
+  background: $primary;
+}

@@ -37,13 +37,16 @@ export default function ChatConversation() {
     }
   }, [me?.id, socket, initSocket]);
 
-  // 加载消息并获取对方名称
+  // 加载消息并获取对方名称（先取名称，避免消息里的昵称覆盖企业名）
   useEffect(() => {
-    if (userId) {
-      loadMessages();
-      chatApi.markRead(userId).catch(() => {});
-      fetchOtherName();
-    }
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      await fetchOtherName();
+      if (!cancelled) loadMessages();
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const fetchOtherName = async () => {
@@ -51,6 +54,7 @@ export default function ChatConversation() {
     try {
       const res = await chatApi.getConversations();
       const conv = (res.data || []).find((c: any) => c.chatWith === userId);
+      // 企业方优先显示公司名，人才方显示真实姓名，最后才回退到用户昵称
       if (conv?.otherProfile?.companyName) {
         setOtherName(conv.otherProfile.companyName);
       } else if (conv?.otherProfile?.realName) {
@@ -69,8 +73,9 @@ export default function ChatConversation() {
       const msgs = res.data.messages || [];
       setMessages(msgs);
 
-      // 从消息中获取对方名称
-      if (msgs.length > 0) {
+      // 仅当尚未拿到企业/真实姓名时，才回退到消息里的昵称，避免把"经理"这类昵称
+      // 误显示成对方企业名称
+      if (msgs.length > 0 && otherName === '用户') {
         const otherMsg = msgs.find((m: Message) => m.senderId !== me?.id);
         if (otherMsg?.sender?.name) {
           setOtherName(otherMsg.sender.name);

@@ -1,0 +1,22 @@
+{
+  "miniprogramRoot": "./dist",
+  "projectname": "canlie",
+  "description": "canlie weapp",
+  "appid": "wx40368211068934ef",
+  "setting": {
+    "urlCheck": false,
+    "es6": false,
+    "enhance": false,
+    "compileHotReLoad": false,
+    "postcss": false,
+    "minified": false,
+    "newFeature": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "miniprogram",
+  "condition": {}
+}

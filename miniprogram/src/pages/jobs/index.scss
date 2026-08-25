@@ -1,0 +1,581 @@
+// 首页（1:1 还原网页版 Home.tsx：人才端职位搜索 + 企业端管理首页）
+.home-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+// ========== 人才端顶部搜索区（白底 sticky shadow-sm）==========
+.home-header {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.px-32 {
+  padding: 24rpx 32rpx 16rpx;
+}
+
+.home-title-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+  // 右侧让位胶囊按钮（小程序专属适配，网页版无此项）
+  padding-right: 190rpx;
+}
+
+.home-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $primary;
+}
+
+.home-subtitle {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-left: 16rpx;
+}
+
+.home-greeting {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-left: auto;
+}
+
+// 搜索框（还原网页版 h-9 bg-gray-100 rounded-lg pl-9）
+.home-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: $gray-100;
+  border-radius: 16rpx;
+  height: 72rpx;
+}
+
+.home-search-icon {
+  position: absolute;
+  left: 24rpx;
+  display: flex;
+  align-items: center;
+}
+
+.home-search-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 32rpx 0 72rpx;
+  font-size: 28rpx;
+  background: transparent;
+}
+
+.home-search-placeholder {
+  color: $gray-400;
+}
+
+// ========== 城市快捷 chips（还原网页版 flex-wrap gap-1.5 max-h-[120px]）==========
+.city-chips-wrap {
+  padding: 0 32rpx 16rpx;
+}
+
+.city-chips {
+  max-height: 240rpx;
+}
+
+.city-chips-inner {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.city-chip {
+  font-size: 24rpx;
+  font-weight: 500;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  background: $gray-100;
+  color: $gray-600;
+  margin: 0 12rpx 12rpx 0;
+}
+
+.city-chip-active {
+  background: $primary;
+  color: #fff;
+}
+
+// ========== 菜系横向滚动条 ==========
+.cuisine-bar {
+  padding-bottom: 16rpx;
+}
+
+.cuisine-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.cuisine-scroll-inner {
+  display: inline-flex;
+  padding: 0 32rpx;
+}
+
+.cuisine-chip {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  font-weight: 500;
+  padding: 8rpx 24rpx;
+  border-radius: 999rpx;
+  background: $gray-100;
+  color: $gray-600;
+  margin-right: 16rpx;
+  white-space: nowrap;
+}
+
+.chip-active {
+  background: $primary;
+  color: #fff;
+}
+
+// ========== 平台服务入口（还原网页版双卡宫格）==========
+.platform-entries {
+  padding: 24rpx 32rpx;
+}
+
+.platform-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+}
+
+.platform-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.platform-icon-orange {
+  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+}
+
+.platform-icon-purple {
+  background: linear-gradient(135deg, #A855F7, #6B21A8);
+}
+
+.platform-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.platform-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.platform-desc {
+  font-size: 22rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+// ========== 职位列表 ==========
+.job-list-wrap {
+  padding: 24rpx 32rpx;
+}
+
+// 分页（还原网页版上一页/下一页）
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  padding: 32rpx 0 16rpx;
+}
+
+.page-btn {
+  font-size: 28rpx;
+  padding: 16rpx 32rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  color: $gray-700;
+}
+
+.page-btn-disabled {
+  opacity: 0.3;
+}
+
+.page-info {
+  font-size: 28rpx;
+  color: $gray-500;
+}
+
+// ========== 企业端首页 ==========
+.ent-header {
+  background: #fff;
+  padding: 32rpx 32rpx 40rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.ent-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  // 右侧让位胶囊按钮
+  padding-right: 190rpx;
+  margin-bottom: 32rpx;
+}
+
+.ent-title-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.ent-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $primary;
+}
+
+.ent-company {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+.post-btn {
+  padding: 16rpx 32rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  background: $primary;
+  color: #fff;
+}
+
+.post-btn-disabled {
+  background: $gray-200;
+  color: $gray-400;
+}
+
+// 认证提示条
+.verify-alert {
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.verify-alert-pending {
+  background: $yellow-50;
+  border: 2rpx solid #FDE68A;
+}
+
+.verify-alert-rejected {
+  background: $red-50;
+  border: 2rpx solid $red-200;
+}
+
+.verify-alert-text {
+  font-size: 24rpx;
+  color: $yellow-700;
+  display: block;
+}
+
+.verify-alert-rejected .verify-alert-text {
+  color: $red-600;
+}
+
+.verify-alert-link {
+  display: inline-block;
+  font-size: 24rpx;
+  font-weight: 500;
+  margin-top: 8rpx;
+  text-decoration: underline;
+}
+
+.link-pending {
+  color: #92400E;
+}
+
+.link-rejected {
+  color: #991B1B;
+}
+
+// 数据概览
+.ent-body {
+  padding: 32rpx;
+}
+
+.stat-grid {
+  margin-bottom: 32rpx;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx 0;
+  text-align: center;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.stat-num {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: $gray-900;
+}
+
+.stat-num-primary {
+  color: $primary;
+}
+
+.stat-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 8rpx;
+}
+
+// 快捷入口
+.quick-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 32rpx;
+}
+
+.quick-grid {
+  padding: 32rpx 0;
+}
+
+.quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.quick-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-icon-blue {
+  background: $blue-50;
+}
+
+.quick-icon-green {
+  background: $green-50;
+}
+
+.quick-icon-orange {
+  background: $orange-50;
+}
+
+.quick-icon-purple {
+  background: $purple-50;
+}
+
+.quick-label {
+  font-size: 24rpx;
+  color: $gray-600;
+}
+
+// 平台入口（浅色底小卡）
+.platform-entries-sm {
+  margin-bottom: 32rpx;
+}
+
+.platform-sm {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-radius: 24rpx;
+}
+
+.platform-sm-orange {
+  background: rgba(255, 247, 237, 0.6);
+  border: 1PX solid #FFEDD5;
+}
+
+.platform-sm-purple {
+  background: rgba(250, 245, 255, 0.6);
+  border: 1PX solid #F3E8FF;
+}
+
+.platform-icon-sm {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.platform-name-sm {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+.platform-desc-sm {
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+// 我的职位卡
+.my-jobs-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.my-jobs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  border-bottom: 1PX solid $gray-50;
+}
+
+.my-jobs-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.my-jobs-more {
+  font-size: 24rpx;
+  color: $primary;
+}
+
+.my-job-item {
+  border-bottom: 1PX solid $gray-50;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.my-job-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  border-bottom: 1PX solid $gray-50;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.my-job-info {
+  flex: 1;
+  min-width: 0;
+  margin-right: 16rpx;
+}
+
+.my-job-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-job-meta {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+// 状态胶囊
+.status-pill {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+}
+
+.status-pill-green {
+  background: $green-50;
+  color: $green-600;
+}
+
+.status-pill-gray {
+  background: $gray-100;
+  color: $gray-500;
+}
+
+// 空职位
+.my-jobs-empty {
+  padding: 64rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.my-jobs-empty-text {
+  font-size: 28rpx;
+  color: $gray-400;
+}
+
+.my-jobs-empty-link {
+  margin-top: 24rpx;
+  color: $primary;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.my-jobs-empty-link-disabled {
+  color: $gray-300;
+}
+
+// 展开操作行（还原网页版 EnterpriseDashboard 展开 编辑/关闭/查看匹配）
+.my-job-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 0 0 24rpx;
+}
+
+.my-job-act {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  padding: 14rpx 0;
+  border-radius: 14rpx;
+}
+
+.my-job-act-outline {
+  color: $primary;
+  border: 1PX solid $primary;
+}
+
+.my-job-act-gray {
+  color: $gray-500;
+  background: $gray-50;
+}
+
+.my-job-act-primary {
+  color: #fff;
+  background: $primary;
+}
+
+.my-job-act-full {
+  flex: none;
+  width: 100%;
+}

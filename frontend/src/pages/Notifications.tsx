@@ -90,6 +90,8 @@ export default function Notifications() {
   };
 
   const getDisplayName = (conv: Conversation): string => {
+    // 严格优先级：企业公司名 > 人才真实姓名 > 用户昵称
+    // 这样企业方永远显示公司名，不会被 "经理" 这类 user.name 覆盖
     if (conv.otherProfile?.companyName) return conv.otherProfile.companyName;
     if (conv.otherProfile?.realName) return conv.otherProfile.realName;
     if (conv.otherUser?.name) return conv.otherUser.name;

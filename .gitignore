@@ -50,3 +50,15 @@ coverage/
 
 # Ngrok
 ngrok.log
+# ===== 本地敏感/临时文件（勿提交）=====
+# HANDOFF.md 含服务器 SSH 密码等敏感信息，仅保留在本地
+HANDOFF.md
+# 截图与调试产物
+preview_shots/
+console_capture*.txt
+*.tar.gz
+tunnel.log
+tunnel-url.txt
+# 微信开发者工具本地私有配置
+miniprogram/project.private.config.json
+ssh_exec.py

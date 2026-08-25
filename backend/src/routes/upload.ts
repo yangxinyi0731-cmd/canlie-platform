@@ -44,4 +44,25 @@ router.post('/', authMiddleware, upload.single('file'), (req: AuthRequest, res) 
   }
 });
 
+// 视频上传（分享模块，上限 100MB）
+const videoUpload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['.mp4', '.mov', '.webm', '.m4v', '.avi'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  },
+});
+
+router.post('/video', authMiddleware, videoUpload.single('file'), (req: AuthRequest, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: '请选择视频文件' });
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ url, filename: req.file.filename });
+  } catch (err) {
+    res.status(500).json({ error: '视频上传失败' });
+  }
+});
+
 export default router;

@@ -1,0 +1,694 @@
+// 编辑个人资料页（1:1 还原网页版 EditTalentProfile.tsx）
+.etp-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.etp-save-link {
+  font-size: 28rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+.etp-link-disabled {
+  opacity: 0.5;
+}
+
+// 提示条
+.etp-msg {
+  display: flex;
+  align-items: center;
+  margin: 24rpx 32rpx 0;
+  padding: 24rpx;
+  border-radius: 16rpx;
+}
+
+.etp-msg-error {
+  background: $red-50;
+}
+
+.etp-msg-success {
+  background: $green-50;
+}
+
+.etp-msg-text {
+  font-size: 28rpx;
+  margin-left: 12rpx;
+}
+
+.etp-msg-error-text {
+  color: $red-600;
+}
+
+.etp-msg-success-text {
+  color: $green-600;
+}
+
+.etp-body {
+  padding: 32rpx;
+}
+
+.etp-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 32rpx;
+}
+
+.etp-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.etp-card-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin-bottom: 32rpx;
+
+  .etp-card-header & {
+    margin-bottom: 0;
+  }
+}
+
+.etp-add-link {
+  font-size: 24rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+// 表单
+.etp-field {
+  margin-bottom: 28rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.etp-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-bottom: 8rpx;
+}
+
+.etp-hint {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin: -16rpx 0 24rpx;
+  line-height: 1.6;
+}
+
+.etp-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+}
+
+.etp-input-disabled {
+  background: $gray-50;
+  border-color: $gray-100;
+  color: $gray-400;
+}
+
+.etp-textarea {
+  width: 100%;
+  height: 200rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+
+  &.short {
+    height: 144rpx;
+  }
+}
+
+.etp-placeholder {
+  color: $gray-400;
+}
+
+.etp-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+}
+
+.etp-select-text {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+.etp-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.etp-half {
+  flex: 1;
+  min-width: 0;
+}
+
+// 简历完善度
+.etp-score-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4rpx;
+}
+
+.etp-score {
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.etp-score-green { color: $green-600; }
+.etp-score-orange { color: $primary; }
+.etp-score-red { color: $red-500; }
+
+.etp-score-sub {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+.etp-progress-track {
+  height: 20rpx;
+  background: $gray-100;
+  border-radius: 999rpx;
+  overflow: hidden;
+  margin-bottom: 24rpx;
+}
+
+.etp-progress-fill {
+  height: 100%;
+  border-radius: 999rpx;
+}
+
+.fill-green { background: $green-500; }
+.fill-orange { background: $primary; }
+.fill-red { background: $red-400; }
+
+.etp-module-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.etp-module-name {
+  font-size: 24rpx;
+  color: $gray-500;
+  width: 192rpx;
+  flex-shrink: 0;
+}
+
+.etp-module-track {
+  flex: 1;
+  height: 12rpx;
+  background: $gray-100;
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+
+.etp-module-fill {
+  height: 100%;
+  border-radius: 999rpx;
+}
+
+.mfill-green { background: #4ADE80; }
+.mfill-orange { background: $primary; }
+.mfill-gray { background: $gray-300; }
+
+.etp-module-score {
+  font-size: 20rpx;
+  color: $gray-400;
+  width: 72rpx;
+  text-align: right;
+}
+
+.etp-module-hint {
+  display: block;
+  font-size: 22rpx;
+  color: $gray-400;
+  margin-top: 24rpx;
+  line-height: 1.6;
+}
+
+// 工作经历
+.etp-exp-item {
+  border: 1PX solid $gray-100;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: flex-start;
+}
+
+.etp-exp-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.etp-exp-position {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.etp-exp-company {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-600;
+  margin-top: 4rpx;
+}
+
+.etp-exp-date {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+.etp-exp-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-top: 8rpx;
+}
+
+.etp-exp-bgref {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 8rpx;
+}
+
+.etp-exp-badge {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 4rpx 16rpx;
+  background: $green-50;
+  color: $green-600;
+  font-size: 20rpx;
+  border-radius: 999rpx;
+}
+
+.etp-exp-ops {
+  display: flex;
+  gap: 24rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.etp-exp-op {
+  font-size: 24rpx;
+  color: $gray-400;
+
+  &.danger {
+    color: $red-500;
+  }
+}
+
+.etp-empty-text {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-400;
+  text-align: center;
+  padding: 48rpx 0;
+}
+
+// 复选框
+.etp-check-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 28rpx;
+}
+
+.etp-checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid $gray-300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  box-sizing: border-box;
+}
+
+.etp-checkbox-on {
+  background: $primary;
+  border-color: $primary;
+}
+
+.etp-check-label {
+  font-size: 24rpx;
+  color: $gray-600;
+}
+
+// 背景调查
+.etp-bgref-section {
+  border-top: 1PX solid $gray-100;
+  padding-top: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.etp-bgref-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-800;
+  margin-bottom: 16rpx;
+}
+
+.etp-bgref-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.etp-bgref-input {
+  font-size: 24rpx;
+  padding: 0 16rpx;
+  height: 72rpx;
+}
+
+// 表单操作
+.etp-form-actions {
+  display: flex;
+  gap: 16rpx;
+  padding-top: 16rpx;
+}
+
+.etp-btn-cancel {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: $gray-500;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+}
+
+.etp-btn-primary {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #fff;
+  background: $primary;
+  border-radius: 16rpx;
+}
+
+.etp-btn-primary-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+// chips
+.etp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.etp-chip {
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid $gray-200;
+  background: #fff;
+  color: $gray-600;
+}
+
+.etp-chip-active {
+  background: $primary;
+  color: #fff;
+  border-color: $primary;
+}
+
+// AI 分隔
+.etp-ai-divider {
+  height: 1PX solid $gray-100;
+  border-top: 1PX solid $gray-100;
+  margin: 16rpx 0;
+}
+
+.etp-ai-title {
+  display: block;
+  font-size: 24rpx;
+  color: $primary;
+  font-weight: 500;
+  margin-bottom: 24rpx;
+}
+
+.etp-counter {
+  display: block;
+  text-align: right;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 8rpx;
+}
+
+// 隐私单选卡
+.etp-radio-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+  border: 2rpx solid $gray-100;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  gap: 24rpx;
+}
+
+.etp-radio-active {
+  border-color: $primary;
+  background: $orange-50;
+}
+
+.etp-radio-info {
+  flex: 1;
+}
+
+.etp-radio-label {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-800;
+}
+
+.etp-radio-desc {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.etp-radio {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
+  border: 2rpx solid $gray-300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.etp-radio-selected {
+  border-color: $primary;
+}
+
+.etp-radio-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: $primary;
+}
+
+// 认证材料
+.etp-verify-list {
+  margin-bottom: 24rpx;
+}
+
+.etp-verify-list-title {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.etp-verify-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $gray-50;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin-bottom: 12rpx;
+}
+
+.etp-verify-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.etp-verify-type {
+  font-size: 24rpx;
+  color: $gray-700;
+}
+
+.etp-verify-status {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+}
+
+.vs-green { background: $green-100; color: $green-700; }
+.vs-red { background: $red-100; color: #B91C1C; }
+.vs-yellow { background: #FEF9C3; color: $yellow-700; }
+
+.etp-verify-date {
+  font-size: 20rpx;
+  color: $gray-400;
+}
+
+.etp-verify-option {
+  border: 1PX solid $gray-100;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+
+  .etp-input {
+    margin-bottom: 24rpx;
+  }
+}
+
+.etp-verify-option-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-800;
+  margin-bottom: 12rpx;
+}
+
+.etp-verify-option-desc {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 24rpx;
+  line-height: 1.5;
+}
+
+.etp-upload-box {
+  width: 100%;
+  padding: 20rpx 0;
+  background: $gray-50;
+  border: 2rpx dashed $gray-300;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.etp-upload-box-text {
+  font-size: 28rpx;
+  color: $gray-500;
+}
+
+// 开关
+.etp-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.etp-switch-info {
+  flex: 1;
+}
+
+.etp-switch-label {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-800;
+}
+
+.etp-switch-desc {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.etp-switch {
+  position: relative;
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: 999rpx;
+  background: $gray-200;
+  flex-shrink: 0;
+}
+
+.etp-switch-on {
+  background: $primary;
+}
+
+.etp-switch-knob {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.15);
+}
+
+.etp-switch-knob-on {
+  transform: translateX(40rpx);
+}
+
+// 保存
+.etp-save-btn {
+  width: 100%;
+  padding: 24rpx 0;
+  background: $primary;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8rpx;
+}
+
+.etp-btn-disabled {
+  opacity: 0.5;
+}
+
+.etp-save-btn-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
@@ -14,6 +14,24 @@ export default function Login() {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 显示密码 & 记住密码
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // 页面加载时读取记住的账号
+  useEffect(() => {
+    const savedPhone = localStorage.getItem('remembered_phone');
+    const savedPassword = localStorage.getItem('remembered_password');
+    if (savedPhone) {
+      setPhone(savedPhone);
+      setRememberMe(true);
+    }
+    if (savedPassword) {
+      setPassword(savedPassword);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +61,14 @@ export default function Login() {
         await register(phone, password, role, name.trim());
       } else {
         await login(phone, password);
+        // 记住密码
+        if (rememberMe) {
+          localStorage.setItem('remembered_phone', phone);
+          localStorage.setItem('remembered_password', password);
+        } else {
+          localStorage.removeItem('remembered_phone');
+          localStorage.removeItem('remembered_password');
+        }
       }
       // After successful auth, redirect based on role
       const user = useAuthStore.getState().user;
@@ -101,6 +127,7 @@ export default function Login() {
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
                 placeholder="手机号"
                 maxLength={11}
+                autoComplete="tel"
                 className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
               />
             </div>
@@ -114,12 +141,32 @@ export default function Login() {
                 </svg>
               </span>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="密码"
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
                 className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="px-3 py-3 text-gray-400 hover:text-gray-600 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
             </div>
 
             {/* Confirm Password (register only) */}
@@ -132,12 +179,32 @@ export default function Login() {
                   </svg>
                 </span>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="确认密码"
+                  autoComplete="new-password"
                   className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="px-3 py-3 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
               </div>
             )}
 
@@ -157,6 +224,21 @@ export default function Login() {
                   placeholder={role === 'TALENT' ? '您的姓名' : '企业名称'}
                   className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
                 />
+              </div>
+            )}
+
+            {/* Remember Me (login only) */}
+            {!isRegister && (
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 text-[#FF6B00] focus:ring-[#FF6B00] rounded"
+                  />
+                  <span className="text-xs text-gray-500">记住密码</span>
+                </label>
               </div>
             )}
 

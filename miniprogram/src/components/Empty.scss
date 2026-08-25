@@ -1,0 +1,27 @@
+.empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 128rpx 0;
+}
+
+.empty-icon-wrap {
+  width: 160rpx;
+  height: 160rpx;
+  background: $gray-100;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32rpx;
+}
+
+.empty-emoji {
+  font-size: 64rpx;
+}
+
+.empty-text {
+  color: $gray-400;
+  font-size: 28rpx;
+}

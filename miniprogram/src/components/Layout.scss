@@ -1,0 +1,75 @@
+.layout {
+  min-height: 100vh;
+  background: $gray-50;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-main {
+  flex: 1;
+}
+
+// 底部导航（还原网页版 nav: fixed bottom-0 白底 border-t h-14）
+.tab-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background: #fff;
+  border-top: 1PX solid $gray-100;
+}
+
+.tab-nav-inner {
+  display: flex;
+  align-items: center;
+  height: 112rpx;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon-wrap {
+  position: relative;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 未读角标（还原网页版 -top-1 -right-2 min-w-[16px] h-4 bg-red-500）
+.tab-badge {
+  position: absolute;
+  top: -10rpx;
+  right: -20rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  background: $red-500;
+  color: #fff;
+  font-size: 20rpx;
+  font-weight: 700;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rpx;
+  box-sizing: border-box;
+}
+
+.tab-label {
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 6rpx;
+  line-height: 1.2;
+}
+
+.tab-label-active {
+  color: $primary;
+  font-weight: 500;
+}

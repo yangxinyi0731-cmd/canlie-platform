@@ -5,7 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#FF6B00" />
+    <!-- 禁止浏览器缓存 HTML，确保每次都是全新加载 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>餐猎 - 餐饮酒店高端人才猎头平台</title>
+    <script>
+      // 页面加载时立即检查：如果 token 为 null/undefined/空字符串，确保彻底清除
+      // 防止 localStorage 异步写入导致的残留
+      (function() {
+        var token = localStorage.getItem('token');
+        if (!token || token === 'null' || token === 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

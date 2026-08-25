@@ -1,0 +1,669 @@
+// 管理后台页（1:1 还原网页版 AdminDashboard.tsx）
+.admin-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.admin-header {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.admin-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  // 右侧让位胶囊按钮
+  padding-right: 200rpx;
+}
+
+.admin-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $primary;
+}
+
+.admin-logout {
+  font-size: 28rpx;
+  color: $gray-500;
+}
+
+.admin-body {
+  padding: 32rpx;
+}
+
+// 统计
+.admin-stats {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.admin-stat-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.admin-stat-num {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $gray-900;
+}
+
+.admin-stat-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+// AI 评估按钮
+.admin-eval-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.admin-eval-btn {
+  flex: 1;
+  padding: 16rpx 0;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-eval-blue {
+  background: linear-gradient(to right, #3B82F6, #2563EB);
+}
+
+.admin-eval-purple {
+  background: linear-gradient(to right, #A855F7, #9333EA);
+}
+
+.admin-btn-disabled {
+  opacity: 0.5;
+}
+
+.admin-eval-text {
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+// Tab 导航
+.admin-tabs {
+  width: 100%;
+  white-space: nowrap;
+  margin-bottom: 32rpx;
+}
+
+.admin-tabs-inner {
+  display: inline-flex;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 8rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.admin-tab {
+  flex: 1;
+  min-width: 140rpx;
+  padding: 16rpx 24rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-500;
+  border-radius: 16rpx;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.admin-tab-active {
+  background: $primary;
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+// 通用卡片
+.admin-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 24rpx;
+}
+
+.admin-row-between {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.admin-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.admin-user-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-900;
+}
+
+.admin-user-phone {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+// 角色胶囊
+.admin-role-pill {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+}
+
+.rp-purple { background: $purple-50; color: $purple-700; }
+.rp-blue { background: $blue-50; color: $blue-700; }
+.rp-orange { background: $orange-50; color: $primary; }
+
+// 状态胶囊
+.admin-status-pill {
+  align-self: flex-start;
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+  margin-top: 12rpx;
+}
+
+.sp-yellow { background: $yellow-50; color: $yellow-700; }
+.sp-green { background: $green-50; color: $green-700; }
+.sp-red { background: $red-50; color: #B91C1C; }
+
+// 操作小按钮
+.admin-op-pill {
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 16rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.op-red { background: $red-50; color: $red-600; }
+.op-green { background: $green-50; color: $green-600; }
+
+// 企业卡
+.admin-ent-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 24rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-ent-logo {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, #FF6B00, #FB923C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.sm {
+    width: 80rpx;
+    height: 80rpx;
+    border-radius: 24rpx;
+  }
+}
+
+.admin-ent-logo-text {
+  color: #fff;
+  font-weight: 700;
+  font-size: 36rpx;
+}
+
+// 执照图
+.admin-license-section {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.admin-license-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 12rpx;
+}
+
+.admin-license-img {
+  width: 400rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid $gray-200;
+}
+
+// 审核按钮
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.admin-verify-btn {
+  flex: 1;
+  min-width: 200rpx;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #fff;
+  border-radius: 16rpx;
+}
+
+.vb-green { background: $green-500; }
+.vb-red { background: $red-500; }
+
+.admin-reject-input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+}
+
+.admin-placeholder {
+  color: $gray-400;
+}
+
+// 星级
+.admin-criteria-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24rpx;
+}
+
+.admin-criteria-link {
+  font-size: 24rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+.admin-star-label {
+  font-size: 28rpx;
+  color: #F59E0B;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.admin-talent-ops {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.admin-star-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.admin-star-select-label {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+.admin-star-select {
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 12rpx 24rpx;
+  background: #fff;
+}
+
+.admin-star-select-text {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+.admin-bgcheck-link {
+  font-size: 24rpx;
+  color: $primary;
+}
+
+// 背调详情
+.admin-bgcheck {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.admin-bgcheck-title {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.admin-bgcheck-item {
+  background: $gray-50;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.admin-bgcheck-position {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-800;
+}
+
+.admin-bgcheck-date {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+.admin-bgcheck-company {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-600;
+  margin-top: 4rpx;
+}
+
+.admin-bgcheck-desc {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-top: 8rpx;
+}
+
+.admin-bgcheck-ref {
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1PX solid $gray-200;
+}
+
+.admin-bgcheck-ref-title {
+  display: block;
+  font-size: 24rpx;
+  color: #EA580C;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.admin-bgcheck-ref-text {
+  font-size: 24rpx;
+  color: $gray-700;
+  line-height: 1.6;
+}
+
+.admin-bgcheck-none {
+  font-size: 24rpx;
+  color: $gray-400;
+  text-align: center;
+  padding: 24rpx 0;
+}
+
+// 认证详情
+.admin-verify-detail {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.admin-verify-detail-text {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-600;
+  margin-bottom: 8rpx;
+
+  &.danger {
+    color: $red-500;
+  }
+
+  &.clamp2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// 子 Tab
+.admin-sub-tabs {
+  display: flex;
+  gap: 8rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 8rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 24rpx;
+}
+
+.admin-sub-tab {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 24rpx;
+  font-weight: 500;
+  color: $gray-500;
+  border-radius: 12rpx;
+}
+
+.admin-sub-tab-active {
+  background: $primary;
+  color: #fff;
+}
+
+// 分享卡
+.admin-share-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-900;
+  margin-top: 16rpx;
+}
+
+.admin-share-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 24rpx;
+  color: $gray-600;
+  margin-top: 8rpx;
+}
+
+.admin-share-img {
+  width: 400rpx;
+  height: 224rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid $gray-200;
+  margin-top: 16rpx;
+}
+
+.admin-share-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.admin-share-date {
+  font-size: 22rpx;
+  color: $gray-400;
+}
+
+// 空态
+.admin-empty {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 64rpx 32rpx;
+  text-align: center;
+}
+
+.admin-empty-text {
+  font-size: 28rpx;
+  color: $gray-400;
+}
+
+// 弹层
+.admin-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.admin-modal {
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  width: 100%;
+  max-height: 80vh;
+  padding: 48rpx 32rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.admin-modal-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: $gray-900;
+}
+
+.admin-modal-close {
+  font-size: 32rpx;
+  color: $gray-400;
+  padding: 8rpx;
+}
+
+.admin-modal-desc {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 32rpx;
+  line-height: 1.6;
+}
+
+.admin-modal-scroll {
+  flex: 1;
+  height: 0;
+}
+
+.admin-modal-loading {
+  display: block;
+  text-align: center;
+  font-size: 28rpx;
+  color: $gray-400;
+  padding: 64rpx 0;
+}
+
+.admin-modal-tip {
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+  line-height: 1.6;
+}
+
+// 星级标准卡
+.admin-criteria-card {
+  border: 2rpx solid transparent;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.crit-gray { background: $gray-50; border-color: $gray-200; }
+.crit-yellow { background: $yellow-50; border-color: #FDE68A; }
+.crit-blue { background: $blue-50; border-color: #BFDBFE; }
+.crit-purple { background: $purple-50; border-color: #E9D5FF; }
+.crit-orange { background: $orange-50; border-color: #FED7AA; }
+
+.admin-criteria-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.admin-criteria-emoji {
+  font-size: 32rpx;
+}
+
+.admin-criteria-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.admin-criteria-years {
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-left: auto;
+}
+
+.admin-criteria-desc {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-600;
+  margin-bottom: 16rpx;
+  line-height: 1.6;
+}
+
+.admin-criteria-req {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.admin-criteria-req-dot {
+  font-size: 24rpx;
+  color: $primary;
+  flex-shrink: 0;
+}
+
+.admin-criteria-req-text {
+  font-size: 24rpx;
+  color: $gray-500;
+  line-height: 1.6;
+}

@@ -1,52 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['vite.svg'],
-      manifest: {
-        name: '餐猎 - 餐饮酒店高端人才平台',
-        short_name: '餐猎',
-        description: '专注餐饮酒店行业的中高管招聘平台，类似BOSS直聘的垂直领域版本',
-        theme_color: '#FF6B00',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
-        icons: [
-          {
-            src: 'vite.svg',
-            sizes: '192x192',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
-          },
-          {
-            src: 'vite.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
-          },
-        ],
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,json}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-            },
-          },
-        ],
-      },
-    }),
+    // PWA 已禁用：service worker 缓存 API 响应导致登录状态泄漏，
+    // 且 standalone 模式下 window.location.replace 行为异常
   ],
   server: {
     port: 5173,
@@ -72,6 +31,5 @@ export default defineConfig({
     sourcemap: false,
     emptyOutDir: true,
   },
-  // 生产环境基础路径
   base: '/',
 })

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { jobsApi, refApi, safeArray, getImageUrl } from '../api';
 import { useAuthStore } from '../stores/authStore';
 
@@ -15,6 +15,7 @@ interface Job {
   maxSalary: number;
   salaryMonth: number;
   city: string;
+  province?: string;
   district: string;
   cuisineIds: string;
   businessTypeIds: string;
@@ -27,12 +28,16 @@ interface Job {
 }
 
 export default function Home() {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
 
   // 企业端显示管理首页
   if (user?.role === 'ENTERPRISE') {
     return <EnterpriseHome />;
+  }
+
+  // 管理员不应看到人才端首页，直接跳转管理后台
+  if (user?.role === 'ADMIN') {
+    return <Navigate to="/admin" replace />;
   }
 
   // 人才端显示职位搜索
@@ -42,29 +47,83 @@ export default function Home() {
 // ========== 人才端首页：职位搜索 ==========
 function TalentHome() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const talent = user?.profile as any;
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [cuisines, setCuisines] = useState<RefItem[]>([]);
   const [businessTypes, setBusinessTypes] = useState<RefItem[]>([]);
   const [selectedCuisine, setSelectedCuisine] = useState('');
   const [selectedBizType, setSelectedBizType] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 20;
+
+  // 全国热门城市 — 全覆盖
+  const hotCities = [
+    '全部', '北京', '上海', '广州', '深圳',
+    '杭州', '宁波', '温州', '绍兴', '嘉兴', '金华', '台州',
+    '南京', '苏州', '无锡', '常州', '南通', '徐州', '扬州',
+    '成都', '绵阳', '宜宾', '泸州',
+    '重庆', '万州',
+    '武汉', '宜昌', '襄阳', '荆州',
+    '长沙', '株洲', '湘潭', '衡阳', '岳阳', '常德',
+    '郑州', '洛阳', '开封', '新乡',
+    '西安', '咸阳', '宝鸡',
+    '济南', '青岛', '烟台', '潍坊', '临沂', '淄博',
+    '福州', '厦门', '泉州', '漳州',
+    '合肥', '芜湖', '蚌埠',
+    '南昌', '九江', '赣州',
+    '昆明', '大理', '丽江', '曲靖',
+    '贵阳', '遵义',
+    '南宁', '桂林', '柳州', '北海',
+    '海口', '三亚',
+    '石家庄', '唐山', '保定', '廊坊',
+    '太原', '大同',
+    '沈阳', '大连', '鞍山',
+    '长春', '吉林', '延边',
+    '哈尔滨', '大庆', '齐齐哈尔',
+    '兰州', '天水',
+    '乌鲁木齐', '伊犁',
+    '呼和浩特', '包头', '鄂尔多斯',
+    '银川',
+    '西宁',
+    '拉萨',
+    '天津',
+    '佛山', '东莞', '珠海', '中山', '惠州', '汕头', '湛江',
+  ];
 
   useEffect(() => {
-    loadData();
+    loadData(1);
   }, []);
 
-  const loadData = async () => {
+  // 筛选条件变化时重新加载（重置到第一页）
+  useEffect(() => {
+    loadData(1);
+  }, [selectedCuisine, selectedBizType, selectedCity, keyword]);
+
+  const loadData = async (p = 1) => {
     setLoading(true);
     try {
+      const params: Record<string, unknown> = { page: p, pageSize };
+      if (selectedCuisine) params.cuisineId = selectedCuisine;
+      if (selectedBizType) params.businessTypeId = selectedBizType;
+      if (selectedCity) params.city = selectedCity;
+      if (keyword) params.keyword = keyword;
+
       const [jobsRes, refRes] = await Promise.allSettled([
-        jobsApi.list(),
+        jobsApi.list(params),
         refApi.getAll(),
       ]);
 
       if (jobsRes.status === 'fulfilled') {
         const data = jobsRes.value.data;
-        setJobs(safeArray(data?.jobs || data));
+        setJobs(safeArray(data?.jobs));
+        setTotal(data?.total || 0);
+        setPage(data?.page || p);
       }
       if (refRes.status === 'fulfilled') {
         const ref = refRes.value.data;
@@ -78,18 +137,14 @@ function TalentHome() {
     }
   };
 
+  const totalPages = Math.ceil(total / pageSize);
+
   // ID -> 名称映射
   const cuisineMap = new Map(cuisines.map(c => [c.id, c.name]));
   const bizTypeMap = new Map(businessTypes.map(b => [b.id, b.name]));
 
-  // 筛选职位
-  const filteredJobs = jobs.filter((job) => {
-    const location = `${job.city} ${job.district}`;
-    if (keyword && !job.title.includes(keyword) && !location.includes(keyword)) return false;
-    if (selectedCuisine && job.cuisineIds !== selectedCuisine) return false;
-    if (selectedBizType && job.businessTypeIds !== selectedBizType) return false;
-    return true;
-  });
+  // 后端已分页+筛选，前端直接展示
+  const displayJobs = jobs;
 
   const formatSalary = (job: Job) => {
     if (!job.minSalary && !job.maxSalary) return '面议';
@@ -112,12 +167,16 @@ function TalentHome() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* 顶部搜索栏 */}
       <div className="bg-white sticky top-0 z-10 shadow-sm">
         <div className="px-4 pt-3 pb-2">
           <div className="flex items-center gap-2 mb-3">
             <h1 className="text-xl font-bold text-[#FF6B00]">餐猎</h1>
             <span className="text-xs text-gray-400">餐饮酒店高端人才平台</span>
+            {talent?.realName && (
+              <span className="text-xs text-gray-400 ml-auto">👋 {talent.realName}</span>
+            )}
           </div>
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -127,13 +186,35 @@ function TalentHome() {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="搜索职位、地点..."
+              placeholder="搜索职位、公司、地点..."
               className="w-full h-9 bg-gray-100 rounded-lg pl-9 pr-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20"
             />
           </div>
         </div>
 
-        {/* 筛选标签 */}
+        {/* 全国热门城市快捷选择 */}
+        <div className="px-4 pb-2">
+          <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto no-scrollbar">
+            {hotCities.map((city) => {
+              const isSelected = (city === '全部' && !selectedCity) || (city !== '全部' && selectedCity === city);
+              return (
+                <button
+                  key={city}
+                  onClick={() => setSelectedCity(city === '全部' ? '' : city)}
+                  className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                    isSelected
+                      ? 'bg-[#FF6B00] text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {city}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 菜系筛选 */}
         <div className="px-4 pb-2 flex gap-2 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setSelectedCuisine('')}
@@ -157,13 +238,39 @@ function TalentHome() {
         </div>
       </div>
 
+      {/* 平台服务入口：供应平台 + 创业分享 */}
+      <div className="px-4 py-3">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => navigate('/supply')}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-50 flex items-center gap-3 active:bg-gray-50 transition-colors"
+          >
+            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF6B00] to-[#FF8C38] flex items-center justify-center text-lg flex-shrink-0">🏪</span>
+            <span className="text-left">
+              <span className="block text-sm font-semibold text-gray-900">供应平台</span>
+              <span className="block text-[11px] text-gray-400">食材 · 设备 · 培训 · 转让</span>
+            </span>
+          </button>
+          <button
+            onClick={() => navigate('/share')}
+            className="bg-white rounded-xl p-4 shadow-sm border border-gray-50 flex items-center gap-3 active:bg-gray-50 transition-colors"
+          >
+            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-lg flex-shrink-0">🎬</span>
+            <span className="text-left">
+              <span className="block text-sm font-semibold text-gray-900">创业分享</span>
+              <span className="block text-[11px] text-gray-400">创业经验 · 学习成长</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* 职位列表 */}
       <div className="px-4 py-3">
         {loading ? (
           <div className="flex justify-center py-16">
             <div className="w-8 h-8 border-3 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : filteredJobs.length === 0 ? (
+        ) : displayJobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <svg className="w-10 h-10 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -173,46 +280,71 @@ function TalentHome() {
             <p className="text-gray-400 text-sm">暂无匹配的职位</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredJobs.map((job) => (
-              <div
-                key={job.id}
-                onClick={() => navigate(`/jobs/${job.id}`)}
-                className="bg-white rounded-xl p-4 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-base font-semibold text-gray-900 flex-1 mr-3">{job.title}</h3>
-                  <span className="text-[#FF6B00] font-bold text-sm whitespace-nowrap">
-                    {formatSalary(job)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  {job.cuisineIds && cuisineMap.get(job.cuisineIds) && (
-                    <span className="px-2 py-0.5 bg-orange-50 text-[#FF6B00] text-xs rounded-md">{cuisineMap.get(job.cuisineIds)}</span>
-                  )}
-                  {job.businessTypeIds && bizTypeMap.get(job.businessTypeIds) && (
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-md">{bizTypeMap.get(job.businessTypeIds)}</span>
-                  )}
-                  {job.city && (
-                    <span className="text-xs text-gray-400">{job.city} {job.district}</span>
-                  )}
-                </div>
-                {job.enterprise && (
-                  <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                    <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
-                      {job.enterprise.companyLogo ? (
-                        <img src={getImageUrl(job.enterprise.companyLogo) || ''} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] font-bold text-[#FF6B00]">{job.enterprise.companyName?.charAt(0) || '企'}</span>
-                      )}
-                    </div>
-                    <span className="text-xs text-gray-500">{job.enterprise.companyName}</span>
-                    <span className="text-xs text-gray-300 ml-auto">{timeAgo(job.createdAt)}</span>
+          <>
+            <div className="space-y-3">
+              {displayJobs.map((job) => (
+                <div
+                  key={job.id}
+                  onClick={() => navigate(`/jobs/${job.id}`)}
+                  className="bg-white rounded-xl p-4 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-base font-semibold text-gray-900 flex-1 mr-3">{job.title}</h3>
+                    <span className="text-[#FF6B00] font-bold text-sm whitespace-nowrap">
+                      {formatSalary(job)}
+                    </span>
                   </div>
-                )}
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    {job.cuisineIds && cuisineMap.get(job.cuisineIds) && (
+                      <span className="px-2 py-0.5 bg-orange-50 text-[#FF6B00] text-xs rounded-md">{cuisineMap.get(job.cuisineIds)}</span>
+                    )}
+                    {job.businessTypeIds && bizTypeMap.get(job.businessTypeIds) && (
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-md">{bizTypeMap.get(job.businessTypeIds)}</span>
+                    )}
+                    {job.city && (
+                      <span className="text-xs text-gray-400">{job.province ? `${job.province} ` : ''}{job.city} {job.district}</span>
+                    )}
+                  </div>
+                  {job.enterprise && (
+                    <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
+                      <div className="w-6 h-6 rounded bg-gray-100 flex items-center justify-center overflow-hidden">
+                        {job.enterprise.companyLogo ? (
+                          <img src={getImageUrl(job.enterprise.companyLogo) || ''} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[10px] font-bold text-[#FF6B00]">{job.enterprise.companyName?.charAt(0) || '企'}</span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500">{job.enterprise.companyName}</span>
+                      <span className="text-xs text-gray-300 ml-auto">{timeAgo(job.createdAt)}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 分页 */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 pt-4 pb-2">
+                <button
+                  onClick={() => loadData(page - 1)}
+                  disabled={page <= 1}
+                  className="px-4 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                >
+                  上一页
+                </button>
+                <span className="text-sm text-gray-500">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  onClick={() => loadData(page + 1)}
+                  disabled={page >= totalPages}
+                  className="px-4 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-50 transition-colors"
+                >
+                  下一页
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -226,7 +358,6 @@ function EnterpriseHome() {
   const enterprise = user?.profile as { companyName?: string; _count?: { jobs: number }; status?: string; licenseVerified?: boolean } | undefined;
 
   const [jobs, setJobs] = useState<any[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 检查企业认证状态
@@ -240,13 +371,8 @@ function EnterpriseHome() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [jobsRes, appsRes] = await Promise.allSettled([
-        jobsApi.getMyJobs(),
-        jobsApi.getMyApplications ? jobsApi.getMyApplications() : Promise.resolve({ data: [] }),
-      ]);
-      if (jobsRes.status === 'fulfilled') {
-        setJobs(jobsRes.value.data || []);
-      }
+      const res = await jobsApi.getMyJobs();
+      setJobs(res.data?.jobs || res.data || []);
     } catch {
       // ignore
     } finally {
@@ -374,6 +500,30 @@ function EnterpriseHome() {
               <span className="text-xs text-gray-600">企业信息</span>
             </button>
           </div>
+        </div>
+
+        {/* 平台服务入口：供应平台 + 创业分享 */}
+        <div className="grid grid-cols-2 gap-3 pt-0 pb-4">
+          <button
+            onClick={() => navigate('/supply')}
+            className="bg-orange-50/60 border border-orange-100 rounded-xl p-3 flex items-center gap-2.5 active:bg-orange-50 transition-colors"
+          >
+            <span className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FF6B00] to-[#FF8C38] flex items-center justify-center text-base flex-shrink-0">🏪</span>
+            <span className="text-left">
+              <span className="block text-sm font-semibold text-gray-800">供应平台</span>
+              <span className="block text-[10px] text-gray-400">供应链 · 采购 · 转让</span>
+            </span>
+          </button>
+          <button
+            onClick={() => navigate('/share')}
+            className="bg-purple-50/60 border border-purple-100 rounded-xl p-3 flex items-center gap-2.5 active:bg-purple-50 transition-colors"
+          >
+            <span className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-base flex-shrink-0">🎬</span>
+            <span className="text-left">
+              <span className="block text-sm font-semibold text-gray-800">创业分享</span>
+              <span className="block text-[10px] text-gray-400">创业经验 · 学习成长</span>
+            </span>
+          </button>
         </div>
 
         {/* 我的职位 */}

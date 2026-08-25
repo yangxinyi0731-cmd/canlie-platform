@@ -1,0 +1,258 @@
+// 供应商家详情（1:1 还原网页版 SupplyCompanyDetail.tsx）
+.scd-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+// ========== 渐变头部 ==========
+.scd-header {
+  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+  padding: 0 32rpx 160rpx;
+}
+
+.scd-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 64rpx;
+  padding-right: 160rpx;
+}
+
+.scd-back {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scd-back-arrow {
+  display: block;
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid #fff;
+  border-bottom: 4rpx solid #fff;
+  border-radius: 2rpx;
+  transform: rotate(45deg);
+  margin-left: 4rpx;
+}
+
+.scd-back-placeholder {
+  width: 64rpx;
+}
+
+.scd-category {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.scd-company-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.scd-logo {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 32rpx;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.scd-logo-text {
+  color: #fff;
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.scd-company-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.scd-company-name {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scd-license {
+  display: block;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8rpx;
+}
+
+// ========== 内容卡 ==========
+.scd-body {
+  padding: 0 32rpx;
+  margin-top: -96rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.scd-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+  margin-bottom: 24rpx;
+}
+
+.scd-card-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin-bottom: 16rpx;
+}
+
+.scd-card-subtitle {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin: 32rpx 0 16rpx;
+}
+
+.scd-card-text {
+  font-size: 28rpx;
+  color: $gray-600;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+// ========== 产品 ==========
+.scd-product {
+  border: 1PX solid $gray-100;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.scd-product-imgs {
+  width: 100%;
+  white-space: nowrap;
+  margin-bottom: 16rpx;
+}
+
+.scd-product-imgs-inner {
+  display: inline-flex;
+  gap: 16rpx;
+}
+
+.scd-product-img {
+  width: 192rpx;
+  height: 192rpx;
+  border-radius: 16rpx;
+  background: $gray-100;
+  flex-shrink: 0;
+}
+
+.scd-product-info {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.scd-product-text {
+  flex: 1;
+  min-width: 0;
+  margin-right: 16rpx;
+}
+
+.scd-product-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-900;
+}
+
+.scd-product-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-top: 4rpx;
+}
+
+.scd-product-price {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: $primary;
+  white-space: nowrap;
+}
+
+// ========== 联系方式 ==========
+.scd-contact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.scd-contact-label {
+  font-size: 28rpx;
+  color: $gray-400;
+}
+
+.scd-contact-value {
+  font-size: 28rpx;
+  color: $gray-900;
+  font-weight: 500;
+}
+
+.scd-contact-phone {
+  font-size: 28rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+// ========== 错误态 ==========
+.scd-error-page {
+  min-height: 100vh;
+  background: $gray-50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 48rpx;
+}
+
+.scd-error-text {
+  color: $gray-400;
+  font-size: 28rpx;
+  margin-bottom: 32rpx;
+}
+
+.scd-error-btn {
+  padding: 16rpx 32rpx;
+  background: $primary;
+  border-radius: 16rpx;
+}
+
+.scd-error-btn-text {
+  color: #fff;
+  font-size: 28rpx;
+}

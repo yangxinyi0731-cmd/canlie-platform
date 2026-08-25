@@ -1,0 +1,45 @@
+// ========== 餐猎设计令牌（1:1 对齐网页版 frontend/src/index.css + Tailwind 色板）==========
+// 换算规则：网页 1px = 2rpx（Taro designWidth 750）
+// 此文件通过 config/index.ts 的 sass.resource 全局注入所有 scss
+
+$primary: #FF6B00;
+$primary-light: #FF8C38;
+$primary-dark: #E06000;
+
+// Tailwind 色板（网页版使用的实际色值）
+$orange-50: #FFF7ED;
+$yellow-50: #FEFCE8;
+$yellow-600: #CA8A04;
+$yellow-700: #A16207;
+$green-50: #F0FDF4;
+$green-100: #DCFCE7;
+$green-500: #22C55E;
+$green-600: #16A34A;
+$green-700: #15803D;
+$blue-50: #EFF6FF;
+$blue-500: #3B82F6;
+$blue-600: #2563EB;
+$blue-700: #1D4ED8;
+$red-50: #FEF2F2;
+$red-100: #FEE2E2;
+$red-200: #FECACA;
+$red-400: #F87171;
+$red-500: #EF4444;
+$red-600: #DC2626;
+$purple-50: #FAF5FF;
+$purple-100: #F3E8FF;
+$purple-500: #A855F7;
+$purple-600: #9333EA;
+$purple-700: #6B21A8;
+$amber-400: #FBBF24;
+
+$gray-50: #F9FAFB;
+$gray-100: #F3F4F6;
+$gray-200: #E5E7EB;
+$gray-300: #D1D5DB;
+$gray-400: #9CA3AF;
+$gray-500: #6B7280;
+$gray-600: #4B5563;
+$gray-700: #374151;
+$gray-800: #1F2937;
+$gray-900: #111827;

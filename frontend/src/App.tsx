@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore, initChatSocket } from './stores/authStore';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
@@ -24,6 +25,15 @@ import EnterpriseDetail from './pages/EnterpriseDetail';
 import MyApplications from './pages/MyApplications';
 import MyFavorites from './pages/MyFavorites';
 import Notifications from './pages/Notifications';
+import SupplyHome from './pages/supply/SupplyHome';
+import SupplyCategoryList from './pages/supply/SupplyCategoryList';
+import SupplyCompanyDetail from './pages/supply/SupplyCompanyDetail';
+import ApplySupplyStore from './pages/supply/ApplySupplyStore';
+import MySupplyStore from './pages/supply/MySupplyStore';
+import ShareFeed from './pages/share/ShareFeed';
+import SharePostDetail from './pages/share/SharePostDetail';
+import ShareCreate from './pages/share/ShareCreate';
+import MyShares from './pages/share/MyShares';
 
 // 加载动画组件
 function LoadingSpinner() {
@@ -88,6 +98,44 @@ export default function App() {
     init();
   }, [init]);
 
+  // bfcache 恢复时重新验证：浏览器后退/前进缓存会恢复整个 JS 堆，
+  // 必须强制重新验证 auth 状态
+  useEffect(() => {
+    const handlePageshow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        // 页面从 bfcache 中恢复，立即重新验证
+        const token = localStorage.getItem('token');
+        if (!token) {
+          useAuthStore.getState().forceLogout();
+        } else {
+          init();
+        }
+      }
+    };
+    window.addEventListener('pageshow', handlePageshow);
+    return () => window.removeEventListener('pageshow', handlePageshow);
+  }, [init]);
+
+  // 标签页从后台切换回来时，重新检查 token 有效性
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && initialized) {
+        const token = localStorage.getItem('token');
+        const currentUser = useAuthStore.getState().user;
+        // 有 token 但没有用户 → 重新初始化
+        if (token && !currentUser) {
+          init();
+        }
+        // 没有 token 但有用户 → 强制清除
+        if (!token && currentUser) {
+          useAuthStore.getState().forceLogout();
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [initialized, init]);
+
   // 设置安全区域
   useEffect(() => {
     document.documentElement.style.setProperty('--safe-bottom', 'env(safe-area-inset-bottom, 0px)');
@@ -106,9 +154,10 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
         {/* 公开路由 */}
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -122,6 +171,19 @@ export default function App() {
         <Route path="/talents/:id" element={<ProtectedRoute><TalentDetail /></ProtectedRoute>} />
         <Route path="/enterprises/:id" element={<ProtectedRoute><EnterpriseDetail /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><Layout><Notifications /></Layout></ProtectedRoute>} />
+
+        {/* 供应平台路由（所有登录用户） */}
+        <Route path="/supply" element={<ProtectedRoute><SupplyHome /></ProtectedRoute>} />
+        <Route path="/supply/category/:categoryId" element={<ProtectedRoute><SupplyCategoryList /></ProtectedRoute>} />
+        <Route path="/supply/company/:id" element={<ProtectedRoute><SupplyCompanyDetail /></ProtectedRoute>} />
+        <Route path="/supply/apply" element={<ProtectedRoute><ApplySupplyStore /></ProtectedRoute>} />
+        <Route path="/supply/my" element={<ProtectedRoute><MySupplyStore /></ProtectedRoute>} />
+
+        {/* 创业分享/学习分享路由（所有登录用户） */}
+        <Route path="/share" element={<ProtectedRoute><ShareFeed /></ProtectedRoute>} />
+        <Route path="/share/:id" element={<ProtectedRoute><SharePostDetail /></ProtectedRoute>} />
+        <Route path="/share/create" element={<ProtectedRoute><ShareCreate /></ProtectedRoute>} />
+        <Route path="/share/my" element={<ProtectedRoute><MyShares /></ProtectedRoute>} />
 
         {/* 企业端路由 */}
         <Route path="/enterprise" element={<ProtectedRoute role="ENTERPRISE"><Layout><EnterpriseDashboard /></Layout></ProtectedRoute>} />
@@ -146,5 +208,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }

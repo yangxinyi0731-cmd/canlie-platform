@@ -12,7 +12,7 @@ router.post('/', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRequ
     if (!enterprise) return res.status(400).json({ error: '请先完善企业信息' });
     if (enterprise.status === 'REJECTED') return res.status(400).json({ error: '企业认证被拒绝，无法发布职位' });
 
-    const { title, minSalary, maxSalary, city, businessTypeIds, cuisineIds, description, requirements, department, district, address, ageMin, ageMax, maritalReq, childrenReq, qualifications, educationReq, experienceReq, headcount, openPartner } = req.body;
+    const { title, minSalary, maxSalary, city, province, businessTypeIds, cuisineIds, description, requirements, department, district, address, ageMin, ageMax, maritalReq, childrenReq, qualifications, educationReq, experienceReq, headcount, openPartner, jobCategoryId, genderReq, minTenureReq } = req.body;
 
     if (!title || !minSalary || !maxSalary || !city || !description) {
       return res.status(400).json({ error: '请填写完整职位信息' });
@@ -31,6 +31,7 @@ router.post('/', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRequ
         minSalary,
         maxSalary,
         city,
+        province,
         district,
         address,
         businessTypeIds: businessTypeIds || '',
@@ -47,6 +48,9 @@ router.post('/', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRequ
         experienceReq,
         headcount: headcount || 1,
         openPartner: openPartner || false,
+        jobCategoryId: jobCategoryId || null,
+        genderReq: genderReq || null,
+        minTenureReq: minTenureReq || null,
         serviceType: maxSalary >= 400000 ? 'AGENT' : 'PLATFORM',
       },
     });
@@ -68,7 +72,7 @@ router.put('/:id', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRe
     if (job.enterpriseId !== enterprise?.id) return res.status(403).json({ error: '无权修改' });
 
     // 只允许修改特定字段，防止批量赋值攻击
-    const { title, minSalary, maxSalary, city, district, address, businessTypeIds, cuisineIds, description, requirements, department, ageMin, ageMax, maritalReq, childrenReq, qualifications, educationReq, experienceReq, headcount, openPartner } = req.body;
+    const { title, minSalary, maxSalary, city, province, district, address, businessTypeIds, cuisineIds, description, requirements, department, ageMin, ageMax, maritalReq, childrenReq, qualifications, educationReq, experienceReq, headcount, openPartner, jobCategoryId, genderReq, minTenureReq } = req.body;
 
     // 验证薪资
     if (minSalary !== undefined && minSalary < 8000) {
@@ -85,6 +89,7 @@ router.put('/:id', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRe
         minSalary,
         maxSalary,
         city,
+        province,
         district,
         address,
         businessTypeIds,
@@ -101,6 +106,9 @@ router.put('/:id', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRe
         experienceReq,
         headcount,
         openPartner,
+        jobCategoryId,
+        genderReq,
+        minTenureReq,
       },
     });
     res.json(updated);
@@ -113,19 +121,25 @@ router.put('/:id', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRe
 // List jobs (public, with filters)
 router.get('/', async (req, res) => {
   try {
-    const { city, cuisineId, businessTypeId, keyword, minSalary, maxSalary, page = '1', pageSize = '20' } = req.query;
+    const { city, province, cuisineId, businessTypeId, jobCategoryId, keyword, minSalary, maxSalary, page = '1', pageSize = '20' } = req.query;
     const skip = (parseInt(page as string) - 1) * parseInt(pageSize as string);
     const take = parseInt(pageSize as string);
 
     const where: any = { status: 'ACTIVE' };
 
     if (city) where.city = { contains: city as string };
+    if (province) where.province = { contains: province as string };
+    if (jobCategoryId) where.jobCategoryId = jobCategoryId as string;
     if (minSalary) where.minSalary = { gte: parseInt(minSalary as string) };
     if (maxSalary) where.maxSalary = { lte: parseInt(maxSalary as string) };
     if (keyword) {
+      // 搜索框承诺「职位、公司、地点」：title/description 之外补公司名与城市/省份
       where.OR = [
         { title: { contains: keyword as string } },
         { description: { contains: keyword as string } },
+        { city: { contains: keyword as string } },
+        { province: { contains: keyword as string } },
+        { enterprise: { companyName: { contains: keyword as string } } },
       ];
     }
     if (cuisineId) where.cuisineIds = { contains: cuisineId as string };
@@ -154,6 +168,26 @@ router.get('/', async (req, res) => {
   }
 });
 
+// 热门城市：按在招职位数聚合取前 N（注意必须注册在 GET /:id 之前，否则 "hot-cities" 会被当作 id）
+router.get('/hot-cities', async (_req, res) => {
+  try {
+    const grouped = await prisma.job.groupBy({
+      by: ['city'],
+      where: { status: 'ACTIVE' },
+      _count: { _all: true },
+      orderBy: { _count: { city: 'desc' } },
+      take: 15, // 稍多取几个，null 城市组在下面过滤掉
+    });
+    const cities = grouped
+      .filter((g: any) => g.city)
+      .map((g: any) => ({ name: g.city, count: g._count._all }));
+    res.json({ cities });
+  } catch (err) {
+    console.error('Hot cities error:', err);
+    res.status(500).json({ error: '获取热门城市失败' });
+  }
+});
+
 // Get job detail
 router.get('/:id', async (req, res) => {
   try {
@@ -161,7 +195,7 @@ router.get('/:id', async (req, res) => {
       where: { id: req.params.id },
       include: {
         enterprise: {
-          select: { id: true, companyName: true, companyLogo: true, description: true, city: true, companySize: true, address: true },
+          select: { id: true, userId: true, companyName: true, companyLogo: true, description: true, city: true, companySize: true, address: true },
         },
       },
     });
@@ -178,12 +212,24 @@ router.get('/my/list', authMiddleware, requireRole('ENTERPRISE'), async (req: Au
     const enterprise = await prisma.enterprise.findUnique({ where: { userId: req.userId } });
     if (!enterprise) return res.status(400).json({ error: '企业信息不存在' });
 
-    const jobs = await prisma.job.findMany({
-      where: { enterpriseId: enterprise.id },
-      orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { applications: true } } },
-    });
-    res.json(jobs);
+    const { page = '1', pageSize = '20' } = req.query;
+    const skip = (parseInt(page as string) - 1) * parseInt(pageSize as string);
+    const take = parseInt(pageSize as string);
+
+    const where = { enterpriseId: enterprise.id };
+
+    const [jobs, total] = await Promise.all([
+      prisma.job.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: { _count: { select: { applications: true } } },
+      }),
+      prisma.job.count({ where }),
+    ]);
+
+    res.json({ jobs, total, page: parseInt(page as string), pageSize: take });
   } catch (err) {
     res.status(500).json({ error: '获取职位列表失败' });
   }
@@ -306,7 +352,19 @@ router.get('/:id/applications', authMiddleware, requireRole('ENTERPRISE'), async
     const applications = await prisma.jobApplication.findMany({
       where: { jobId },
       orderBy: { createdAt: 'desc' },
-      include: { talent: true },
+      include: {
+        talent: {
+          // 数据最小化：仅返回简历展示字段，不返回 idNumber / phone / email /
+          // maritalStatus / hasChildren / hometown / parentInfo 等敏感信息
+          select: {
+            id: true, realName: true, title: true, currentCompany: true,
+            city: true, province: true, minSalary: true, maxSalary: true,
+            workYears: true, education: true, starLevel: true, starLevelStr: true,
+            brandEndorsement: true, avatar: true, selfIntro: true,
+            cuisineIds: true, businessTypeIds: true, jobCategoryId: true,
+          },
+        },
+      },
     });
     res.json(applications);
   } catch (err) {
@@ -328,7 +386,7 @@ router.patch('/:id/applications/:appId', authMiddleware, requireRole('ENTERPRISE
 
     const application = await prisma.jobApplication.findUnique({
       where: { id: appId },
-      include: { talent: true },
+      include: { talent: { select: { userId: true } } },
     });
     if (!application) return res.status(404).json({ error: '投递记录不存在' });
 

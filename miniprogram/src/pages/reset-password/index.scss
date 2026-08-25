@@ -1,0 +1,124 @@
+// 重置密码页（1:1 还原网页版 ResetPassword.tsx 三步流程）
+.rp-page {
+  min-height: 100vh;
+  background: #fff;
+}
+
+// 提示条
+.rp-msg {
+  display: flex;
+  align-items: center;
+  margin: 24rpx 32rpx 0;
+  padding: 24rpx;
+  border-radius: 16rpx;
+}
+
+.rp-msg-error {
+  background: $red-50;
+}
+
+.rp-msg-success {
+  background: $green-50;
+}
+
+.rp-msg-text {
+  font-size: 28rpx;
+  margin-left: 16rpx;
+}
+
+.rp-msg-error-text {
+  color: $red-600;
+}
+
+.rp-msg-success-text {
+  color: $green-600;
+}
+
+.rp-body {
+  padding: 64rpx 48rpx;
+}
+
+.rp-hint {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-500;
+  margin-bottom: 48rpx;
+}
+
+// 输入行（还原网页版左图标前缀）
+.rp-field {
+  display: flex;
+  align-items: center;
+  border: 2rpx solid $gray-200;
+  border-radius: 24rpx;
+  overflow: hidden;
+  margin-bottom: 32rpx;
+}
+
+.rp-prefix {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: $gray-50;
+  border-right: 2rpx solid $gray-200;
+  height: 100rpx;
+  box-sizing: border-box;
+}
+
+.rp-prefix-text {
+  font-size: 28rpx;
+  color: $gray-500;
+  margin-left: 8rpx;
+}
+
+.rp-input {
+  flex: 1;
+  height: 100rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+}
+
+.rp-code-input {
+  text-align: center;
+  font-size: 40rpx;
+  letter-spacing: 16rpx;
+}
+
+.rp-placeholder {
+  color: $gray-400;
+}
+
+// 主按钮
+.rp-btn {
+  width: 100%;
+  padding: 24rpx 0;
+  background: $primary;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rp-btn-disabled {
+  opacity: 0.5;
+}
+
+.rp-btn-text {
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+// 重新获取
+.rp-reget {
+  width: 100%;
+  padding: 24rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rp-reget-text {
+  color: $gray-500;
+  font-size: 28rpx;
+}

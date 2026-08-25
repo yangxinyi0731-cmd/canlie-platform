@@ -110,6 +110,25 @@ router.get('/verifications', async (req, res) => {
   }
 });
 
+// Get talent detail with work experiences (including background check data - admin only)
+router.get('/talents/:id/detail', async (req, res) => {
+  try {
+    const talent = await prisma.talent.findUnique({
+      where: { id: req.params.id },
+      include: {
+        user: { select: { phone: true, name: true, status: true } },
+        workExperiences: { orderBy: [{ isCurrent: 'desc' }, { startYear: 'desc' }] },
+        verifications: { orderBy: { createdAt: 'desc' } },
+        _count: { select: { jobApplications: true } },
+      },
+    });
+    if (!talent) return res.status(404).json({ error: '人才不存在' });
+    res.json(talent);
+  } catch (err) {
+    res.status(500).json({ error: '获取人才详情失败' });
+  }
+});
+
 // Approve/reject verification
 router.put('/verifications/:id', async (req, res) => {
   try {

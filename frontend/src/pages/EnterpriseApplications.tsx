@@ -30,7 +30,7 @@ export default function EnterpriseApplications() {
       setLoading(true);
       // 获取所有职位的投递
       const jobsRes = await jobsApi.getMyJobs();
-      const jobs = jobsRes.data || [];
+      const jobs = jobsRes.data?.jobs || jobsRes.data || [];
 
       const allApps: any[] = [];
       for (const job of jobs) {

@@ -29,7 +29,7 @@ export default function EnterpriseJobs() {
     try {
       setLoading(true);
       const res = await jobsApi.getMyJobs();
-      setJobs(res.data);
+      setJobs(res.data?.jobs || res.data || []);
     } catch {
       setError('加载职位列表失败');
     } finally {

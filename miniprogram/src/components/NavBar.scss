@@ -1,0 +1,76 @@
+.navbar {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1PX solid $gray-100;
+
+  .navbar-inner {
+    display: flex;
+    align-items: center;
+    position: relative;
+    // 高度由组件内联注入（胶囊对齐）
+  }
+
+  // 返回按钮：大热区 + 网页版同款圆形底
+  .navbar-back {
+    width: 120rpx;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 32rpx;
+    box-sizing: border-box;
+  }
+
+  .navbar-back-hover {
+    opacity: 0.6;
+  }
+
+  // 纯 CSS 左箭头（border-left + border-bottom 旋转 45°，指向左）
+  .navbar-back-arrow {
+    display: block;
+    width: 20rpx;
+    height: 20rpx;
+    border-left: 4rpx solid $gray-700;
+    border-bottom: 4rpx solid $gray-700;
+    border-radius: 2rpx;
+    transform: rotate(45deg);
+  }
+
+  .navbar-back-arrow-white {
+    border-left-color: #fff;
+    border-bottom-color: #fff;
+  }
+
+  .navbar-title {
+    position: absolute;
+    left: 190rpx;
+    right: 190rpx;
+    text-align: center;
+    font-size: 32rpx;
+    font-weight: 600;
+    color: $gray-900;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .navbar-title-white {
+    color: #fff;
+  }
+
+  .navbar-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    // 右侧内容让位胶囊按钮（真机胶囊悬浮在右上角）
+    padding-right: 200rpx;
+    margin-left: auto;
+  }
+}
+
+.navbar-transparent {
+  background: transparent;
+  border-bottom: none;
+}

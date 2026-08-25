@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Briefcase,
   Heart,
+  Store,
+  PlaySquare,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { enterpriseApi, talentsApi } from '../api';
@@ -125,6 +127,16 @@ function TalentProfile({ profile }: { profile: Talent }) {
       onClick: () => navigate('/talent/favorites'),
     },
     {
+      label: '供应平台',
+      icon: <Store className="w-5 h-5" />,
+      onClick: () => navigate('/supply'),
+    },
+    {
+      label: '创业分享',
+      icon: <PlaySquare className="w-5 h-5" />,
+      onClick: () => navigate('/share'),
+    },
+    {
       label: '认证材料',
       icon: <ShieldCheck className="w-5 h-5" />,
       onClick: () => navigate('/talent/edit?section=verification'),
@@ -223,6 +235,16 @@ function EnterpriseProfile({ profile }: { profile: Enterprise }) {
       label: '人才搜索',
       icon: <Search className="w-5 h-5" />,
       onClick: () => navigate('/enterprise/talent-search'),
+    },
+    {
+      label: '供应平台',
+      icon: <Store className="w-5 h-5" />,
+      onClick: () => navigate('/supply'),
+    },
+    {
+      label: '创业分享',
+      icon: <PlaySquare className="w-5 h-5" />,
+      onClick: () => navigate('/share'),
     },
     {
       label: '退出登录',
@@ -326,9 +348,10 @@ function ProfileSkeleton() {
 // Main Profile Component
 // ================================================================
 export default function Profile() {
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, forceLogout } = useAuthStore();
   const [profileData, setProfileData] = useState<Talent | Enterprise | null>(null);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
 
   // Fetch profile data if user.profile is null
   useEffect(() => {
@@ -339,18 +362,30 @@ export default function Profile() {
     }
     const fetchProfile = async () => {
       setLoading(true);
+      setFetchError(false);
       try {
         if (user.role === 'TALENT') {
           const res = await talentsApi.getProfile();
-          setProfileData(res.data);
-          updateUser({ ...user, profile: res.data });
+          // res.data 可能为 null（401 拦截器返回），检查有效性
+          if (res.data && res.data.id) {
+            setProfileData(res.data);
+            updateUser({ ...user, profile: res.data });
+          } else {
+            // token 无效，不做任何事 — forceLogout 已由 401 拦截器触发
+            setLoading(false);
+          }
         } else if (user.role === 'ENTERPRISE') {
           const res = await enterpriseApi.getProfile();
-          setProfileData(res.data);
-          updateUser({ ...user, profile: res.data });
+          if (res.data && res.data.id) {
+            setProfileData(res.data);
+            updateUser({ ...user, profile: res.data });
+          } else {
+            setLoading(false);
+          }
         }
       } catch (err) {
         console.error('Failed to load profile:', err);
+        setFetchError(true);
       } finally {
         setLoading(false);
       }
@@ -361,7 +396,7 @@ export default function Profile() {
   // Not logged in
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-gray-400 px-6">
+      <div className="flex flex-col items-center justify-center h-full text-gray-400 px-6 py-12">
         <User className="w-16 h-16 text-gray-200 mb-3" />
         <p className="text-sm">请先登录</p>
       </div>
@@ -369,8 +404,24 @@ export default function Profile() {
   }
 
   // Loading state
-  if (loading || !profileData) {
+  if (loading) {
     return <ProfileSkeleton />;
+  }
+
+  // No profile data (may happen after token expired)
+  if (!profileData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-gray-400 px-6 py-12">
+        <User className="w-16 h-16 text-gray-200 mb-3" />
+        <p className="text-sm mb-2">{fetchError ? '加载失败，请重试' : '暂无数据'}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-[#FF6B00] text-white text-sm rounded-lg"
+        >
+          刷新页面
+        </button>
+      </div>
+    );
   }
 
   // Render based on role

@@ -20,8 +20,13 @@ model User {
 
   enterprise    Enterprise?
   talent        Talent?
+  supplyCompany SupplyCompany?
+  sharePosts    SharePost[]
+  shareLikes    ShareLike[]
+  shareComments ShareComment[]
   sentMessages  ChatMessage[] @relation("senderMessages")
   chatParticipants ChatParticipant[]
+  referralCodes ReferralCode[]
 }
 
 model Enterprise {
@@ -31,20 +36,38 @@ model Enterprise {
   companyLogo   String?
   businessLicense String?
   licenseVerified Boolean @default(false)
+  isPreparation Boolean  @default(false) // 筹备阶段，无需营业执照
+  personalIdFront String? // 筹备阶段个人身份证正面
+  personalIdBack  String? // 筹备阶段个人身份证反面
   companySize   String?  // 1-50, 50-200, 200-500, 500-2000, 2000+
   revenue       String?  // annual revenue range
   description   String?
   address       String?
   city          String?
+  province      String?  // 省份
   website       String?
   contactName   String?
   contactPhone  String?
   status        String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  notes         String?  // 备注（如酒店总经理、星级酒店总厨等特殊说明）
+  // 企业星级评定（AI自动评估）
+  starLevel     Int      @default(0) // 0=普通, 3=三星, 4=四星, 5=五星, 6=金牌
+  starLevelStr  String   @default("普通")
+  // AI匹配维度字段
+  businessModelDescription String? // 业态经营描述
+  developmentPlan String?  // 企业发展规划
+  shareholderInfo String?  // 股东结构
+  mainMarkets    String?   // 主要发展市场（省市）
+  welfareBenefits String?  // 福利待遇情况
+  currentStatus  String?  // 企业经营现状
+  bossInfo       String?  // 老板个人情况
+  equityOpportunity Boolean @default(false) // 投资入股绑定机会
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id])
-  jobs          Job[]
+  user            User     @relation(fields: [userId], references: [id])
+  jobs            Job[]
+  subscriptions   EnterpriseSubscription[]
 }
 
 model Talent {
@@ -53,11 +76,15 @@ model Talent {
   realName        String?
   gender          String?  // MALE, FEMALE
   birthYear       Int?
+  birthMonth      Int?     // 出生月份
+  idNumber        String?  // 身份证号
   city            String?
+  province        String?  // 省份
   phone           String?
   email           String?
   avatar          String?
   title           String?  // current job title
+  jobCategoryId   String?  // 岗位分类ID (关联JobCategory)
   currentCompany  String?
   minSalary       Int?     // expected min salary (monthly)
   maxSalary       Int?     // expected max salary (monthly)
@@ -66,6 +93,7 @@ model Talent {
   maritalStatus   String?  // SINGLE, MARRIED
   hasChildren     Boolean?
   hometown        String?  //籍贯
+  hometownProvince String? //籍贯省份
   cuisineIds      String?  // cuisine IDs, comma separated
   businessTypeIds String?  // business type IDs, comma separated
   status          String   @default("ACTIVE")
@@ -78,15 +106,45 @@ model Talent {
   headBrandExp    String?  //头部品牌任职经历
   projectExp      String?  //项目经验
   selfIntro       String?  //自我介绍
+  // AI匹配维度字段（新增）
+  parentInfo       String?  // 父母情况（稳定性评估）
+  learningAbility  String?  // 学习能力自评
+  thinkingStyle    String?  // 思维方式（灵活/固化）
+  personalSkills   String?  // 个人擅长能力
+  brandExperienceDetail String? // 知名品牌经验详情（品牌发展阶段等）
+  projectExpDetail  String? // 成功项目经验详情
+  preferredBusinessModel String? // 更适合的业态模型（高端餐饮/酒店餐饮/快餐简餐/小吃等）
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   user            User     @relation(fields: [userId], references: [id])
   resumes         Resume[]
   verifications   Verification[]
+  workExperiences WorkExperience[]
   jobApplications JobApplication[]
   matches         Match[]
   favorites       JobFavorite[]
+}
+
+model WorkExperience {
+  id            String   @id @default(cuid())
+  talentId      String
+  companyName   String   // 公司名称
+  position      String   // 担任职务
+  startYear     Int      // 开始年份
+  startMonth    Int      // 开始月份
+  endYear       Int?     // 结束年份（null表示至今）
+  endMonth      Int?     // 结束月份
+  isCurrent     Boolean  @default(false) // 是否现任
+  description   String?  // 工作描述
+  // 背景调查信息（隐私，仅管理员可见）
+  bgRefName     String?  // 背景调查人姓名
+  bgRefTitle    String?  // 背景调查人职位
+  bgRefPhone    String?  // 背景调查人联系电话
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  talent        Talent   @relation(fields: [talentId], references: [id])
 }
 
 model Resume {
@@ -126,10 +184,12 @@ model Job {
   enterpriseId    String
   title           String   //职位名称
   department      String?  //部门
+  jobCategoryId   String?  // 岗位分类ID
   minSalary       Int      // 月薪下限 (≥8000)
   maxSalary       Int      // 月薪上限
   salaryMonth     Int      @default(12) // 年薪月数
   city            String
+  province        String?  // 省份
   district        String?  //区
   address         String?  //详细地址
   businessTypeIds String   //业态IDs, comma separated
@@ -143,6 +203,8 @@ model Job {
   qualifications  String?  //资质要求
   educationReq    String?  //学历要求
   experienceReq   Int?     //经验要求(年)
+  genderReq       String?  //性别要求 MALE/FEMALE
+  minTenureReq    Int?     //单单位任职时长要求(年) 3/5
   headcount       Int      @default(1)
   status          String   @default("ACTIVE") // ACTIVE, CLOSED, DRAFT
   openPartner     Boolean  @default(false) // 开放合伙/投资洽谈
@@ -186,6 +248,10 @@ model Match {
   skillMatch      Float    @default(0)
   brandMatch      Float    @default(0)
   stabilityMatch  Float    @default(0) // stability score (marriage, children, age)
+  genderMatch     Float    @default(0) // gender requirement match
+  tenureMatch     Float    @default(0) // tenure requirement match
+  enterpriseMatch Float    @default(0) // enterprise strength match (talent-side expectation)
+  scoresJson      String?  // 全部评分维度 JSON 持久化
   totalScore      Float    @default(0)
   createdAt       DateTime @default(now())
 
@@ -239,10 +305,116 @@ model BusinessType {
   createdAt DateTime @default(now())
 }
 
+// 岗位分类 (e.g., 厨师岗位, 运营岗位, 人事岗位...)
+model JobCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "厨师岗位", "运营岗位"
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  subCategories JobSubCategory[]
+}
+
+// 岗位子分类 (e.g., 厨师长, 研发总监, 行政总厨...)
+model JobSubCategory {
+  id         String   @id @default(cuid())
+  categoryId String
+  name       String   // e.g. "厨师长", "研发总监"
+  sortOrder  Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  category   JobCategory @relation(fields: [categoryId], references: [id])
+
+  @@unique([categoryId, name])
+}
+
+// 中国城市数据（省份+地级市）
+model ChinaCity {
+  id         String   @id @default(cuid())
+  name       String   // 城市名称
+  province   String   // 所属省份
+  level      String   @default("CITY") // PROVINCE(省会), CITY(地级市)
+  sortOrder  Int      @default(0)
+  active     Boolean  @default(true)
+
+  @@unique([name, province])
+}
+
+// 推荐/分享系统
+model ReferralCode {
+  id          String   @id @default(cuid())
+  userId      String   @unique // 每个用户一个推荐码
+  code        String   @unique // 推荐码
+  referralCount Int    @default(0) // 成功推荐人数
+  discountAmount Float @default(0) // 累计优惠金额
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  records     ReferralRecord[]
+}
+
+// 推荐记录
+model ReferralRecord {
+  id          String   @id @default(cuid())
+  referralId  String   // ReferralCode ID
+  referredUserId String? // 被推荐人用户ID（如已注册）
+  referredPhone  String? // 被推荐人手机号
+  status      String   @default("PENDING") // PENDING, REGISTERED, PAID
+  createdAt   DateTime @default(now())
+
+  referral    ReferralCode @relation(fields: [referralId], references: [id])
+}
+
 model SystemConfig {
   id    String @id @default(cuid())
   key   String @unique
   value String
+}
+
+// 企业订阅/付费方案
+model SubscriptionPlan {
+  id            String   @id @default(cuid())
+  name          String   // 方案名称: 月度VIP, 季度VIP, 年度VIP, 单岗位发布
+  type          String   // MONTHLY, QUARTERLY, YEARLY, PER_JOB
+  price         Float    // 价格 (元)
+  jobQuota      Int      // 职位发布配额 (-1 = 不限)
+  durationDays  Int      // 有效天数
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+// 企业订阅记录
+model EnterpriseSubscription {
+  id            String   @id @default(cuid())
+  enterpriseId  String
+  planId        String
+  planName      String   // 冗余存储方案名称
+  planType      String   // MONTHLY, QUARTERLY, YEARLY, PER_JOB
+  price         Float    // 购买时价格
+  jobQuota      Int      // 购买时配额
+  jobsUsed      Int      @default(0) // 已使用配额
+  status        String   @default("ACTIVE") // ACTIVE, EXPIRED, USED
+  startDate     DateTime @default(now())
+  endDate       DateTime // 到期时间
+  createdAt     DateTime @default(now())
+
+  enterprise    Enterprise @relation(fields: [enterpriseId], references: [id])
+}
+
+// 人才星级评定标准
+model StarCriteria {
+  id            String   @id @default(cuid())
+  starLevel     Int      @unique // 0, 3, 4, 5, 6
+  starName      String   // 普通, 三星, 四星, 五星, 金牌
+  minWorkYears  Int      // 最低工作年限
+  description   String   // 评定标准描述
+  requirements  String   // 具体要求 (JSON or text)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
 }
 
 model JobFavorite {
@@ -269,4 +441,104 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, read])
+}
+
+// ========== 供应平台 ==========
+
+// 供应平台分类（食材公司/餐具公司/厨具公司/家具公司/品牌策划/设计/培训/出租转让/二手市场/投资公司）
+model SupplyCategory {
+  id        String   @id @default(cuid())
+  code      String   @unique // FOOD, TABLEWARE, KITCHENWARE, FURNITURE, BRAND_PLANNING, DESIGN, TRAINING, RENT_TRANSFER, SECOND_HAND, INVESTMENT
+  name      String   // 分类名称
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  companies SupplyCompany[]
+}
+
+// 供应公司/店铺（复用现有账号，无需新角色）
+model SupplyCompany {
+  id              String   @id @default(cuid())
+  userId          String   @unique // 归属用户
+  categoryId      String
+  companyName     String
+  businessLicense String?  // 营业执照图片 URL
+  productDesc     String?  // 公司产品介绍
+  services        String?  // 公司服务
+  introduction    String?  // 公司介绍
+  contactName     String?
+  contactPhone    String?
+  cuisineIds      String?  // 食材公司：八大菜系 level-1 IDs，逗号分隔
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  reason          String?  // 驳回原因
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id])
+  category SupplyCategory  @relation(fields: [categoryId], references: [id])
+  products SupplyProduct[]
+}
+
+// 供应产品
+model SupplyProduct {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  price       String?  // 价格文本（可含区间/单位）
+  images      String   @default("[]") // JSON 数组 of /uploads URLs
+  description String?
+  cuisineIds  String?  // 食材产品可选菜系
+  createdAt   DateTime @default(now())
+
+  company SupplyCompany @relation(fields: [companyId], references: [id])
+}
+
+// ========== 创业分享/学习分享 ==========
+
+// 分享帖子（类似视频号）
+model SharePost {
+  id           String   @id @default(cuid())
+  userId       String
+  category     String   // STARTUP 创业分享, LEARNING 学习分享
+  title        String
+  content      String?
+  images       String   @default("[]") // JSON 数组 of /uploads URLs
+  videoUrl     String?
+  likeCount    Int      @default(0)
+  commentCount Int      @default(0)
+  status       String   @default("VISIBLE") // VISIBLE, HIDDEN
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id])
+  likes    ShareLike[]
+  comments ShareComment[]
+
+  @@index([category, status, createdAt])
+}
+
+// 分享点赞
+model ShareLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post SharePost @relation(fields: [postId], references: [id])
+  user User      @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+// 分享评论
+model ShareComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  post SharePost @relation(fields: [postId], references: [id])
+  user User      @relation(fields: [userId], references: [id])
 }

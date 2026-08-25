@@ -8,21 +8,18 @@ const userSockets = new Map<string, string[]>();
 export function setupSocketHandlers(io: Server, socket: Socket) {
   let currentUserId: string | null = null;
 
-  // 加入房间 - 需要验证token
+  // 加入房间 - 必须验证 token（旧版"无 token 兼容"分支已移除：任何人可冒充任意用户收发消息）
   socket.on('join', (data: { userId: string; token?: string }) => {
-    // 验证用户身份
-    if (data.token) {
-      const decoded = verifySocketToken(data.token);
-      if (decoded && decoded.userId === data.userId) {
-        currentUserId = data.userId;
-      }
-    } else {
-      // 兼容旧版本，但记录警告
-      currentUserId = data.userId;
-      console.warn(`Socket join without token: userId=${data.userId}`);
+    if (!data.token) {
+      socket.emit('authError', { error: '缺少认证令牌' });
+      return;
     }
-
-    if (!currentUserId) return;
+    const decoded = verifySocketToken(data.token);
+    if (!decoded || decoded.userId !== data.userId) {
+      socket.emit('authError', { error: '身份验证失败' });
+      return;
+    }
+    currentUserId = data.userId;
 
     const existing = userSockets.get(currentUserId) || [];
     if (!existing.includes(socket.id)) {

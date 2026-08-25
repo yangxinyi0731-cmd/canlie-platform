@@ -15,15 +15,30 @@ export interface Enterprise {
   companyLogo?: string
   businessLicense?: string
   licenseVerified: boolean
+  isPreparation?: boolean
+  personalIdFront?: string
+  personalIdBack?: string
   companySize?: string
   revenue?: string
   description?: string
   address?: string
   city?: string
+  province?: string
   website?: string
   contactName?: string
   contactPhone?: string
   status: string
+  notes?: string
+  starLevel: number
+  starLevelStr: string
+  businessModelDescription?: string
+  developmentPlan?: string
+  shareholderInfo?: string
+  mainMarkets?: string
+  welfareBenefits?: string
+  currentStatus?: string
+  bossInfo?: string
+  equityOpportunity?: boolean
   _count?: { jobs: number }
 }
 
@@ -33,11 +48,15 @@ export interface Talent {
   realName?: string
   gender?: string
   birthYear?: number
+  birthMonth?: number
+  idNumber?: string
   city?: string
+  province?: string
   phone?: string
   email?: string
   avatar?: string
   title?: string
+  jobCategoryId?: string
   currentCompany?: string
   minSalary?: number
   maxSalary?: number
@@ -46,6 +65,7 @@ export interface Talent {
   maritalStatus?: string
   hasChildren?: boolean
   hometown?: string
+  hometownProvince?: string
   cuisineIds?: string
   businessTypeIds?: string
   status: string
@@ -58,9 +78,34 @@ export interface Talent {
   headBrandExp?: string
   projectExp?: string
   selfIntro?: string
+  parentInfo?: string
+  learningAbility?: string
+  thinkingStyle?: string
+  personalSkills?: string
+  brandExperienceDetail?: string
+  projectExpDetail?: string
+  preferredBusinessModel?: string
   resumes?: Resume[]
   verifications?: Verification[]
+  workExperiences?: WorkExperience[]
   _count?: { jobApplications: number }
+}
+
+export interface WorkExperience {
+  id: string
+  talentId: string
+  companyName: string
+  position: string
+  startYear: number
+  startMonth: number
+  endYear?: number
+  endMonth?: number
+  isCurrent: boolean
+  description?: string
+  bgRefName?: string
+  bgRefTitle?: string
+  bgRefPhone?: string
+  createdAt?: string
 }
 
 export interface Resume {
@@ -90,10 +135,12 @@ export interface Job {
   enterpriseId: string
   title: string
   department?: string
+  jobCategoryId?: string
   minSalary: number
   maxSalary: number
   salaryMonth: number
   city: string
+  province?: string
   district?: string
   address?: string
   businessTypeIds: string
@@ -107,6 +154,8 @@ export interface Job {
   qualifications?: string
   educationReq?: string
   experienceReq?: number
+  genderReq?: string
+  minTenureReq?: number
   headcount: number
   status: string
   openPartner: boolean
@@ -114,6 +163,28 @@ export interface Job {
   enterprise?: Enterprise
   _count?: { applications: number }
   createdAt: string
+}
+
+export interface JobCategory {
+  id: string
+  name: string
+  sortOrder: number
+  subCategories: JobSubCategory[]
+}
+
+export interface JobSubCategory {
+  id: string
+  categoryId: string
+  name: string
+  sortOrder: number
+}
+
+export interface ChinaCity {
+  id: string
+  name: string
+  province: string
+  level: string
+  sortOrder: number
 }
 
 export interface ChatMessage {
@@ -154,6 +225,13 @@ export interface Match {
   skillMatch: number
   brandMatch: number
   stabilityMatch: number
+  businessMatch?: number
+  growthMatch?: number
+  partnerMatch?: number
+  ageMatch?: number
+  genderMatch?: number
+  tenureMatch?: number
+  enterpriseMatch?: number
   totalScore: number
   talent?: Talent
   job?: Job
@@ -196,4 +274,73 @@ export interface JobApplication {
   createdAt: string
   job?: Job & { enterprise?: Enterprise }
   talent?: Talent
+}
+
+// ========== 供应平台 ==========
+
+export interface SupplyCategory {
+  id: string
+  code: string
+  name: string
+  sortOrder: number
+  active: boolean
+}
+
+export interface SupplyProduct {
+  id: string
+  companyId: string
+  name: string
+  price?: string
+  images: string
+  description?: string
+  cuisineIds?: string
+  createdAt: string
+}
+
+export interface SupplyCompany {
+  id: string
+  userId: string
+  categoryId: string
+  companyName: string
+  businessLicense?: string
+  productDesc?: string
+  services?: string
+  introduction?: string
+  contactName?: string
+  contactPhone?: string
+  cuisineIds?: string
+  status: string
+  reason?: string
+  createdAt: string
+  category?: SupplyCategory
+  products?: SupplyProduct[]
+  _count?: { products: number }
+}
+
+// ========== 创业分享/学习分享 ==========
+
+export interface ShareComment {
+  id: string
+  postId: string
+  userId: string
+  content: string
+  createdAt: string
+  user?: { id: string; name?: string; avatar?: string; phone?: string }
+}
+
+export interface SharePost {
+  id: string
+  userId: string
+  category: string
+  title: string
+  content?: string
+  images: string
+  videoUrl?: string
+  likeCount: number
+  commentCount: number
+  status: string
+  createdAt: string
+  user?: { id: string; name?: string; avatar?: string; phone?: string }
+  likedByMe?: boolean
+  comments?: ShareComment[]
 }

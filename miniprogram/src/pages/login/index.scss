@@ -1,0 +1,301 @@
+// 登录页（1:1 还原网页版 Login.tsx：渐变头 + 上浮表单卡 + 左图标输入行）
+.login-page {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+// ========== 品牌渐变头 ==========
+.brand-header {
+  position: relative;
+  padding: 0 48rpx 96rpx;
+  border-radius: 0 0 64rpx 64rpx;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8C38 100%);
+}
+
+.brand-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand-title {
+  font-size: 72rpx;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 8rpx;
+}
+
+.brand-sub {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 24rpx;
+  letter-spacing: 2rpx;
+}
+
+// 装饰圆（还原网页版 bg-white/10）
+.brand-deco {
+  position: relative;
+  height: 80rpx;
+  margin-top: 48rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.deco-circle-lg {
+  position: absolute;
+  left: -16rpx;
+  bottom: -48rpx;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.deco-circle-sm {
+  position: absolute;
+  right: -8rpx;
+  bottom: -16rpx;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+// ========== 上浮表单卡 ==========
+.form-wrap {
+  flex: 1;
+  padding: 0 48rpx;
+  margin-top: -48rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.form-card {
+  background: #fff;
+  border-radius: 32rpx;
+  box-shadow: 0 -8rpx 40rpx rgba(0, 0, 0, 0.06);
+  padding: 64rpx 48rpx;
+}
+
+.form-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin-bottom: 48rpx;
+}
+
+// ========== 输入行（左图标区 + 输入框 + 右眼睛）==========
+.field-row {
+  display: flex;
+  align-items: center;
+  border: 2rpx solid $gray-200;
+  border-radius: 24rpx;
+  overflow: hidden;
+  margin-bottom: 32rpx;
+  background: #fff;
+}
+
+.field-prefix {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: $gray-50;
+  border-right: 2rpx solid $gray-200;
+  height: 100rpx;
+  box-sizing: border-box;
+}
+
+.field-prefix-text {
+  font-size: 28rpx;
+  color: $gray-500;
+  margin-left: 8rpx;
+  white-space: nowrap;
+}
+
+.field-input {
+  flex: 1;
+  height: 100rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  background: transparent;
+}
+
+.field-placeholder {
+  color: $gray-400;
+}
+
+.field-suffix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx;
+}
+
+// ========== 记住密码 ==========
+.remember-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid $gray-300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  box-sizing: border-box;
+
+  &.checked {
+    background: $primary;
+    border-color: $primary;
+  }
+}
+
+.remember-text {
+  font-size: 24rpx;
+  color: $gray-500;
+}
+
+// ========== 注册身份 ==========
+.role-section {
+  margin-bottom: 32rpx;
+}
+
+.role-label {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-600;
+  margin-bottom: 16rpx;
+}
+
+.role-group {
+  // grid-2 的 g2 自带 margin-bottom，此处收紧
+  .role-card {
+    margin-bottom: 0;
+  }
+}
+
+.role-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0;
+  border-radius: 24rpx;
+  border: 4rpx solid $gray-200;
+  background: #fff;
+
+  &.active {
+    border-color: $primary;
+    background: $orange-50;
+
+    .role-name {
+      color: $primary;
+    }
+  }
+}
+
+.role-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-500;
+  margin-left: 16rpx;
+}
+
+// ========== 错误条 ==========
+.error-box {
+  display: flex;
+  align-items: center;
+  background: $red-50;
+  border: 2rpx solid $red-200;
+  border-radius: 24rpx;
+  padding: 24rpx 32rpx;
+  margin-bottom: 32rpx;
+}
+
+.error-text {
+  font-size: 28rpx;
+  color: $red-600;
+  margin-left: 16rpx;
+}
+
+// ========== 提交按钮（渐变 + 橙色投影）==========
+.submit-btn {
+  width: 100%;
+  padding: 28rpx 0;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8C38 100%);
+  box-shadow: 0 16rpx 32rpx rgba(255, 107, 0, 0.2);
+
+  &.submitting {
+    background: linear-gradient(135deg, #FF8C38 0%, #FF6B00 100%);
+    opacity: 0.9;
+  }
+}
+
+.submit-text {
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.submit-loading {
+  display: flex;
+  align-items: center;
+}
+
+.submit-spinner {
+  width: 40rpx;
+  height: 40rpx;
+  border: 4rpx solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  margin-right: 16rpx;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ========== 模式切换 ==========
+.switch-row {
+  margin-top: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32rpx;
+}
+
+.switch-link {
+  font-size: 28rpx;
+  color: $gray-500;
+}
+
+.forgot-link {
+  font-size: 28rpx;
+  color: $primary;
+  text-decoration: underline;
+}
+
+// ========== 底部协议 ==========
+.login-footer {
+  padding: 48rpx;
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 24rpx;
+  color: $gray-400;
+}

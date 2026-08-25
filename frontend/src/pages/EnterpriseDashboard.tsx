@@ -25,12 +25,17 @@ export default function EnterpriseDashboard() {
   const [loading, setLoading] = useState(true);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (p = 1) => {
     try {
       setLoading(true);
-      const res = await jobsApi.getMyJobs();
-      setJobs(res.data);
+      const res = await jobsApi.getMyJobs({ page: p, pageSize });
+      setJobs(res.data?.jobs || []);
+      setTotal(res.data?.total || 0);
+      setPage(res.data?.page || p);
     } catch {
       setError('加载职位列表失败');
     } finally {
@@ -262,6 +267,32 @@ export default function EnterpriseDashboard() {
           })}
         </div>
       )}
+
+      {/* Pagination */}
+      {(() => {
+        const totalPages = Math.ceil(total / pageSize);
+        return totalPages > 1 ? (
+          <div className="flex items-center justify-center gap-3 pt-4 pb-2">
+            <button
+              onClick={() => fetchJobs(page - 1)}
+              disabled={page <= 1}
+              className="px-4 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              上一页
+            </button>
+            <span className="text-sm text-gray-500">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => fetchJobs(page + 1)}
+              disabled={page >= totalPages}
+              className="px-4 py-2 text-sm border border-gray-200 rounded-lg disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              下一页
+            </button>
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }

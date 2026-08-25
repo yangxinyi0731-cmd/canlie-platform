@@ -19,14 +19,29 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// 标记是否已经触发 forceLogout，防止多个 401 并发时重复调用
+let logoutTriggered = false;
+
 // 响应拦截器
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ error?: string; message?: string }>) => {
     if (error.response?.status === 401) {
+      // 清空 localStorage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // 使用 Zustand forceLogout 而不是 window.location.replace
+      // 这样 React 的 ProtectedRoute 会平滑重定向到 /login
+      // 避免了硬导航导致的页面撕裂和白屏
+      if (!logoutTriggered) {
+        logoutTriggered = true;
+        import('../stores/authStore').then(({ useAuthStore }) => {
+          useAuthStore.getState().forceLogout();
+          logoutTriggered = false;
+        });
+      }
+      // 不 reject，返回 null 让调用方优雅处理
+      return Promise.resolve({ data: null } as any);
     }
     // 统一错误消息提取
     const message = error.response?.data?.error || error.response?.data?.message || error.message || '网络错误';
@@ -58,7 +73,7 @@ export const jobsApi = {
   create: (data: Record<string, unknown>) => api.post('/jobs', data),
   update: (id: string, data: Record<string, unknown>) => api.put(`/jobs/${id}`, data),
   close: (id: string) => api.patch(`/jobs/${id}/close`),
-  getMyJobs: () => api.get('/jobs/my/list'),
+  getMyJobs: (params?: Record<string, unknown>) => api.get('/jobs/my/list', { params }),
   apply: (id: string) => api.post(`/jobs/${id}/apply`),
   checkApplied: (id: string) => api.get(`/jobs/${id}/applied`),
   getMyApplications: () => api.get('/jobs/my/applications'),
@@ -73,11 +88,17 @@ export const jobsApi = {
 // ========== Talents API ==========
 export const talentsApi = {
   getProfile: () => api.get('/talents/profile'),
+  getCompleteness: () => api.get('/talents/profile/completeness'),
   updateProfile: (data: Record<string, unknown>) => api.put('/talents/profile', data),
   search: (params?: Record<string, unknown>) => api.get('/talents/search', { params }),
   getById: (id: string) => api.get(`/talents/${id}`),
   addVerification: (data: Record<string, unknown>) => api.post('/talents/verification', data),
   getVerifications: () => api.get('/talents/verifications'),
+  // Work experience CRUD
+  getWorkExperiences: () => api.get('/talents/work-experiences'),
+  addWorkExperience: (data: Record<string, unknown>) => api.post('/talents/work-experiences', data),
+  updateWorkExperience: (id: string, data: Record<string, unknown>) => api.put(`/talents/work-experiences/${id}`, data),
+  deleteWorkExperience: (id: string) => api.delete(`/talents/work-experiences/${id}`),
 };
 
 // ========== Chat API ==========
@@ -104,13 +125,25 @@ export const adminApi = {
   verifyEnterprise: (id: string, status: string) => api.put(`/admin/enterprises/${id}/verify`, { status }),
   getVerifications: () => api.get('/admin/verifications'),
   updateVerification: (id: string, status: string) => api.put(`/admin/verifications/${id}`, { status }),
+  getTalentDetail: (id: string) => api.get(`/admin/talents/${id}/detail`),
 };
 
 // ========== Reference Data API ==========
 export const refApi = {
   getCuisines: () => api.get('/cuisines/cuisines'),
+  getCuisinesGrouped: () => api.get('/cuisines/cuisines/grouped'),
   getBusinessTypes: () => api.get('/cuisines/business-types'),
+  getJobCategories: () => api.get('/cuisines/job-categories'),
+  getCities: () => api.get('/cuisines/cities'),
   getAll: () => api.get('/cuisines/all'),
+  getPlans: () => api.get('/cuisines/plans'),
+  getStarCriteria: () => api.get('/cuisines/star-criteria'),
+};
+
+// ========== Subscription API ==========
+export const subscriptionApi = {
+  getStatus: () => api.get('/enterprises/subscription/status'),
+  buy: (planId: string) => api.post('/enterprises/subscription/buy', { planId }),
 };
 
 // ========== Upload API ==========
@@ -120,6 +153,11 @@ export const uploadApi = {
     form.append('file', file);
     return api.post('/uploads', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
+  uploadVideo: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/uploads/video', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 // ========== Notification API ==========
@@ -128,6 +166,35 @@ export const notificationApi = {
   getUnreadCount: () => api.get('/notifications/unread-count'),
   markRead: (id: string) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.post('/notifications/read-all'),
+};
+
+// ========== Supply Platform API ==========
+export const supplyApi = {
+  getCategories: () => api.get('/supply/categories'),
+  listCompanies: (params?: Record<string, unknown>) => api.get('/supply/companies', { params }),
+  getCompany: (id: string) => api.get(`/supply/companies/${id}`),
+  getMyCompany: () => api.get('/supply/my/company'),
+  applyCompany: (data: Record<string, unknown>) => api.post('/supply/my/company', data),
+  updateCompany: (data: Record<string, unknown>) => api.put('/supply/my/company', data),
+  addProduct: (data: Record<string, unknown>) => api.post('/supply/my/company/products', data),
+  updateProduct: (id: string, data: Record<string, unknown>) => api.put(`/supply/my/company/products/${id}`, data),
+  deleteProduct: (id: string) => api.delete(`/supply/my/company/products/${id}`),
+  adminListCompanies: (params?: Record<string, unknown>) => api.get('/supply/admin/companies', { params }),
+  adminVerifyCompany: (id: string, status: string, reason?: string) => api.put(`/supply/admin/companies/${id}/verify`, { status, reason }),
+};
+
+// ========== Share (创业/学习分享) API ==========
+export const sharesApi = {
+  list: (params?: Record<string, unknown>) => api.get('/shares', { params }),
+  getById: (id: string) => api.get(`/shares/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/shares', data),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/shares/${id}`, data),
+  remove: (id: string) => api.delete(`/shares/${id}`),
+  toggleLike: (id: string) => api.post(`/shares/${id}/like`),
+  addComment: (id: string, content: string) => api.post(`/shares/${id}/comment`, { content }),
+  getMy: (params?: Record<string, unknown>) => api.get('/shares/my/list', { params }),
+  adminList: (params?: Record<string, unknown>) => api.get('/shares/admin/list', { params }),
+  adminSetStatus: (id: string, status: string) => api.patch(`/shares/admin/${id}/status`, { status }),
 };
 
 // ========== Helper Functions ==========

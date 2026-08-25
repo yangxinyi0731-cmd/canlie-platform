@@ -48,9 +48,11 @@ export default function Chat() {
   };
 
   const getDisplayName = (c: Conversation): string => {
-    if (c.otherUser?.name) return c.otherUser.name;
+    // 严格优先级：企业公司名 > 人才真实姓名 > 用户昵称
+    // 否则企业用户昵称（如"经理"）会覆盖公司名
     if (c.otherProfile?.companyName) return c.otherProfile.companyName;
     if (c.otherProfile?.realName) return c.otherProfile.realName;
+    if (c.otherUser?.name) return c.otherUser.name;
     return '用户';
   };
 

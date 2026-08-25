@@ -1,0 +1,69 @@
+.section-row {
+  display: flex;
+  align-items: center;
+  padding: 26rpx 36rpx;
+
+  & + .section-row {
+    border-top: 1PX solid $gray-50;
+  }
+
+  &.section-row-hover {
+    background: $gray-50;
+  }
+}
+
+// 图标：72rpx 浅色圆角底（舒适均匀的列表视觉）
+.section-row-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 28rpx;
+  flex-shrink: 0;
+}
+
+.section-row-icon-gray {
+  background: $gray-100;
+}
+
+.section-row-icon-blue {
+  background: #EFF6FF;
+}
+
+.section-row-icon-orange {
+  background: #FFF7ED;
+}
+
+.section-row-icon-purple {
+  background: #FAF5FF;
+}
+
+.section-row-icon-green {
+  background: #F0FDF4;
+}
+
+.section-row-icon-red {
+  background: #FEF2F2;
+}
+
+.section-row-emoji {
+  font-size: 36rpx;
+}
+
+.section-row-label {
+  flex: 1;
+  font-size: 30rpx;
+  color: $gray-900;
+}
+
+.section-row-danger .section-row-label {
+  color: $red-500;
+}
+
+.section-row-value {
+  font-size: 28rpx;
+  color: $gray-400;
+  margin-right: 8rpx;
+}

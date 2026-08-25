@@ -1,0 +1,310 @@
+// ========== 餐猎设计令牌（变量定义在 styles/variables.scss，经 sass.resource 全局注入）==========
+@import './styles/variables.scss';
+
+page {
+  background-color: #F5F5F5;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+view, text, image {
+  box-sizing: border-box;
+}
+
+// ========== 布局工具类 ==========
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-wrap { display: flex; flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.overflow-hidden { overflow: hidden; }
+
+// 伪 grid（替代网页版 grid-cols-N + gap，规避 weapp 旧内核 flex gap 兼容问题）
+.grid-2 { display: flex; flex-wrap: wrap; }
+.grid-2 > .g2 { width: calc(50% - 12rpx); margin-right: 24rpx; margin-bottom: 24rpx; }
+.grid-2 > .g2:nth-child(2n) { margin-right: 0; }
+
+.grid-3 { display: flex; flex-wrap: wrap; justify-content: space-between; }
+.grid-3 > .g3 { width: 32%; }
+
+.grid-4 { display: flex; }
+.grid-4 > .g4 { flex: 1; }
+
+// ========== 字号/字重/颜色 ==========
+.text-20 { font-size: 20rpx; }
+.text-22 { font-size: 22rpx; }
+.text-xs { font-size: 24rpx; }
+.text-sm { font-size: 28rpx; }
+.text-30 { font-size: 30rpx; }
+.text-base { font-size: 32rpx; }
+.text-lg { font-size: 36rpx; }
+.text-xl { font-size: 40rpx; }
+.text-2xl { font-size: 48rpx; }
+.text-4xl { font-size: 72rpx; }
+
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.text-primary { color: $primary; }
+.text-gray-400 { color: $gray-400; }
+.text-gray-500 { color: $gray-500; }
+.text-gray-600 { color: $gray-600; }
+.text-gray-700 { color: $gray-700; }
+.text-gray-900 { color: $gray-900; }
+.text-white { color: #fff; }
+.text-danger { color: $red-500; }
+.text-success { color: $green-600; }
+.text-info { color: $blue-600; }
+
+// ========== 卡片（网页版 .card = bg-white rounded-xl shadow-sm）==========
+.card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+// ========== 按钮（网页版 .btn-primary / .btn-outline）==========
+.btn-primary {
+  background: $primary;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 16rpx;
+  padding: 20rpx 32rpx;
+  text-align: center;
+  font-size: 28rpx;
+
+  &.disabled,
+  &.btn-hover {
+    background: $primary-dark;
+  }
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
+.btn-outline {
+  border: 2rpx solid $primary;
+  color: $primary;
+  font-weight: 500;
+  border-radius: 16rpx;
+  padding: 20rpx 32rpx;
+  text-align: center;
+  font-size: 28rpx;
+  background: #fff;
+
+  &.btn-hover {
+    background: $orange-50;
+  }
+}
+
+// ========== 输入框（网页版 .input-field）==========
+.input-field {
+  width: 100%;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  font-size: 28rpx;
+  background: #fff;
+}
+
+// 旧版灰底输入框（表单页沿用）
+.input {
+  background: $gray-100;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// ========== 标签（网页版 .tag 五色变体，rounded-full）==========
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  margin-right: 12rpx;
+  line-height: 1.2;
+}
+
+.tag-orange { background: $orange-50; color: $primary; }
+.tag-gray { background: $gray-100; color: $gray-600; }
+.tag-green { background: $green-50; color: $green-700; }
+.tag-blue { background: $blue-50; color: $blue-700; }
+.tag-purple { background: $purple-50; color: $purple-700; }
+.tag-yellow { background: $yellow-50; color: $yellow-700; }
+.tag-red { background: $red-50; color: $red-600; }
+
+// ========== 星级（网页版 .star-level：黄星/灰空星）==========
+.star-level {
+  display: inline-flex;
+  align-items: center;
+
+  .star {
+    font-size: 28rpx;
+    color: $amber-400;
+    margin-right: 4rpx;
+  }
+
+  .star.empty {
+    color: $gray-200;
+  }
+}
+
+// ========== 品牌渐变（网页版 .header-gradient）==========
+.header-gradient {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF8C38 100%);
+}
+
+// ========== 职位卡片（网页版 .job-card）==========
+.job-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+// ========== 聊天气泡（网页版 .chat-bubble-mine / .chat-bubble-other）==========
+.chat-bubble-mine {
+  background: $primary;
+  color: #fff;
+  border-radius: 32rpx;
+  border-top-right-radius: 12rpx;
+  padding: 20rpx 32rpx;
+  max-width: 80%;
+  margin-left: auto;
+  font-size: 28rpx;
+  word-break: break-all;
+}
+
+.chat-bubble-other {
+  background: #fff;
+  color: $gray-800;
+  border-radius: 32rpx;
+  border-top-left-radius: 12rpx;
+  padding: 20rpx 32rpx;
+  max-width: 80%;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-100;
+  font-size: 28rpx;
+  word-break: break-all;
+}
+
+// ========== 匹配度标签（网页版 .match-high/medium/low）==========
+.match-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+.match-high { background: $green-50; color: $green-700; }
+.match-medium { background: $yellow-50; color: $yellow-700; }
+.match-low { background: $red-50; color: $red-600; }
+
+// ========== 安全区 ==========
+.safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0), 32rpx);
+}
+
+// 底部导航让位（网页版 Layout main 的 pb-16）
+.tab-page-padding {
+  padding-bottom: 128rpx;
+}
+
+// ========== 分隔线 ==========
+.divider {
+  height: 2rpx;
+  background: $gray-100;
+}
+
+// ========== 行数限制 ==========
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ========== 动画 ==========
+.slide-up { animation: slideUp 0.3s ease-out; }
+.fade-in { animation: fadeIn 0.2s ease-out; }
+
+@keyframes slideUp {
+  from { transform: translateY(40rpx); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// ========== 按压反馈 ==========
+.hover-bg { background: $gray-50 !important; }
+.hover-opacity { opacity: 0.75; }
+
+// ========== 空状态 ==========
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+  color: $gray-400;
+  font-size: 26rpx;
+
+  .empty-icon {
+    font-size: 80rpx;
+    margin-bottom: 16rpx;
+  }
+}
+
+// ========== 骨架屏（网页版 animate-pulse）==========
+.skeleton {
+  background: $gray-200;
+  border-radius: 8rpx;
+  animation: skeletonPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

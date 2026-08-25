@@ -1,0 +1,370 @@
+// 商家入驻页（1:1 还原网页版 ApplySupplyStore.tsx）
+.apply-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.apply-header {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.apply-header-inner {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+}
+
+.apply-back {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apply-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $gray-900;
+  margin-left: 16rpx;
+}
+
+.apply-body {
+  padding: 32rpx;
+}
+
+.apply-error {
+  background: $red-50;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 32rpx;
+}
+
+.apply-error-text {
+  color: $red-600;
+  font-size: 28rpx;
+}
+
+// 表单卡
+.apply-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $gray-50;
+  margin-bottom: 32rpx;
+}
+
+.apply-card-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin-bottom: 24rpx;
+}
+
+.apply-card-sub {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin: -12rpx 0 24rpx;
+}
+
+.apply-field {
+  margin-bottom: 24rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.apply-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-bottom: 8rpx;
+}
+
+.apply-input {
+  width: 100%;
+  height: 80rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+}
+
+.apply-textarea {
+  width: 100%;
+  height: 144rpx;
+  padding: 16rpx 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+
+  &.tall {
+    height: 200rpx;
+  }
+}
+
+.apply-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+}
+
+.apply-select-text {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+.apply-placeholder {
+  color: $gray-400;
+}
+
+// 营业执照上传
+.apply-license-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.apply-license-img {
+  width: 192rpx;
+  height: 192rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid $gray-200;
+  flex-shrink: 0;
+}
+
+.apply-license-placeholder {
+  width: 192rpx;
+  height: 192rpx;
+  border-radius: 16rpx;
+  border: 4rpx dashed $gray-200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.apply-license-icon {
+  font-size: 40rpx;
+}
+
+.apply-license-text {
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 8rpx;
+}
+
+.apply-license-right {
+  flex: 1;
+}
+
+.apply-upload-btn {
+  display: inline-flex;
+  padding: 16rpx 32rpx;
+  background: $orange-50;
+  border: 2rpx solid rgba(255, 107, 0, 0.3);
+  border-radius: 16rpx;
+}
+
+.apply-upload-text {
+  color: $primary;
+  font-size: 28rpx;
+}
+
+.apply-upload-hint {
+  display: block;
+  font-size: 22rpx;
+  color: $gray-400;
+  margin-top: 8rpx;
+}
+
+// chips
+.apply-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.apply-chip {
+  font-size: 24rpx;
+  font-weight: 500;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: $gray-100;
+  color: $gray-600;
+}
+
+.apply-chip-active {
+  background: $primary;
+  color: #fff;
+}
+
+// 产品图片
+.apply-img-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.apply-img-wrap {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+}
+
+.apply-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid $gray-200;
+}
+
+.apply-img-del {
+  position: absolute;
+  top: -12rpx;
+  right: -12rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: $red-500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apply-img-del-text {
+  color: #fff;
+  font-size: 22rpx;
+}
+
+.apply-img-add {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  border: 4rpx dashed $gray-200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.apply-img-add-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.apply-img-add-plus {
+  font-size: 40rpx;
+  color: $gray-400;
+  line-height: 1;
+}
+
+.apply-img-add-label {
+  font-size: 20rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+}
+
+.apply-img-add-text {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+// 提交
+.apply-submit {
+  width: 100%;
+  padding: 24rpx 0;
+  background: $primary;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apply-submit-disabled {
+  opacity: 0.5;
+}
+
+.apply-submit-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.apply-footer-hint {
+  display: block;
+  text-align: center;
+  font-size: 22rpx;
+  color: $gray-400;
+  margin-top: 24rpx;
+}
+
+// 已申请态
+.apply-applied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0 48rpx;
+}
+
+.apply-applied-icon {
+  font-size: 96rpx;
+  margin-bottom: 32rpx;
+}
+
+.apply-applied-text {
+  font-size: 28rpx;
+  color: $gray-500;
+  margin-bottom: 8rpx;
+}
+
+.apply-applied-sub {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 48rpx;
+}
+
+.apply-applied-btns {
+  display: flex;
+  gap: 24rpx;
+}
+
+.apply-btn-primary {
+  padding: 16rpx 40rpx;
+  background: $primary;
+  border-radius: 16rpx;
+}
+
+.apply-btn-primary-text {
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.apply-btn-outline {
+  padding: 16rpx 40rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+}
+
+.apply-btn-outline-text {
+  color: $gray-600;
+  font-size: 28rpx;
+}

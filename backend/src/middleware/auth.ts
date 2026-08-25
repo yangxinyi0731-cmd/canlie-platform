@@ -1,12 +1,17 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
-// JWT Secret - 生产环境必须设置环境变量
+// JWT Secret：生产环境必须设置环境变量，否则拒绝启动（防止用硬编码默认值上线）
+const isProduction = process.env.NODE_ENV === 'production';
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  console.warn('⚠️  WARNING: JWT_SECRET not set! Using insecure default. Set JWT_SECRET environment variable for production.');
+  if (isProduction) {
+    console.error('❌ FATAL: JWT_SECRET 未设置。生产环境必须通过环境变量配置 JWT_SECRET。');
+    process.exit(1);
+  }
+  console.warn('⚠️  WARNING: JWT_SECRET not set! Using insecure default (DEV ONLY). Set JWT_SECRET env var for production.');
 }
-const SECRET = JWT_SECRET || 'dev-secret-change-in-production';
+const SECRET = JWT_SECRET || 'canlie-dev-secret-v2-20240804';
 
 export interface AuthRequest extends Request {
   userId?: string;

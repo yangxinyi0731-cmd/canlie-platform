@@ -1,0 +1,305 @@
+// AI 匹配结果页（1:1 还原网页版 MatchResults.tsx：border-l-4 分档卡 + 15 维进度条）
+.mr-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.mr-rematch-btn {
+  padding: 12rpx 24rpx;
+  background: $primary;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 500;
+  border-radius: 16rpx;
+}
+
+.mr-rematch-disabled {
+  opacity: 0.5;
+}
+
+.mr-body {
+  padding: 32rpx;
+}
+
+.mr-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.mr-meta {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+.mr-meta-num {
+  font-weight: 600;
+  color: $gray-600;
+}
+
+// ========== 匹配卡（border-l-4 分档）==========
+.mr-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 32rpx;
+  border-left: 8rpx solid transparent;
+}
+
+.bl-green { border-left-color: $green-500; }
+.bl-yellow { border-left-color: #EAB308; }
+.bl-red { border-left-color: $red-500; }
+
+.mr-card-body {
+  padding: 32rpx;
+}
+
+.mr-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 32rpx;
+}
+
+// 分数圆环（还原网页版 w-16 h-16 圆形）
+.mr-score-circle {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 4rpx solid transparent;
+  box-sizing: border-box;
+}
+
+.sc-green { border-color: #BBF7D0; background: $green-50; }
+.sc-yellow { border-color: #FDE68A; background: $yellow-50; }
+.sc-red { border-color: $red-200; background: $red-50; }
+
+.mr-score-num {
+  font-size: 40rpx;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.mr-score-label {
+  font-size: 18rpx;
+  color: $gray-400;
+  line-height: 1;
+}
+
+.text-green { color: $green-600; }
+.text-yellow { color: $yellow-600; }
+.text-red { color: $red-500; }
+
+// 人才信息
+.mr-talent-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.mr-talent-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 4rpx;
+}
+
+.mr-talent-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.mr-star {
+  font-size: 24rpx;
+}
+
+.mr-star-gold {
+  background: #FEF9C3;
+  color: $yellow-700;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  font-weight: 700;
+}
+
+.mr-star-gray {
+  color: $gray-400;
+}
+
+.mr-star-orange {
+  color: #F59E0B;
+}
+
+.mr-talent-title {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mr-talent-meta {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mr-talent-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  margin-top: 12rpx;
+}
+
+.mr-talent-tag {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+// ========== 维度分解 ==========
+.mr-breakdown {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.mr-breakdown-title {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 16rpx;
+}
+
+.mr-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 12rpx 0;
+}
+
+.mr-bar-icon {
+  font-size: 28rpx;
+  width: 48rpx;
+  text-align: center;
+}
+
+.mr-bar-label {
+  font-size: 24rpx;
+  color: $gray-500;
+  width: 80rpx;
+}
+
+.mr-bar-track {
+  flex: 1;
+  height: 16rpx;
+  background: $gray-100;
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+
+.mr-bar-fill {
+  height: 100%;
+  border-radius: 999rpx;
+}
+
+.bar-green { background: $green-500; }
+.bar-yellow { background: #EAB308; }
+.bar-red { background: $red-400; }
+
+.mr-bar-score {
+  font-size: 24rpx;
+  font-weight: 700;
+  width: 64rpx;
+  text-align: right;
+}
+
+// ========== 底部操作 ==========
+.mr-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1PX solid $gray-100;
+}
+
+.mr-level-badge {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 999rpx;
+  font-weight: 500;
+}
+
+.sb-green { background: $green-50; color: $green-700; border: 1PX solid #BBF7D0; }
+.sb-yellow { background: $yellow-50; color: $yellow-700; border: 1PX solid #FDE68A; }
+.sb-red { background: $red-50; color: $red-600; border: 1PX solid $red-200; }
+
+.mr-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.mr-btn {
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 16rpx;
+}
+
+.mr-btn-gray {
+  color: $gray-500;
+  border: 2rpx solid $gray-200;
+}
+
+.mr-btn-primary {
+  color: #fff;
+  background: $primary;
+  font-weight: 500;
+}
+
+// ========== 空态 ==========
+.mr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 128rpx 48rpx;
+}
+
+.mr-empty-icon {
+  font-size: 96rpx;
+  margin-bottom: 32rpx;
+}
+
+.mr-empty-text {
+  font-size: 28rpx;
+  color: $gray-500;
+  margin-bottom: 8rpx;
+}
+
+.mr-empty-sub {
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-bottom: 40rpx;
+}
+
+.mr-empty-btn {
+  padding: 20rpx 48rpx;
+  background: $primary;
+  border-radius: 16rpx;
+}
+
+.mr-empty-btn-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}

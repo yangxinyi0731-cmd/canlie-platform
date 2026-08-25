@@ -1,0 +1,369 @@
+// 企业信息编辑页（1:1 还原网页版 EditEnterpriseProfile.tsx）
+.eep-page {
+  min-height: 100vh;
+  background: $gray-50;
+}
+
+.eep-save-link {
+  font-size: 28rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+.eep-link-disabled {
+  opacity: 0.5;
+}
+
+// 提示条
+.eep-msg {
+  display: flex;
+  align-items: center;
+  margin: 24rpx 32rpx 0;
+  padding: 24rpx;
+  border-radius: 16rpx;
+}
+
+.eep-msg-error {
+  background: $red-50;
+}
+
+.eep-msg-success {
+  background: $green-50;
+}
+
+.eep-msg-text {
+  font-size: 28rpx;
+  margin-left: 12rpx;
+}
+
+.eep-msg-error-text {
+  color: $red-600;
+}
+
+.eep-msg-success-text {
+  color: $green-600;
+}
+
+// 认证状态横幅
+.eep-banner-wrap {
+  padding: 24rpx 32rpx 0;
+}
+
+.eep-banner {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.eep-banner-pending {
+  background: $yellow-50;
+  border: 2rpx solid #FDE68A;
+}
+
+.eep-banner-approved {
+  background: $green-50;
+  border: 2rpx solid #BBF7D0;
+}
+
+.eep-banner-rejected {
+  background: $red-50;
+  border: 2rpx solid $red-200;
+}
+
+.eep-banner-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.eep-banner-pending-title { color: $yellow-700; }
+.eep-banner-approved-title { color: $green-700; }
+.eep-banner-rejected-title { color: #B91C1C; }
+
+.eep-banner-text {
+  display: block;
+  font-size: 24rpx;
+  margin-top: 4rpx;
+}
+
+.eep-banner-pending-text { color: $yellow-600; }
+.eep-banner-approved-text { color: $green-600; }
+.eep-banner-rejected-text { color: $red-600; }
+
+// 表单
+.eep-body {
+  padding: 32rpx;
+}
+
+.eep-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 32rpx;
+}
+
+.eep-card-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-900;
+  margin-bottom: 32rpx;
+}
+
+.eep-field {
+  margin-bottom: 28rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.eep-label {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-500;
+  margin-bottom: 8rpx;
+}
+
+.eep-hint {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin: -16rpx 0 24rpx;
+}
+
+.eep-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+}
+
+.eep-textarea {
+  width: 100%;
+  height: 200rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  box-sizing: border-box;
+
+  &.short {
+    height: 144rpx;
+  }
+}
+
+.eep-placeholder {
+  color: $gray-400;
+}
+
+.eep-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2rpx solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+}
+
+.eep-select-text {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+.eep-row {
+  display: flex;
+  gap: 24rpx;
+}
+
+.eep-half {
+  flex: 1;
+  min-width: 0;
+}
+
+// Logo 上传
+.eep-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.eep-logo-img {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 16rpx;
+}
+
+.eep-logo-placeholder {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 16rpx;
+  background: $gray-100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eep-upload-link {
+  font-size: 24rpx;
+  color: $primary;
+  text-decoration: underline;
+}
+
+// 营业执照/身份证上传
+.eep-license-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.eep-license-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 16rpx;
+  background: $gray-100;
+}
+
+.eep-id-img {
+  width: 160rpx;
+  height: 112rpx;
+  border-radius: 12rpx;
+}
+
+.eep-license-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.eep-status-pill {
+  align-self: flex-start;
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+}
+
+.eep-pill-green {
+  background: $green-100;
+  color: $green-700;
+}
+
+.eep-pill-yellow {
+  background: #FEF9C3;
+  color: $yellow-700;
+}
+
+.eep-upload-box {
+  width: 100%;
+  padding: 96rpx 0;
+  background: $gray-50;
+  border: 2rpx dashed $gray-300;
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &.tall {
+    padding: 64rpx 0;
+  }
+}
+
+.eep-upload-box-text {
+  font-size: 28rpx;
+  color: $gray-500;
+  margin-top: 16rpx;
+}
+
+// 开关行
+.eep-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.eep-checkbox-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 24rpx;
+  border: 2rpx solid $gray-100;
+  border-radius: 16rpx;
+}
+
+.eep-switch-info,
+.eep-checkbox-info {
+  flex: 1;
+}
+
+.eep-switch-label {
+  display: block;
+  font-size: 28rpx;
+  color: $gray-800;
+}
+
+.eep-switch-desc {
+  display: block;
+  font-size: 24rpx;
+  color: $gray-400;
+  margin-top: 4rpx;
+  line-height: 1.5;
+}
+
+.eep-switch {
+  position: relative;
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: 999rpx;
+  background: $gray-200;
+  flex-shrink: 0;
+}
+
+.eep-switch-on {
+  background: $primary;
+}
+
+.eep-switch-knob {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.15);
+}
+
+.eep-switch-knob-on {
+  transform: translateX(40rpx);
+}
+
+// 保存按钮
+.eep-save-btn {
+  width: 100%;
+  padding: 24rpx 0;
+  background: $primary;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8rpx;
+}
+
+.eep-btn-disabled {
+  opacity: 0.5;
+}
+
+.eep-save-btn-text {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 500;
+}
