@@ -33,6 +33,9 @@ export default defineConfig(async (merge) => {
       projectDirectory: path.resolve(__dirname, '..')
     },
     mini: {
+      miniCssExtractPluginOption: {
+        ignoreOrder: true
+      },
       postcss: {
         pxtransform: {
           enable: true,
