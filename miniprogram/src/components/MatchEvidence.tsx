@@ -55,7 +55,7 @@ export default function MatchEvidence({ match, loading = false, error = false }:
               <View key={String(item.key)} className='match-evidence-item'>
                 <View className='match-evidence-label-row'>
                   <Text className='match-evidence-label'>{item.label}</Text>
-                  <Text className='match-evidence-value'>{value}</Text>
+                  <Text className='match-evidence-value'>{value}分</Text>
                 </View>
                 <View className='match-evidence-track' aria-label={`${item.label} ${value} 分`}>
                   <View className='match-evidence-fill' style={{ width: `${value}%` }} />
