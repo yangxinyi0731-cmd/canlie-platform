@@ -12,6 +12,7 @@
     "data:backup": "node scripts/backup-data.mjs",
     "data:verify-backup": "node scripts/verify-backup.mjs",
     "data:restore": "node scripts/restore-data.mjs",
+    "admin:reset-password": "node scripts/reset-admin-password.mjs",
     "db:push": "prisma db push",
     "db:seed": "tsx src/seed.ts",
     "data:cleanup-demo": "tsx src/cleanupDemoData.ts"
