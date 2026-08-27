@@ -1,14 +1,31 @@
 // ========== 餐猎设计令牌（变量定义在 styles/variables.scss，经 sass.resource 全局注入）==========
 page {
-  background-color: #F5F5F5;
+  background-color: $color-page;
   font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
   font-size: 28rpx;
-  color: #333;
-  line-height: 1.5;
+  color: $color-text-primary;
+  line-height: 1.6;
 }
 
-view, text, image {
+view, text, image, button, input, scroll-view {
   box-sizing: border-box;
+}
+
+// Taro 原生 Button 的轻量重置。仅显式加入该类的 V2 组件受影响，避免改写旧页面。
+.ui-button-reset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+
+  &::after {
+    border: 0;
+  }
 }
 
 // ========== 布局工具类 ==========
@@ -227,7 +244,7 @@ view, text, image {
 
 // 底部导航让位（网页版 Layout main 的 pb-16）
 .tab-page-padding {
-  padding-bottom: 128rpx;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom, 0));
 }
 
 // ========== 分隔线 ==========

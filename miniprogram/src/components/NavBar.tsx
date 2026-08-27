@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components';
+import { Button, View, Text } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { ReactNode } from 'react';
 import './NavBar.scss';
@@ -59,9 +59,14 @@ export default function NavBar({ title = '', showBack = true, transparent = fals
     >
       <View className='navbar-inner' style={{ height: `${NAV_ROW_HEIGHT}px` }}>
         {showBack ? (
-          <View className='navbar-back' onClick={handleBack} hoverClass='navbar-back-hover'>
+          <Button
+            className='ui-button-reset navbar-back'
+            aria-label='返回'
+            onClick={handleBack}
+            hoverClass='navbar-back-hover'
+          >
             <View className={`navbar-back-arrow ${transparent ? 'navbar-back-arrow-white' : ''}`} />
-          </View>
+          </Button>
         ) : (
           <View className='navbar-back' />
         )}

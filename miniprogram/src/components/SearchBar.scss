@@ -1,0 +1,67 @@
+.search-bar {
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  border: 1PX solid transparent;
+  border-radius: $radius-control;
+  background: $color-page;
+  position: relative;
+}
+
+.search-bar-icon {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-bar-input {
+  flex: 1;
+  min-width: 0;
+  height: 72rpx;
+  padding: 0;
+  color: $color-text-primary;
+  font-size: 28rpx;
+  line-height: 72rpx;
+}
+
+.search-bar-placeholder {
+  color: $color-text-muted;
+}
+
+.search-bar-end {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-bar-clear {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.search-bar-clear-pressed {
+  background: $color-border;
+}
+
+.search-bar-spinner {
+  width: 28rpx;
+  height: 28rpx;
+  border: 3rpx solid $color-border;
+  border-top-color: $brand-primary;
+  border-radius: 50%;
+  animation: searchSpin 0.8s linear infinite;
+}
+
+@keyframes searchSpin {
+  to { transform: rotate(360deg); }
+}

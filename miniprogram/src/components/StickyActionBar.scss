@@ -1,0 +1,17 @@
+.sticky-action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: $z-tabbar;
+  border-top: 1PX solid $color-border;
+  background: $color-surface;
+  box-shadow: 0 -8rpx 24rpx rgba(31, 35, 41, 0.06);
+}
+
+.sticky-action-bar-inner {
+  min-height: 112rpx;
+  padding: 16rpx $space-page;
+  display: flex;
+  align-items: center;
+}

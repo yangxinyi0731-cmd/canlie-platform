@@ -1,0 +1,45 @@
+.filter-bar-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.filter-bar {
+  display: inline-flex;
+  min-width: 100%;
+  padding: 0 $space-page;
+}
+
+.filter-bar-item {
+  min-width: 152rpx;
+  height: 64rpx;
+  padding: 0 20rpx;
+  margin-right: 12rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1PX solid $color-border;
+  border-radius: $radius-control;
+  background: $color-surface;
+  color: $color-text-secondary;
+  white-space: nowrap;
+}
+
+.filter-bar-item-active {
+  border-color: rgba(255, 107, 0, 0.42);
+  background: $brand-primary-soft;
+  color: $brand-primary;
+}
+
+.filter-bar-item-pressed {
+  opacity: 0.72;
+}
+
+.filter-bar-label {
+  max-width: 180rpx;
+  margin-right: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 1.2;
+}

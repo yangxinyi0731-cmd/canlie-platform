@@ -1,9 +1,9 @@
 .navbar {
-  background: #fff;
+  background: $color-surface;
   position: sticky;
   top: 0;
-  z-index: 100;
-  border-bottom: 1PX solid $gray-100;
+  z-index: $z-sticky;
+  border-bottom: 1PX solid $color-border;
 
   .navbar-inner {
     display: flex;
@@ -24,7 +24,7 @@
   }
 
   .navbar-back-hover {
-    opacity: 0.6;
+    background: $color-page;
   }
 
   // 纯 CSS 左箭头（border-left + border-bottom 旋转 45°，指向左）
@@ -32,8 +32,8 @@
     display: block;
     width: 20rpx;
     height: 20rpx;
-    border-left: 4rpx solid $gray-700;
-    border-bottom: 4rpx solid $gray-700;
+    border-left: 4rpx solid $color-text-secondary;
+    border-bottom: 4rpx solid $color-text-secondary;
     border-radius: 2rpx;
     transform: rotate(45deg);
   }
@@ -50,7 +50,7 @@
     text-align: center;
     font-size: 32rpx;
     font-weight: 600;
-    color: $gray-900;
+    color: $color-text-primary;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

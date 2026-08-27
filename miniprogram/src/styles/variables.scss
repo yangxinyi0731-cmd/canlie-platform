@@ -1,8 +1,37 @@
-// ========== 餐猎设计令牌（1:1 对齐网页版 frontend/src/index.css + Tailwind 色板）==========
-// 换算规则：网页 1px = 2rpx（Taro designWidth 750）
-// 此文件通过 config/index.ts 的 sass.resource 全局注入所有 scss
+// ========== 餐猎 V2 语义设计令牌 ==========
+// 运行时唯一来源：DESIGN.md 镜像这些已接受值，不单独生成另一套 token。
+// 换算规则：网页 1px = 2rpx（Taro designWidth 750）。
+// 此文件通过 config/index.ts 的 sass.resource 全局注入所有 scss。
 
-$primary: #FF6B00;
+$brand-primary: #FF6B00;
+$brand-primary-pressed: #E85F00;
+$brand-primary-soft: #FFF3E8;
+
+$color-page: #F7F8FA;
+$color-surface: #FFFFFF;
+$color-text-primary: #1F2329;
+$color-text-secondary: #4E5969;
+$color-text-muted: #86909C;
+$color-border: #E5E6EB;
+$color-success: #00A870;
+$color-warning: #F59E0B;
+$color-danger: #E5484D;
+
+$radius-control: 16rpx;
+$radius-card: 24rpx;
+$radius-sheet: 32rpx;
+$space-page: 32rpx;
+$space-card: 24rpx;
+$space-list: 16rpx;
+
+$z-sticky: 100;
+$z-tabbar: 400;
+$z-backdrop: 500;
+$z-sheet: 700;
+
+// ========== V1 兼容别名 ==========
+// 旧页面可继续使用原变量；触达的 V2 页面优先消费上面的语义变量。
+$primary: $brand-primary;
 $primary-light: #FF8C38;
 $primary-dark: #E06000;
 

@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components';
+import { Button, View, Text } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { ReactNode, useEffect, useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
@@ -65,12 +65,18 @@ export default function Layout({ children, active }: LayoutProps) {
           {tabs.map(tab => {
             const isActive = active === tab.path;
             return (
-              <View key={tab.path} className='tab-item' onClick={() => switchTo(tab.path)}>
+              <Button
+                key={tab.path}
+                className={`ui-button-reset tab-item ${isActive ? 'tab-item-active' : ''}`}
+                hoverClass='tab-item-pressed'
+                aria-label={`${tab.label}${isActive ? '，当前页面' : ''}`}
+                onClick={() => switchTo(tab.path)}
+              >
                 <View className='tab-icon-wrap'>
                   <Icon
                     name={tab.icon}
                     size={44}
-                    color={isActive ? '#FF6B00' : '#9CA3AF'}
+                    color={isActive ? '#FF6B00' : '#86909C'}
                     fill={isActive ? '#FF6B00' : 'none'}
                   />
                   {tab.path === TABS.notifications.path && unreadCount > 0 && (
@@ -78,7 +84,8 @@ export default function Layout({ children, active }: LayoutProps) {
                   )}
                 </View>
                 <Text className={`tab-label ${isActive ? 'tab-label-active' : ''}`}>{tab.label}</Text>
-              </View>
+                {isActive ? <View className='tab-current-mark' /> : null}
+              </Button>
             );
           })}
         </View>

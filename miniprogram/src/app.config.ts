@@ -37,8 +37,8 @@ export default {
     navigationBarTitleText: '餐猎',
     navigationBarTextStyle: 'black',
     // 窗口底色 = 页面灰底，避免下拉/回弹时露出默认白色
-    backgroundColor: '#F9FAFB',
-    backgroundColorTop: '#F9FAFB',
-    backgroundColorBottom: '#F9FAFB',
+    backgroundColor: '#F7F8FA',
+    backgroundColorTop: '#F7F8FA',
+    backgroundColorBottom: '#F7F8FA',
   },
 }
