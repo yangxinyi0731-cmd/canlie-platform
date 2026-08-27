@@ -143,7 +143,6 @@ export const refApi = {
 // ========== Subscription API ==========
 export const subscriptionApi = {
   getStatus: () => api.get('/enterprises/subscription/status'),
-  buy: (planId: string) => api.post('/enterprises/subscription/buy', { planId }),
 };
 
 // ========== Upload API ==========

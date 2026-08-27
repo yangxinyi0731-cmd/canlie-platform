@@ -1,22 +1,13 @@
 import { useEffect, useState } from 'react'
 import Taro, { useRouter } from '@tarojs/taro'
 import { View, Text, Input, Textarea, Picker } from '@tarojs/components'
-import { jobsApi, refApi, subscriptionApi, safeArray } from '../../api'
+import { jobsApi, refApi, safeArray } from '../../api'
 import { useRequireAuth } from '../../hooks/useAuth'
 import NavBar from '../../components/NavBar'
 import Icon from '../../components/Icon'
 import './index.scss'
 
-interface Plan {
-  id: string
-  name: string
-  type: string
-  price: number
-  jobQuota: number
-  durationDays: number
-}
-
-const STEPS = ['基础信息', '职位要求', '薪资地点', '业态菜系', '发布付费']
+const STEPS = ['基础信息', '职位要求', '薪资地点', '业态菜系', '确认发布']
 
 const EDUCATION_OPTIONS = ['不限', '高中', '中专', '大专', '本科', '硕士', '博士']
 const EXPERIENCE_OPTIONS = ['不限', '1年以下', '1-3年', '3-5年', '5-10年', '10年以上']
@@ -40,7 +31,6 @@ export default function PostJob() {
   const [cuisines, setCuisines] = useState<any[]>([])
   const [businessTypes, setBusinessTypes] = useState<any[]>([])
   const [jobCategories, setJobCategories] = useState<any[]>([])
-  const [plans, setPlans] = useState<Plan[]>([])
 
   // 表单状态
   const [title, setTitle] = useState('')
@@ -62,7 +52,6 @@ export default function PostJob() {
   const [openPartner, setOpenPartner] = useState(false)
   const [genderReq, setGenderReq] = useState('')
   const [minTenureReq, setMinTenureReq] = useState('')
-  const [selectedPlanId, setSelectedPlanId] = useState('')
 
   useEffect(() => {
     refApi.getAll().then(res => {
@@ -70,9 +59,6 @@ export default function PostJob() {
       setCuisines(safeArray(data?.cuisines))
       setBusinessTypes(safeArray(data?.businessTypes))
       setJobCategories(safeArray(data?.jobCategories))
-    }).catch(() => {})
-    refApi.getPlans().then(res => {
-      setPlans(safeArray(res.data as any))
     }).catch(() => {})
   }, [])
 
@@ -130,10 +116,7 @@ export default function PostJob() {
       if (selectedBusinessTypes.length > 5) { setError('业态选择不能超过5个'); return false }
       return true
     }
-    if (step === 5) {
-      if (!selectedPlanId) { setError('请选择发布方案'); return false }
-      return true
-    }
+    if (step === 5) return true
     return true
   }
 
@@ -189,14 +172,6 @@ export default function PostJob() {
     }
 
     try {
-      // 新发布时购买订阅（还原网页版：失败静默跳过继续发布）
-      if (!isEditing && selectedPlanId) {
-        try {
-          await subscriptionApi.buy(selectedPlanId)
-        } catch {
-          // ignore
-        }
-      }
       if (isEditing && id) {
         await jobsApi.update(id, payload)
       } else {
@@ -544,59 +519,17 @@ export default function PostJob() {
           </View>
         )}
 
-        {/* Step 5: 发布付费 */}
+        {/* Step 5: 确认发布 */}
         {step === 5 && (
           <View className='pj-card'>
             <View className='pj-plan-header'>
-              <Text className='pj-plan-title'>选择发布方案</Text>
-              <Text className='pj-plan-sub'>选择合适的付费方案发布职位</Text>
+              <Text className='pj-plan-title'>确认发布</Text>
+              <Text className='pj-plan-sub'>请确认职位信息真实、完整，提交后可在职位管理中继续维护。</Text>
             </View>
 
-            <View>
-              {plans.map(plan => {
-                const isSelected = selectedPlanId === plan.id
-                const quotaLabel = plan.jobQuota === -1 ? '不限发布数' : `可发布${plan.jobQuota}个职位`
-                const durationLabel = plan.type === 'PER_JOB' ? '30天有效期' : `${plan.durationDays}天内有效`
-                let badge = ''
-                let badgeCls = ''
-                if (plan.type === 'YEARLY') { badge = '最划算'; badgeCls = 'pj-badge-red' }
-                else if (plan.type === 'QUARTERLY') { badge = '推荐'; badgeCls = 'pj-badge-blue' }
-                else if (plan.type === 'MONTHLY') { badge = '灵活'; badgeCls = 'pj-badge-green' }
-                return (
-                  <View
-                    key={plan.id}
-                    className={`pj-plan-card ${isSelected ? 'pj-plan-selected' : ''}`}
-                    onClick={() => setSelectedPlanId(plan.id)}
-                  >
-                    <View className={`pj-radio ${isSelected ? 'pj-radio-selected' : ''}`}>
-                      {isSelected ? <View className='pj-radio-dot' /> : null}
-                    </View>
-                    <View className='pj-plan-info'>
-                      <View className='pj-plan-name-row'>
-                        <Text className='pj-plan-name'>{plan.name}</Text>
-                        {badge ? <Text className={`pj-badge ${badgeCls}`}>{badge}</Text> : null}
-                      </View>
-                      <View className='pj-plan-meta'>
-                        <Text className='pj-plan-meta-text'>{quotaLabel}</Text>
-                        <Text className='pj-plan-meta-dot'>·</Text>
-                        <Text className='pj-plan-meta-text'>{durationLabel}</Text>
-                      </View>
-                      {plan.type === 'YEARLY' ? (
-                        <Text className='pj-plan-tip'>
-                          相当于 ¥{(plan.price / 12).toFixed(0)}/月，比月度VIP节省 ¥{(299 * 12 - plan.price).toFixed(0)}
-                        </Text>
-                      ) : null}
-                    </View>
-                    <View className='pj-plan-price'>
-                      <Text className='pj-price'>¥{plan.price}</Text>
-                      {plan.type !== 'PER_JOB' ? (
-                        <Text className='pj-price-sub'>约¥{(plan.price / (plan.durationDays / 30)).toFixed(0)}/月</Text>
-                      ) : null}
-                    </View>
-                  </View>
-                )
-              })}
-              {plans.length === 0 ? <Text className='pj-loading-text pj-plan-loading'>加载方案中...</Text> : null}
+            <View className='pj-free-notice'>
+              <Text className='pj-free-notice-title'>平台测试期免费</Text>
+              <Text className='pj-free-notice-text'>当前未接入任何支付或自动扣款。发布职位不会产生费用，也不会创建付费订阅记录。</Text>
             </View>
 
             {/* 提交按钮（还原网页版） */}
@@ -610,7 +543,7 @@ export default function PostJob() {
                 <Text className='pj-submit-text'>
                   {isEditing
                     ? '保存修改'
-                    : `确认发布${selectedPlanId ? `（¥${plans.find(p => p.id === selectedPlanId)?.price || ''}）` : ''}`}
+                    : '确认免费发布'}
                 </Text>
               )}
             </View>

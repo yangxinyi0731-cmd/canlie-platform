@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
 import { ownsStoredUploadReferences } from '../security/storedUploadAuthorization.js';
+import { buildPurchaseUnavailableResponse, buildTestPhaseBillingStatus } from '../security/billing.js';
 
 const router = Router();
 
@@ -210,45 +211,10 @@ router.get('/subscription/status', authMiddleware, requireRole('ENTERPRISE'), as
     const enterprise = await prisma.enterprise.findUnique({ where: { userId: req.userId } });
     if (!enterprise) return res.status(404).json({ error: '企业信息不存在' });
 
-    // Find active subscriptions
-    const activeSubs = await prisma.enterpriseSubscription.findMany({
-      where: {
-        enterpriseId: enterprise.id,
-        status: 'ACTIVE',
-        endDate: { gte: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    // Calculate remaining quota
-    let totalQuota = 0;
-    let totalUsed = 0;
-    for (const sub of activeSubs) {
-      if (sub.jobQuota === -1) {
-        totalQuota = -1; // Unlimited
-        break;
-      }
-      totalQuota += sub.jobQuota;
-      totalUsed += sub.jobsUsed;
-    }
-
-    const canPost = totalQuota === -1 || totalQuota > totalUsed;
-    const remainingQuota = totalQuota === -1 ? -1 : Math.max(0, totalQuota - totalUsed);
-
-    // Also count current active job count for display
     const activeJobCount = await prisma.job.count({
       where: { enterpriseId: enterprise.id, status: 'ACTIVE' },
     });
-
-    res.json({
-      hasSubscription: activeSubs.length > 0,
-      activeSubscriptions: activeSubs,
-      totalQuota,
-      totalUsed,
-      remainingQuota,
-      activeJobCount,
-      canPost: canPost || activeSubs.length === 0, // Allow posting even without subscription (for now)
-    });
+    res.json(buildTestPhaseBillingStatus({ enterpriseStatus: enterprise.status, activeJobCount }));
   } catch (err) {
     res.status(500).json({ error: '获取订阅状态失败' });
   }
@@ -256,41 +222,8 @@ router.get('/subscription/status', authMiddleware, requireRole('ENTERPRISE'), as
 
 // Purchase a subscription plan
 router.post('/subscription/buy', authMiddleware, requireRole('ENTERPRISE'), async (req: AuthRequest, res) => {
-  try {
-    const { planId } = req.body;
-    const enterprise = await prisma.enterprise.findUnique({ where: { userId: req.userId } });
-    if (!enterprise) return res.status(404).json({ error: '企业信息不存在' });
-
-    const plan = await prisma.subscriptionPlan.findUnique({ where: { id: planId } });
-    if (!plan) return res.status(404).json({ error: '方案不存在' });
-
-    // Calculate end date
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + plan.durationDays);
-
-    // Create subscription record
-    const subscription = await prisma.enterpriseSubscription.create({
-      data: {
-        enterpriseId: enterprise.id,
-        planId: plan.id,
-        planName: plan.name,
-        planType: plan.type,
-        price: plan.price,
-        jobQuota: plan.jobQuota,
-        jobsUsed: 0,
-        status: 'ACTIVE',
-        startDate,
-        endDate,
-      },
-    });
-
-    console.log(`✅ Enterprise ${enterprise.companyName} purchased ${plan.name} for ¥${plan.price}`);
-    res.json(subscription);
-  } catch (err) {
-    console.error('Purchase error:', err);
-    res.status(500).json({ error: '购买失败' });
-  }
+  const unavailable = buildPurchaseUnavailableResponse();
+  return res.status(unavailable.statusCode).json(unavailable.body);
 });
 
 export default router;

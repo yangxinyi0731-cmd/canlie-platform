@@ -6,6 +6,7 @@ import { randomBytes } from 'node:crypto';
 const prisma = new PrismaClient();
 
 const MIN_SEED_PASSWORD_BYTES = 16;
+const DEMO_DATA_PREFIX = '[TEST]';
 
 function resolveSeedPassword(environmentName: string): string {
   const configuredPassword = process.env[environmentName];
@@ -30,6 +31,9 @@ function resolveSeedPassword(environmentName: string): string {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Demo seed is disabled in production. Import reviewed reference data separately.');
+  }
   // Resolve every required credential before the first database write so a
   // production seed cannot fail halfway through because one variable is absent.
   const [adminPassword, enterprisePassword, talentPassword] = await Promise.all([
@@ -47,11 +51,11 @@ async function main() {
     create: {
       phone: '13800000000',
       password: adminPassword,
-      name: '平台管理员',
+      name: `${DEMO_DATA_PREFIX} 平台管理员`,
       role: 'ADMIN',
     },
   });
-  console.log('✅ Admin created: 13800000000');
+  console.log('✅ Synthetic test administrator created');
 
   // ========== 一级菜系 (Level 1) ==========
   const level1Cuisines = [
@@ -258,95 +262,111 @@ async function main() {
   // ========== 演示企业用户 ==========
   const enterpriseUser = await prisma.user.upsert({
     where: { phone: '13800000001' },
-    update: { password: enterprisePassword },
+    update: { password: enterprisePassword, name: `${DEMO_DATA_PREFIX} 企业管理员甲` },
     create: {
       phone: '13800000001',
       password: enterprisePassword,
-      name: '张经理',
+      name: `${DEMO_DATA_PREFIX} 企业管理员甲`,
       role: 'ENTERPRISE',
     },
   });
 
   await prisma.enterprise.upsert({
     where: { userId: enterpriseUser.id },
-    update: {},
+    update: {
+      companyName: `${DEMO_DATA_PREFIX} 湘味轩演示集团`,
+      description: '仅用于开发测试的虚构连锁餐饮企业资料',
+      address: `${DEMO_DATA_PREFIX} 长沙市测试地址1号`,
+      contactName: `${DEMO_DATA_PREFIX} 企业管理员甲`,
+    },
     create: {
       userId: enterpriseUser.id,
-      companyName: '湘味轩餐饮集团',
+      companyName: `${DEMO_DATA_PREFIX} 湘味轩演示集团`,
       companySize: '200-500人',
-      description: '专注湘菜20年，全国连锁品牌，拥有50+门店，覆盖湖南、广东、北京等多个省市',
-      address: '长沙市岳麓区麓谷大道88号',
+      description: '仅用于开发测试的虚构连锁餐饮企业资料',
+      address: `${DEMO_DATA_PREFIX} 长沙市测试地址1号`,
       city: '长沙',
       province: '湖南省',
-      contactName: '张经理',
+      contactName: `${DEMO_DATA_PREFIX} 企业管理员甲`,
       contactPhone: '13800000001',
       status: 'APPROVED',
       licenseVerified: true,
     },
   });
-  console.log('✅ Enterprise 1: 湘味轩餐饮集团');
+  console.log('✅ Synthetic test enterprise 1 created');
 
   const enterprise2User = await prisma.user.upsert({
     where: { phone: '13800000002' },
-    update: { password: enterprisePassword },
+    update: { password: enterprisePassword, name: `${DEMO_DATA_PREFIX} 企业管理员乙` },
     create: {
       phone: '13800000002',
       password: enterprisePassword,
-      name: '李总监',
+      name: `${DEMO_DATA_PREFIX} 企业管理员乙`,
       role: 'ENTERPRISE',
     },
   });
 
   await prisma.enterprise.upsert({
     where: { userId: enterprise2User.id },
-    update: {},
+    update: {
+      companyName: `${DEMO_DATA_PREFIX} 云栖演示酒店`,
+      description: '仅用于开发测试的虚构酒店餐饮企业资料',
+      address: `${DEMO_DATA_PREFIX} 杭州市测试地址2号`,
+      contactName: `${DEMO_DATA_PREFIX} 企业管理员乙`,
+    },
     create: {
       userId: enterprise2User.id,
-      companyName: '悦榕庄酒店',
+      companyName: `${DEMO_DATA_PREFIX} 云栖演示酒店`,
       companySize: '500-2000人',
-      description: '五星级度假酒店，高端餐饮服务，拥有中餐厅、西餐厅、日料餐厅等多个餐饮板块',
-      address: '杭州市西湖区龙井路1号',
+      description: '仅用于开发测试的虚构酒店餐饮企业资料',
+      address: `${DEMO_DATA_PREFIX} 杭州市测试地址2号`,
       city: '杭州',
       province: '浙江省',
-      contactName: '李总监',
+      contactName: `${DEMO_DATA_PREFIX} 企业管理员乙`,
       contactPhone: '13800000002',
       status: 'APPROVED',
       licenseVerified: true,
     },
   });
-  console.log('✅ Enterprise 2: 悦榕庄酒店');
+  console.log('✅ Synthetic test enterprise 2 created');
 
   // 第三个企业 - 筹备阶段
   const enterprise3User = await prisma.user.upsert({
     where: { phone: '13800000003' },
-    update: { password: enterprisePassword },
+    update: { password: enterprisePassword, name: `${DEMO_DATA_PREFIX} 企业管理员丙` },
     create: {
       phone: '13800000003',
       password: enterprisePassword,
-      name: '王总',
+      name: `${DEMO_DATA_PREFIX} 企业管理员丙`,
       role: 'ENTERPRISE',
     },
   });
 
   await prisma.enterprise.upsert({
     where: { userId: enterprise3User.id },
-    update: {},
+    update: {
+      companyName: `${DEMO_DATA_PREFIX} 星瀚筹备演示公司`,
+      description: '仅用于开发测试的虚构筹备企业资料',
+      address: `${DEMO_DATA_PREFIX} 深圳市测试地址3号`,
+      contactName: `${DEMO_DATA_PREFIX} 企业管理员丙`,
+      notes: `${DEMO_DATA_PREFIX} 筹备状态演示`,
+    },
     create: {
       userId: enterprise3User.id,
-      companyName: '星瀚餐饮管理有限公司（筹备中）',
+      companyName: `${DEMO_DATA_PREFIX} 星瀚筹备演示公司`,
       companySize: '50-200人',
-      description: '初创餐饮品牌，主打新派融合菜，首店筹备中',
-      address: '深圳市南山区科技园路88号',
+      description: '仅用于开发测试的虚构筹备企业资料',
+      address: `${DEMO_DATA_PREFIX} 深圳市测试地址3号`,
       city: '深圳',
       province: '广东省',
-      contactName: '王总',
+      contactName: `${DEMO_DATA_PREFIX} 企业管理员丙`,
       contactPhone: '13800000003',
       status: 'PENDING',
       isPreparation: true,
-      notes: '筹备阶段品牌，计划2025年Q1开业',
+      notes: `${DEMO_DATA_PREFIX} 筹备状态演示`,
     },
   });
-  console.log('✅ Enterprise 3: 星瀚餐饮-筹备阶段');
+  console.log('✅ Synthetic test enterprise 3 created');
 
   // ========== 获取引用数据ID ==========
   const hunanCuisine = await prisma.cuisine.findFirst({ where: { name: '湘菜' } });
@@ -364,7 +384,7 @@ async function main() {
   // ========== 创建职位 ==========
   const jobs = [
     {
-      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: '湘味轩餐饮集团' } }))!.id,
+      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: `${DEMO_DATA_PREFIX} 湘味轩演示集团` } }))!.id,
       title: '行政总厨',
       department: '厨房部',
       jobCategoryId: chefCategory?.id,
@@ -374,7 +394,7 @@ async function main() {
       city: '长沙',
       province: '湖南省',
       district: '岳麓区',
-      address: '麓谷大道88号湘味轩总部',
+      address: `${DEMO_DATA_PREFIX} 测试职位地址1号`,
       businessTypeIds: socialDining?.id || '',
       cuisineIds: hunanCuisine?.id || '',
       description: '1. 负责整个集团的菜品研发、厨房管理、成本控制等工作\n2. 管理50+门店的厨房团队，制定标准化出品流程\n3. 定期推出新菜品，保持品牌创新力',
@@ -387,7 +407,7 @@ async function main() {
       openPartner: true,
     },
     {
-      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: '湘味轩餐饮集团' } }))!.id,
+      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: `${DEMO_DATA_PREFIX} 湘味轩演示集团` } }))!.id,
       title: '厨师长',
       department: '厨房部',
       jobCategoryId: chefCategory?.id,
@@ -397,7 +417,7 @@ async function main() {
       city: '长沙',
       province: '湖南省',
       district: '芙蓉区',
-      address: '五一广场店',
+      address: `${DEMO_DATA_PREFIX} 测试门店地址2号`,
       businessTypeIds: [socialDining?.id, chain?.id].filter(Boolean).join(','),
       cuisineIds: hunanCuisine?.id || '',
       description: '负责门店厨房日常运营，菜品出品质量控制，团队管理',
@@ -409,7 +429,7 @@ async function main() {
       headcount: 3,
     },
     {
-      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: '悦榕庄酒店' } }))!.id,
+      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: `${DEMO_DATA_PREFIX} 云栖演示酒店` } }))!.id,
       title: '餐饮总监',
       department: '餐饮部',
       jobCategoryId: opsCategory?.id,
@@ -419,7 +439,7 @@ async function main() {
       city: '杭州',
       province: '浙江省',
       district: '西湖区',
-      address: '龙井路1号悦榕庄',
+      address: `${DEMO_DATA_PREFIX} 测试酒店地址3号`,
       businessTypeIds: [hotelDining?.id, highEnd?.id].filter(Boolean).join(','),
       cuisineIds: '',
       description: '负责酒店餐饮部门整体运营管理，包括中餐厅、西餐厅、日料餐厅、大堂吧等多个餐饮点',
@@ -432,7 +452,7 @@ async function main() {
       openPartner: true,
     },
     {
-      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: '悦榕庄酒店' } }))!.id,
+      enterpriseId: (await prisma.enterprise.findFirst({ where: { companyName: `${DEMO_DATA_PREFIX} 云栖演示酒店` } }))!.id,
       title: '中餐主厨',
       department: '中餐厅',
       jobCategoryId: chefCategory?.id,
@@ -442,7 +462,7 @@ async function main() {
       city: '杭州',
       province: '浙江省',
       district: '西湖区',
-      address: '悦榕庄中餐厅',
+      address: `${DEMO_DATA_PREFIX} 测试餐厅地址4号`,
       businessTypeIds: hotelDining?.id || '',
       cuisineIds: [sichuanCuisine?.id, yueCuisine?.id].filter(Boolean).join(','),
       description: '负责中餐厅菜品研发和出品，主打川菜和粤菜',
@@ -464,18 +484,18 @@ async function main() {
   const talentsData = [
     {
       phone: '13900000001',
-      name: '王大厨',
-      realName: '王建国',
+      name: `${DEMO_DATA_PREFIX} 人才甲`,
+      realName: `${DEMO_DATA_PREFIX} 候选人甲`,
       gender: 'MALE',
       birthYear: 1980,
       birthMonth: 3,
-      idNumber: '430103198003150011',
+      idNumber: 'TEST-ID-001',
       city: '长沙',
       province: '湖南省',
-      email: 'wangjianguo@example.com',
+      email: 'talent01@example.invalid',
       title: '行政总厨',
       jobCategoryId: chefCategory?.id,
-      currentCompany: '某连锁湘菜品牌',
+      currentCompany: `${DEMO_DATA_PREFIX} 虚构连锁品牌甲`,
       minSalary: 25000,
       maxSalary: 40000,
       workYears: 15,
@@ -491,25 +511,25 @@ async function main() {
       brandEndorsement: '曾任某知名湘菜品牌总厨，该品牌在全国有100+门店',
       selfIntro: '15年湘菜经验，擅长菜品研发和团队管理，精通长沙菜、衡东菜、常德菜等多个湘菜分支。曾带领团队获得全国烹饪大赛金奖。',
       workExperiences: [
-        { companyName: '湘味楼餐饮集团', position: '行政总厨', startYear: 2018, startMonth: 3, endYear: 2024, endMonth: 6, isCurrent: false, description: '负责集团菜品研发和厨房管理，管理30+门店厨房团队', bgRefName: '刘老板', bgRefTitle: '集团董事长', bgRefPhone: '13800000005' },
-        { companyName: '长沙老湘菜馆', position: '厨师长', startYear: 2012, startMonth: 5, endYear: 2018, endMonth: 2, isCurrent: false, description: '负责门店厨房运营管理，带领20人团队', bgRefName: '陈总', bgRefTitle: '餐厅老板', bgRefPhone: '13800000006' },
-        { companyName: '衡阳大酒店', position: '主厨', startYear: 2006, startMonth: 8, endYear: 2012, endMonth: 4, isCurrent: false, description: '负责中餐部菜品出品', bgRefName: '赵经理', bgRefTitle: '餐饮总监', bgRefPhone: '13800000007' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐饮企业甲一`, position: '行政总厨', startYear: 2018, startMonth: 3, endYear: 2024, endMonth: 6, isCurrent: false, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人甲一`, bgRefTitle: '测试职位', bgRefPhone: '13800000005' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐饮企业甲二`, position: '厨师长', startYear: 2012, startMonth: 5, endYear: 2018, endMonth: 2, isCurrent: false, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人甲二`, bgRefTitle: '测试职位', bgRefPhone: '13800000006' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐饮企业甲三`, position: '主厨', startYear: 2006, startMonth: 8, endYear: 2012, endMonth: 4, isCurrent: false, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人甲三`, bgRefTitle: '测试职位', bgRefPhone: '13800000007' },
       ],
     },
     {
       phone: '13900000002',
-      name: '刘厨师长',
-      realName: '刘明',
+      name: `${DEMO_DATA_PREFIX} 人才乙`,
+      realName: `${DEMO_DATA_PREFIX} 候选人乙`,
       gender: 'MALE',
       birthYear: 1985,
       birthMonth: 8,
-      idNumber: '430602198508120012',
+      idNumber: 'TEST-ID-002',
       city: '长沙',
       province: '湖南省',
-      email: 'liuming@example.com',
+      email: 'talent02@example.invalid',
       title: '厨师长',
       jobCategoryId: chefCategory?.id,
-      currentCompany: '某湘菜连锁',
+      currentCompany: `${DEMO_DATA_PREFIX} 虚构连锁品牌乙`,
       minSalary: 15000,
       maxSalary: 25000,
       workYears: 10,
@@ -524,24 +544,24 @@ async function main() {
       starLevelStr: '四星',
       selfIntro: '10年湘菜经验，擅长衡东菜、岳阳菜。曾在多家知名湘菜馆担任厨师长。',
       workExperiences: [
-        { companyName: '岳阳楼餐饮', position: '厨师长', startYear: 2019, startMonth: 6, endYear: undefined, endMonth: undefined, isCurrent: true, description: '负责门店厨房全面管理', bgRefName: '黄总', bgRefTitle: '总经理', bgRefPhone: '13900000001' },
-        { companyName: '湘江春酒楼', position: '副厨师长', startYear: 2015, startMonth: 3, endYear: 2019, endMonth: 5, isCurrent: false, description: '协助厨师长管理厨房团队', bgRefName: '周师傅', bgRefTitle: '行政总厨', bgRefPhone: '13900000002' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐饮企业乙一`, position: '厨师长', startYear: 2019, startMonth: 6, endYear: undefined, endMonth: undefined, isCurrent: true, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人乙一`, bgRefTitle: '测试职位', bgRefPhone: '13900000001' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐饮企业乙二`, position: '副厨师长', startYear: 2015, startMonth: 3, endYear: 2019, endMonth: 5, isCurrent: false, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人乙二`, bgRefTitle: '测试职位', bgRefPhone: '13900000002' },
       ],
     },
     {
       phone: '13900000003',
-      name: '陈总监',
-      realName: '陈伟',
+      name: `${DEMO_DATA_PREFIX} 人才丙`,
+      realName: `${DEMO_DATA_PREFIX} 候选人丙`,
       gender: 'MALE',
       birthYear: 1978,
       birthMonth: 11,
-      idNumber: '330102197811150013',
+      idNumber: 'TEST-ID-003',
       city: '杭州',
       province: '浙江省',
-      email: 'chenwei@example.com',
+      email: 'talent03@example.invalid',
       title: '餐饮总监',
       jobCategoryId: opsCategory?.id,
-      currentCompany: '某五星级酒店',
+      currentCompany: `${DEMO_DATA_PREFIX} 虚构酒店丙`,
       minSalary: 30000,
       maxSalary: 50000,
       workYears: 12,
@@ -557,24 +577,24 @@ async function main() {
       brandEndorsement: '曾任多家五星级酒店餐饮总监，拥有丰富的酒店餐饮管理经验',
       selfIntro: '12年高端餐饮管理经验，精通酒店餐饮运营。成功筹备并运营多个星级酒店餐饮项目。',
       workExperiences: [
-        { companyName: '杭州国际大酒店', position: '餐饮总监', startYear: 2018, startMonth: 1, endYear: undefined, endMonth: undefined, isCurrent: true, description: '全面负责酒店餐饮部门运营', bgRefName: '林总', bgRefTitle: '酒店总经理', bgRefPhone: '13900000003' },
-        { companyName: '上海外滩酒店', position: '餐饮副总监', startYear: 2014, startMonth: 6, endYear: 2017, endMonth: 12, isCurrent: false, description: '协助餐饮总监管理酒店餐饮', bgRefName: '吴总监', bgRefTitle: '餐饮部总监', bgRefPhone: '13900000004' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构酒店丙一`, position: '餐饮总监', startYear: 2018, startMonth: 1, endYear: undefined, endMonth: undefined, isCurrent: true, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人丙一`, bgRefTitle: '测试职位', bgRefPhone: '13900000003' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构酒店丙二`, position: '餐饮副总监', startYear: 2014, startMonth: 6, endYear: 2017, endMonth: 12, isCurrent: false, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人丙二`, bgRefTitle: '测试职位', bgRefPhone: '13900000004' },
       ],
     },
     {
       phone: '13900000004',
-      name: '赵主厨',
-      realName: '赵强',
+      name: `${DEMO_DATA_PREFIX} 人才丁`,
+      realName: `${DEMO_DATA_PREFIX} 候选人丁`,
       gender: 'MALE',
       birthYear: 1982,
       birthMonth: 6,
-      idNumber: '510107198206150014',
+      idNumber: 'TEST-ID-004',
       city: '杭州',
       province: '浙江省',
-      email: 'zhaoqiang@example.com',
+      email: 'talent04@example.invalid',
       title: '中餐主厨',
       jobCategoryId: chefCategory?.id,
-      currentCompany: '某高端餐厅',
+      currentCompany: `${DEMO_DATA_PREFIX} 虚构餐厅丁`,
       minSalary: 18000,
       maxSalary: 28000,
       workYears: 8,
@@ -589,8 +609,8 @@ async function main() {
       starLevelStr: '四星',
       selfIntro: '8年川菜经验，擅长创新融合。精通传统川菜和新派川菜，有丰富的酒店中餐经验。',
       workExperiences: [
-        { companyName: '成都锦江饭店', position: '川菜主厨', startYear: 2018, startMonth: 9, endYear: undefined, endMonth: undefined, isCurrent: true, description: '负责川菜部菜品研发和出品', bgRefName: '钱经理', bgRefTitle: '餐饮经理', bgRefPhone: '13900000005' },
-        { companyName: '重庆火锅城', position: '厨师', startYear: 2015, startMonth: 3, endYear: 2018, endMonth: 8, isCurrent: false, description: '负责火锅底料研发和菜品制作', bgRefName: '孙老板', bgRefTitle: '店长', bgRefPhone: '13900000006' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐厅丁一`, position: '川菜主厨', startYear: 2018, startMonth: 9, endYear: undefined, endMonth: undefined, isCurrent: true, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人丁一`, bgRefTitle: '测试职位', bgRefPhone: '13900000005' },
+        { companyName: `${DEMO_DATA_PREFIX} 虚构餐厅丁二`, position: '厨师', startYear: 2015, startMonth: 3, endYear: 2018, endMonth: 8, isCurrent: false, description: '测试工作经历描述', bgRefName: `${DEMO_DATA_PREFIX} 推荐人丁二`, bgRefTitle: '测试职位', bgRefPhone: '13900000006' },
       ],
     },
   ];
@@ -638,15 +658,15 @@ async function main() {
         });
       }
     }
-    console.log(`✅ ${t.name} (${t.realName}): ${workExperiences.length}条工作经历`);
+    console.log(`✅ Synthetic test talent seeded with ${workExperiences.length} work experiences`);
   }
 
-  // ========== 付费方案 ==========
+  // ========== 历史付费方案占位（支付未接入，必须保持停用） ==========
   const plans = [
-    { name: '月度VIP', type: 'MONTHLY', price: 299, jobQuota: 10, durationDays: 30, sortOrder: 1 },
-    { name: '季度VIP', type: 'QUARTERLY', price: 699, jobQuota: 30, durationDays: 90, sortOrder: 2 },
-    { name: '年度VIP', type: 'YEARLY', price: 1999, jobQuota: -1, durationDays: 365, sortOrder: 3 },
-    { name: '单岗位发布', type: 'PER_JOB', price: 99, jobQuota: 1, durationDays: 30, sortOrder: 4 },
+    { name: `${DEMO_DATA_PREFIX} 未启用月度方案`, type: 'MONTHLY', price: 0, jobQuota: 0, durationDays: 30, sortOrder: 1, active: false },
+    { name: `${DEMO_DATA_PREFIX} 未启用季度方案`, type: 'QUARTERLY', price: 0, jobQuota: 0, durationDays: 90, sortOrder: 2, active: false },
+    { name: `${DEMO_DATA_PREFIX} 未启用年度方案`, type: 'YEARLY', price: 0, jobQuota: 0, durationDays: 365, sortOrder: 3, active: false },
+    { name: `${DEMO_DATA_PREFIX} 未启用单岗位方案`, type: 'PER_JOB', price: 0, jobQuota: 0, durationDays: 30, sortOrder: 4, active: false },
   ];
 
   for (const plan of plans) {
@@ -656,7 +676,7 @@ async function main() {
       create: { id: plan.type, ...plan },
     });
   }
-  console.log('✅ 付费方案创建完成');
+  console.log('✅ Legacy billing plan placeholders disabled');
 
   // ========== 人才星级评定标准 ==========
   const starCriteria = [

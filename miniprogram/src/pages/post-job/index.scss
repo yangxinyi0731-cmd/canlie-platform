@@ -312,6 +312,29 @@
   color: $gray-400;
 }
 
+.pj-free-notice {
+  margin-bottom: 32rpx;
+  padding: 28rpx;
+  border: 2rpx solid rgba(255, 107, 0, 0.22);
+  border-radius: 20rpx;
+  background: #fff7ed;
+}
+
+.pj-free-notice-title {
+  display: block;
+  color: $primary-dark;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.pj-free-notice-text {
+  display: block;
+  margin-top: 10rpx;
+  color: #9a4c0d;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
 .pj-plan-card {
   display: flex;
   align-items: center;

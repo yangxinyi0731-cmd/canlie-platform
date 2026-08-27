@@ -1,18 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { jobsApi, refApi, subscriptionApi } from '../api';
+import { jobsApi, refApi } from '../api';
 import type { Cuisine, BusinessType, JobCategory } from '../types';
 
-interface Plan {
-  id: string;
-  name: string;
-  type: string;
-  price: number;
-  jobQuota: number;
-  durationDays: number;
-}
-
-const STEPS = ['基础信息', '职位要求', '薪资地点', '业态菜系', '发布付费'];
+const STEPS = ['基础信息', '职位要求', '薪资地点', '业态菜系', '确认发布'];
 
 export default function PostJob() {
   const navigate = useNavigate();
@@ -27,7 +18,6 @@ export default function PostJob() {
   const [cuisines, setCuisines] = useState<Cuisine[]>([]);
   const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
   const [jobCategories, setJobCategories] = useState<JobCategory[]>([]);
-  const [plans, setPlans] = useState<Plan[]>([]);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -51,7 +41,6 @@ export default function PostJob() {
   const [minTenureReq, setMinTenureReq] = useState('');
 
   // Payment
-  const [selectedPlanId, setSelectedPlanId] = useState('');
 
   const educationOptions = ['不限', '高中', '中专', '大专', '本科', '硕士', '博士'];
   const experienceOptions = ['不限', '1年以下', '1-3年', '3-5年', '5-10年', '10年以上'];
@@ -70,16 +59,7 @@ export default function PostJob() {
         // silently fail
       }
     };
-    const loadPlans = async () => {
-      try {
-        const res = await refApi.getPlans();
-        setPlans(res.data || []);
-      } catch {
-        // silently fail
-      }
-    };
     loadRefData();
-    loadPlans();
   }, []);
 
   useEffect(() => {
@@ -152,10 +132,7 @@ export default function PostJob() {
       }
       return true;
     }
-    if (step === 5) {
-      if (!selectedPlanId) { setError('请选择发布方案'); return false; }
-      return true;
-    }
+    if (step === 5) return true;
     return true;
   };
 
@@ -218,15 +195,6 @@ export default function PostJob() {
     };
 
     try {
-      // Purchase subscription if this is a new job post
-      if (!isEditing && selectedPlanId) {
-        try {
-          await subscriptionApi.buy(selectedPlanId);
-        } catch {
-          // Subscription purchase may fail silently in dev — proceed with posting
-        }
-      }
-
       if (isEditing && id) {
         await jobsApi.update(id, payload);
       } else {
@@ -621,77 +589,18 @@ export default function PostJob() {
           </div>
         )}
 
-        {/* Step 5: 发布付费 */}
+        {/* Step 5: 确认发布 */}
         {step === 5 && (
           <div className="bg-white rounded-xl p-5 shadow-sm space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">选择发布方案</h3>
-              <p className="text-xs text-gray-400">选择合适的付费方案发布职位</p>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">确认发布</h3>
+              <p className="text-xs text-gray-500">请确认职位信息真实、完整，提交后可在职位管理中继续维护。</p>
             </div>
-
-            {/* Plan Cards */}
-            <div className="space-y-3">
-              {plans.map((plan) => {
-                const isSelected = selectedPlanId === plan.id;
-                const quotaLabel = plan.jobQuota === -1 ? '不限发布数' : `可发布${plan.jobQuota}个职位`;
-                const durationLabel = plan.type === 'PER_JOB' ? '30天有效期' : `${plan.durationDays}天内有效`;
-                let badge = '';
-                let badgeColor = '';
-                if (plan.type === 'YEARLY') { badge = '最划算'; badgeColor = 'bg-red-500'; }
-                else if (plan.type === 'QUARTERLY') { badge = '推荐'; badgeColor = 'bg-blue-500'; }
-                else if (plan.type === 'MONTHLY') { badge = '灵活'; badgeColor = 'bg-green-500'; }
-
-                return (
-                  <label
-                    key={plan.id}
-                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-[#FF6B00] bg-orange-50 shadow-sm'
-                        : 'border-gray-100 hover:border-gray-200 bg-white'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="plan"
-                      value={plan.id}
-                      checked={isSelected}
-                      onChange={() => setSelectedPlanId(plan.id)}
-                      className="w-4 h-4 text-[#FF6B00] focus:ring-[#FF6B00] shrink-0"
-                    />
-                    <div className="ml-3 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-gray-900">{plan.name}</span>
-                        {badge && (
-                          <span className={`text-[10px] text-white px-1.5 py-0.5 rounded ${badgeColor}`}>
-                            {badge}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-gray-500">{quotaLabel}</span>
-                        <span className="text-xs text-gray-300">·</span>
-                        <span className="text-xs text-gray-500">{durationLabel}</span>
-                      </div>
-                      {plan.type === 'YEARLY' && (
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          相当于 ¥{(plan.price / 12).toFixed(0)}/月，比月度VIP节省 ¥{(299 * 12 - plan.price).toFixed(0)}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-lg font-bold text-[#FF6B00]">¥{plan.price}</span>
-                      {plan.type !== 'PER_JOB' && (
-                        <p className="text-[10px] text-gray-400">
-                          约¥{(plan.price / (plan.durationDays / 30)).toFixed(0)}/月
-                        </p>
-                      )}
-                    </div>
-                  </label>
-                );
-              })}
-              {plans.length === 0 && (
-                <p className="text-sm text-gray-400 text-center py-4">加载方案中...</p>
-              )}
+            <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
+              <p className="text-sm font-semibold text-orange-800">平台测试期免费</p>
+              <p className="mt-1 text-xs leading-relaxed text-orange-700">
+                当前未接入任何支付或自动扣款。发布职位不会产生费用，也不会创建付费订阅记录。
+              </p>
             </div>
 
             {/* Submit Button */}
@@ -703,7 +612,7 @@ export default function PostJob() {
               {submitting && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               )}
-              {isEditing ? '保存修改' : `确认发布${selectedPlanId ? '（¥' + (plans.find(p => p.id === selectedPlanId)?.price || '') + '）' : ''}`}
+              {isEditing ? '保存修改' : '确认免费发布'}
             </button>
 
             <p className="text-xs text-gray-400 text-center">
