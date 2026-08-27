@@ -37,6 +37,20 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   }
 }
 
+export function optionalAuthMiddleware(req: AuthRequest, _res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) return next();
+  try {
+    const decoded = jwt.verify(header.slice(7), SECRET) as { userId: string; role: string };
+    req.userId = decoded.userId;
+    req.userRole = decoded.role;
+  } catch {
+    // Public resources remain readable with an expired token. Private-resource
+    // authorization below still fails because no authenticated identity is set.
+  }
+  return next();
+}
+
 export function requireRole(...roles: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.userRole || !roles.includes(req.userRole)) {

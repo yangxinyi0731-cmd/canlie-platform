@@ -147,17 +147,33 @@ export const subscriptionApi = {
 };
 
 // ========== Upload API ==========
+export type UploadPurpose =
+  | 'AVATAR'
+  | 'ENTERPRISE_LOGO'
+  | 'SHARE_IMAGE'
+  | 'SHARE_VIDEO'
+  | 'SUPPLY_PRODUCT_IMAGE'
+  | 'TALENT_CERTIFICATE'
+  | 'TALENT_SALARY_PROOF'
+  | 'RESUME'
+  | 'ENTERPRISE_LICENSE'
+  | 'PERSONAL_ID'
+  | 'SUPPLY_LICENSE';
+
 export const uploadApi = {
-  upload: (file: File) => {
+  upload: (file: File, purpose: UploadPurpose) => {
     const form = new FormData();
     form.append('file', file);
+    form.append('purpose', purpose);
     return api.post('/uploads', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
   uploadVideo: (file: File) => {
     const form = new FormData();
     form.append('file', file);
+    form.append('purpose', 'SHARE_VIDEO');
     return api.post('/uploads/video', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
+  getPrivate: (url: string) => api.get(url.replace(/^\/api/, ''), { responseType: 'blob' }),
 };
 
 // ========== Notification API ==========
@@ -209,15 +225,15 @@ export const safeArray = <T>(data: T[] | null | undefined): T[] => {
 export const getImageUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  // 通过Vite代理访问，不需要拼接host
-  return url;
+  // 旧版 /uploads 路径也必须经过新的受控 API 兼容端点。
+  return url.startsWith('/uploads/') ? `/api${url}` : url;
 };
 
 // 安全获取头像，提供默认占位图
 export const getAvatarUrl = (url: string | null | undefined, name?: string): string => {
   if (url) {
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return url; // 通过Vite代理访问
+    return url.startsWith('/uploads/') ? `/api${url}` : url;
   }
   // 默认头像：使用首字母
   const initial = name?.charAt(0)?.toUpperCase() || '?';

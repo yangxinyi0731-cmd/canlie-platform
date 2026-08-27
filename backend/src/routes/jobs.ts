@@ -7,6 +7,7 @@ import {
   isApplicationStatus,
   isApplicationStatusNoop,
 } from '../security/policies.js';
+import { canRevealTalentIdentity, toTalentDetailResponse } from '../security/privacy.js';
 
 const router = Router();
 
@@ -294,7 +295,7 @@ router.post('/:id/apply', authMiddleware, requireRole('TALENT'), async (req: Aut
         jobWithEnterprise.enterprise.userId,
         'APPLICATION',
         '收到新的简历投递',
-        `${talent.realName || '人才'}投递了您的职位「${jobWithEnterprise.title}」`,
+        `${['PUBLIC', 'REAL_NAME'].includes(talent.privacyMode) ? (talent.realName || '人才') : '匿名人才'}投递了您的职位「${jobWithEnterprise.title}」`,
         JSON.stringify({ jobId, talentId: talent.id })
       );
     }
@@ -367,11 +368,24 @@ router.get('/:id/applications', authMiddleware, requireRole('ENTERPRISE'), async
             workYears: true, education: true, starLevel: true, starLevelStr: true,
             brandEndorsement: true, avatar: true, selfIntro: true,
             cuisineIds: true, businessTypeIds: true, jobCategoryId: true,
+            privacyMode: true,
           },
         },
       },
     });
-    res.json(applications);
+    res.json(applications.map((application) => ({
+      ...application,
+      talent: toTalentDetailResponse(
+        application.talent,
+        canRevealTalentIdentity({
+          requesterRole: req.userRole,
+          privacyMode: application.talent.privacyMode,
+          hasApplication: true,
+          hasMatch: false,
+        }),
+        true,
+      ),
+    })));
   } catch (err) {
     res.status(500).json({ error: '获取投递列表失败' });
   }

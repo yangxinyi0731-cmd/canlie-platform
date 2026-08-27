@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Input, Textarea, Picker, Image } from '@tarojs/components'
-import { enterpriseApi, uploadApi, getImageUrl } from '../../api'
+import { enterpriseApi, uploadApi, getImageUrl, type UploadPurpose } from '../../api'
 import { useAuthStore } from '../../stores/authStore'
 import { useRequireAuth } from '../../hooks/useAuth'
 import NavBar from '../../components/NavBar'
@@ -87,17 +87,33 @@ export default function EditEnterpriseProfile() {
   }, [])
 
   // 上传图片通用封装
-  const uploadImage = async (onSuccess: (url: string) => void, successMsg: string) => {
+  const uploadImage = async (purpose: UploadPurpose, onSuccess: (url: string) => void, successMsg: string) => {
     try {
       const choose = await Taro.chooseImage({ count: 1, sizeType: ['compressed'] })
       const filePath = choose.tempFilePaths?.[0]
       if (!filePath) return
       setError('')
-      const res = await uploadApi.upload(filePath)
+      const res = await uploadApi.upload(filePath, purpose)
       onSuccess((res.data as any)?.url || '')
       setSuccess(successMsg)
     } catch (err: any) {
       setError(err?.message || '上传失败')
+    }
+  }
+
+  const previewProtectedFile = async (url: string) => {
+    Taro.showLoading({ title: '验证权限中', mask: true })
+    try {
+      const filePath = await uploadApi.downloadPrivate(url)
+      try {
+        await Taro.previewImage({ urls: [filePath], current: filePath })
+      } catch {
+        await Taro.openDocument({ filePath, showMenu: true })
+      }
+    } catch (err: any) {
+      Taro.showToast({ title: err?.message || '资料读取失败', icon: 'none' })
+    } finally {
+      Taro.hideLoading()
     }
   }
 
@@ -242,7 +258,7 @@ export default function EditEnterpriseProfile() {
               )}
               <Text
                 className='eep-upload-link'
-                onClick={() => uploadImage(setCompanyLogo, 'Logo上传成功')}
+                onClick={() => uploadImage('ENTERPRISE_LOGO', setCompanyLogo, 'Logo上传成功')}
               >
                 上传Logo
               </Text>
@@ -298,11 +314,13 @@ export default function EditEnterpriseProfile() {
                 <Text className='eep-label'>身份证正面（人像面）</Text>
                 {personalIdFront ? (
                   <View className='eep-license-row'>
-                    <Image src={getImageUrl(personalIdFront) || personalIdFront} className='eep-id-img' mode='aspectFill' />
-                    <Text className='eep-upload-link' onClick={() => uploadImage(setPersonalIdFront, '身份证正面上传成功')}>重新上传</Text>
+                    <View className='eep-protected-file' onClick={() => previewProtectedFile(personalIdFront)}>
+                      <Text className='eep-protected-file-text'>安全查看身份证正面</Text>
+                    </View>
+                    <Text className='eep-upload-link' onClick={() => uploadImage('PERSONAL_ID', setPersonalIdFront, '身份证正面上传成功')}>重新上传</Text>
                   </View>
                 ) : (
-                  <View className='eep-upload-box' onClick={() => uploadImage(setPersonalIdFront, '身份证正面上传成功')}>
+                  <View className='eep-upload-box' onClick={() => uploadImage('PERSONAL_ID', setPersonalIdFront, '身份证正面上传成功')}>
                     <Text className='eep-upload-box-text'>点击上传身份证正面</Text>
                   </View>
                 )}
@@ -311,11 +329,13 @@ export default function EditEnterpriseProfile() {
                 <Text className='eep-label'>身份证反面（国徽面）</Text>
                 {personalIdBack ? (
                   <View className='eep-license-row'>
-                    <Image src={getImageUrl(personalIdBack) || personalIdBack} className='eep-id-img' mode='aspectFill' />
-                    <Text className='eep-upload-link' onClick={() => uploadImage(setPersonalIdBack, '身份证反面上传成功')}>重新上传</Text>
+                    <View className='eep-protected-file' onClick={() => previewProtectedFile(personalIdBack)}>
+                      <Text className='eep-protected-file-text'>安全查看身份证反面</Text>
+                    </View>
+                    <Text className='eep-upload-link' onClick={() => uploadImage('PERSONAL_ID', setPersonalIdBack, '身份证反面上传成功')}>重新上传</Text>
                   </View>
                 ) : (
-                  <View className='eep-upload-box' onClick={() => uploadImage(setPersonalIdBack, '身份证反面上传成功')}>
+                  <View className='eep-upload-box' onClick={() => uploadImage('PERSONAL_ID', setPersonalIdBack, '身份证反面上传成功')}>
                     <Text className='eep-upload-box-text'>点击上传身份证反面</Text>
                   </View>
                 )}
@@ -326,16 +346,18 @@ export default function EditEnterpriseProfile() {
               <Text className='eep-hint'>上传营业执照照片或扫描件（支持 jpg/png，不超过 10MB）</Text>
               {businessLicense ? (
                 <View className='eep-license-row'>
-                  <Image src={getImageUrl(businessLicense) || businessLicense} className='eep-license-img' mode='aspectFill' />
+                  <View className='eep-protected-file eep-protected-file-large' onClick={() => previewProtectedFile(businessLicense)}>
+                    <Text className='eep-protected-file-text'>验证权限并查看营业执照</Text>
+                  </View>
                   <View className='eep-license-right'>
                     <Text className={`eep-status-pill ${licenseVerified ? 'eep-pill-green' : 'eep-pill-yellow'}`}>
                       {licenseVerified ? '已认证' : '待审核'}
                     </Text>
-                    <Text className='eep-upload-link' onClick={() => uploadImage(setBusinessLicense, '营业执照上传成功，等待平台审核')}>重新上传</Text>
+                    <Text className='eep-upload-link' onClick={() => uploadImage('ENTERPRISE_LICENSE', setBusinessLicense, '营业执照上传成功，等待平台审核')}>重新上传</Text>
                   </View>
                 </View>
               ) : (
-                <View className='eep-upload-box tall' onClick={() => uploadImage(setBusinessLicense, '营业执照上传成功，等待平台审核')}>
+                <View className='eep-upload-box tall' onClick={() => uploadImage('ENTERPRISE_LICENSE', setBusinessLicense, '营业执照上传成功，等待平台审核')}>
                   <Icon name='send' size={64} color='#9CA3AF' />
                   <Text className='eep-upload-box-text'>点击上传营业执照</Text>
                 </View>

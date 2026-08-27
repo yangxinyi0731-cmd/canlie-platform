@@ -163,14 +163,28 @@ function parseUploadResult(res: { statusCode: number; data: string }): { data: a
   }
 }
 
+export type UploadPurpose =
+  | 'AVATAR'
+  | 'ENTERPRISE_LOGO'
+  | 'SHARE_IMAGE'
+  | 'SHARE_VIDEO'
+  | 'SUPPLY_PRODUCT_IMAGE'
+  | 'TALENT_CERTIFICATE'
+  | 'TALENT_SALARY_PROOF'
+  | 'RESUME'
+  | 'ENTERPRISE_LICENSE'
+  | 'PERSONAL_ID'
+  | 'SUPPLY_LICENSE'
+
 export const uploadApi = {
-  upload: (filePath: string): Promise<{ data: any }> => {
+  upload: (filePath: string, purpose: UploadPurpose): Promise<{ data: any }> => {
     const token = Taro.getStorageSync('token')
     return Taro.uploadFile({
       url: BASE_URL + API_PREFIX + '/uploads',
       filePath,
       name: 'file',
       header: token ? { Authorization: `Bearer ${token}` } : {},
+      formData: { purpose },
     }).then(parseUploadResult)
   },
   uploadVideo: (filePath: string): Promise<{ data: any }> => {
@@ -180,7 +194,19 @@ export const uploadApi = {
       filePath,
       name: 'file',
       header: token ? { Authorization: `Bearer ${token}` } : {},
+      formData: { purpose: 'SHARE_VIDEO' },
     }).then(parseUploadResult)
+  },
+  downloadPrivate: (url: string) => {
+    const token = Taro.getStorageSync('token')
+    const requestUrl = url.startsWith('/uploads/') ? `${API_PREFIX}${url}` : url
+    return Taro.downloadFile({
+      url: requestUrl.startsWith('http://') || requestUrl.startsWith('https://') ? requestUrl : BASE_URL + requestUrl,
+      header: token ? { Authorization: `Bearer ${token}` } : {},
+    }).then((res) => {
+      if (res.statusCode >= 400) throw new Error('无权读取该文件或文件已失效')
+      return res.tempFilePath
+    })
   },
 }
 
@@ -196,14 +222,14 @@ export const safeArray = <T>(data: T[] | null | undefined): T[] => {
 export const getImageUrl = (url: string | null | undefined): string | null => {
   if (!url) return null
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  return BASE_URL + url
+  return BASE_URL + (url.startsWith('/uploads/') ? `${API_PREFIX}${url}` : url)
 }
 
 // 安全获取头像：无头像时用首字母占位（本地生成，避免外部 ui-avatars 依赖）
 export const getAvatarUrl = (url: string | null | undefined, name?: string): string => {
   if (url) {
     if (url.startsWith('http://') || url.startsWith('https://')) return url
-    return BASE_URL + url
+    return BASE_URL + (url.startsWith('/uploads/') ? `${API_PREFIX}${url}` : url)
   }
   return ''
 }

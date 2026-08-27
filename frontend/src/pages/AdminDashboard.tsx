@@ -2,13 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminApi, refApi, supplyApi, sharesApi } from '../api';
 import { useAuthStore } from '../stores/authStore';
+import SecureUploadPreview from '../components/SecureUploadPreview';
 
 // 图片URL处理：将相对路径转为完整URL（支持手机端访问）
 const getImageUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  // 通过Vite代理访问，不需要拼接host
-  return url;
+  return url.startsWith('/uploads/') ? `/api${url}` : url;
 };
 
 interface AdminStats {
@@ -424,15 +424,10 @@ export default function AdminDashboard() {
               </div>
 
               {/* 营业执照图片 */}
-              {getImageUrl(p?.businessLicense) && (
+              {p?.businessLicense && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <p className="text-xs text-gray-400 mb-2">营业执照：</p>
-                  <img
-                    src={getImageUrl(p.businessLicense)!}
-                    alt="营业执照"
-                    className="w-full max-w-[200px] h-auto rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
-                    onClick={() => setPreviewImage(getImageUrl(p.businessLicense)!)}
-                  />
+                  <SecureUploadPreview url={p.businessLicense} label="验证权限并查看" />
                 </div>
               )}
 
@@ -624,26 +619,16 @@ export default function AdminDashboard() {
                   <p>电话：{v.refPhone}</p>
                 </div>
               )}
-              {v.type === 'CERTIFICATE' && getImageUrl(v.certFileUrl) && (
+              {v.type === 'CERTIFICATE' && v.certFileUrl && (
                 <div>
                   <p className="text-xs text-gray-400 mb-1">离职证明：</p>
-                  <img
-                    src={getImageUrl(v.certFileUrl)!}
-                    alt="离职证明"
-                    className="w-full max-w-[200px] h-auto rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
-                    onClick={() => setPreviewImage(getImageUrl(v.certFileUrl)!)}
-                  />
+                  <SecureUploadPreview url={v.certFileUrl} label="验证权限并查看" />
                 </div>
               )}
-              {v.type === 'SALARY_FLOW' && getImageUrl(v.salaryFileUrl) && (
+              {v.type === 'SALARY_FLOW' && v.salaryFileUrl && (
                 <div>
                   <p className="text-xs text-gray-400 mb-1">工资流水：</p>
-                  <img
-                    src={getImageUrl(v.salaryFileUrl)!}
-                    alt="工资流水"
-                    className="w-full max-w-[200px] h-auto rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
-                    onClick={() => setPreviewImage(getImageUrl(v.salaryFileUrl)!)}
-                  />
+                  <SecureUploadPreview url={v.salaryFileUrl} label="验证权限并查看" />
                 </div>
               )}
             </div>
@@ -738,12 +723,7 @@ export default function AdminDashboard() {
                 {c.businessLicense && (
                   <div className="mt-3">
                     <p className="text-xs text-gray-400 mb-1">营业执照：</p>
-                    <img
-                      src={getImageUrl(c.businessLicense)!}
-                      alt="营业执照"
-                      className="w-full max-w-[200px] h-auto rounded-lg border border-gray-200 cursor-pointer hover:opacity-80"
-                      onClick={() => setPreviewImage(getImageUrl(c.businessLicense)!)}
-                    />
+                    <SecureUploadPreview url={c.businessLicense} label="验证权限并查看" />
                   </div>
                 )}
 

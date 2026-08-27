@@ -341,6 +341,16 @@
   box-shadow: 0 16rpx 32rpx rgba(255, 107, 0, 0.2);
 }
 
+.td-contact-disabled {
+  background: $gray-100;
+  box-shadow: none;
+
+  .td-contact-text {
+    color: $gray-500;
+    margin-left: 0;
+  }
+}
+
 .td-contact-text {
   color: #fff;
   font-size: 30rpx;

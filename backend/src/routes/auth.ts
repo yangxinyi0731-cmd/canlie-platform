@@ -7,6 +7,7 @@ import {
   createEnvironmentResetCodeSender,
   PasswordResetCodeService,
 } from '../security/passwordReset.js';
+import { ownsStoredUploadReferences } from '../security/storedUploadAuthorization.js';
 
 const router = Router();
 
@@ -194,6 +195,19 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
 router.put('/profile', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { name, avatar } = req.body;
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { avatar: true },
+    });
+    if (avatar && avatar !== currentUser?.avatar && !await ownsStoredUploadReferences({
+      prisma,
+      ownerId: req.userId!,
+      urls: [avatar],
+      purposes: ['AVATAR'],
+      accessLevel: 'PUBLIC',
+    })) {
+      return res.status(400).json({ error: '头像文件不存在、用途不符或不属于当前账号' });
+    }
     const user = await prisma.user.update({
       where: { id: req.userId },
       data: { name, avatar },

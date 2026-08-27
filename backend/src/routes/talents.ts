@@ -2,6 +2,14 @@ import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
 import { verificationSubmissionSchema } from '../security/policies.js';
+import {
+  canContactTalent,
+  canRevealTalentIdentity,
+  getStoredUploadId,
+  toTalentDetailResponse,
+  toTalentSearchSummary,
+} from '../security/privacy.js';
+import { ownsStoredUploadReferences } from '../security/storedUploadAuthorization.js';
 
 const router = Router();
 
@@ -163,6 +171,22 @@ router.put('/profile', authMiddleware, requireRole('TALENT'), async (req: AuthRe
       projectExpDetail, preferredBusinessModel,
       parentInfo, learningAbility, thinkingStyle, personalSkills, brandExperienceDetail,
     } = req.body;
+    const existingUser = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { avatar: true },
+    });
+    if (avatar && avatar !== existingUser?.avatar) {
+      const avatarAllowed = await ownsStoredUploadReferences({
+        prisma,
+        ownerId: req.userId!,
+        urls: [avatar],
+        purposes: ['AVATAR'],
+        accessLevel: 'PUBLIC',
+      });
+      if (!avatarAllowed) {
+        return res.status(400).json({ error: '头像文件不存在、用途不符或不属于当前账号' });
+      }
+    }
     const talent = await prisma.talent.upsert({
       where: { userId: req.userId! },
       update: {
@@ -329,6 +353,28 @@ router.post('/verification', authMiddleware, requireRole('TALENT'), async (req: 
     if (!talent) return res.status(400).json({ error: '人才信息不存在' });
 
     const payload = parsed.data;
+    if (payload.type === 'CERTIFICATE' || payload.type === 'SALARY_FLOW') {
+      const fileUrl = payload.type === 'CERTIFICATE' ? payload.certFileUrl : payload.salaryFileUrl;
+      const uploadId = getStoredUploadId(fileUrl, 'private');
+      const expectedPurpose = payload.type === 'CERTIFICATE'
+        ? 'TALENT_CERTIFICATE'
+        : 'TALENT_SALARY_PROOF';
+      const storedUpload = uploadId
+        ? await prisma.storedUpload.findFirst({
+          where: {
+            id: uploadId,
+            ownerId: req.userId!,
+            purpose: expectedPurpose,
+            accessLevel: 'PRIVATE',
+            deletedAt: null,
+          },
+          select: { id: true },
+        })
+        : null;
+      if (!storedUpload) {
+        return res.status(400).json({ error: '认证文件不存在、用途不符或不属于当前账号' });
+      }
+    }
     const verification = await prisma.verification.create({
       data: {
         talentId: talent.id,
@@ -372,10 +418,11 @@ router.get('/verifications', authMiddleware, requireRole('TALENT'), async (req: 
 router.get('/search', authMiddleware, requireRole('ENTERPRISE', 'ADMIN'), async (req, res) => {
   try {
     const { keyword, city, province, cuisineId, businessTypeId, jobCategoryId, minSalary, maxSalary, starLevel, page = '1', pageSize = '20' } = req.query;
-    const skip = (parseInt(page as string) - 1) * parseInt(pageSize as string);
-    const take = parseInt(pageSize as string);
+    const pageNumber = Math.max(1, Number.parseInt(page as string, 10) || 1);
+    const take = Math.min(50, Math.max(1, Number.parseInt(pageSize as string, 10) || 20));
+    const skip = (pageNumber - 1) * take;
 
-    const where: any = { status: 'ACTIVE' };
+    const where: any = { status: 'ACTIVE', privacyMode: { in: ['PUBLIC', 'REAL_NAME', 'ANONYMOUS'] } };
 
     if (city) where.city = { contains: city as string };
     if (province) where.province = { contains: province as string };
@@ -388,9 +435,9 @@ router.get('/search', authMiddleware, requireRole('ENTERPRISE', 'ADMIN'), async 
     if (keyword) {
       where.OR = [
         { title: { contains: keyword as string } },
-        { realName: { contains: keyword as string } },
-        { selfIntro: { contains: keyword as string } },
-        { currentCompany: { contains: keyword as string } },
+        { brandEndorsement: { contains: keyword as string } },
+        { headBrandExp: { contains: keyword as string } },
+        { personalSkills: { contains: keyword as string } },
       ];
     }
 
@@ -401,34 +448,33 @@ router.get('/search', authMiddleware, requireRole('ENTERPRISE', 'ADMIN'), async 
         take,
         orderBy: { starLevel: 'desc' },
         select: {
-          id: true, realName: true, title: true, currentCompany: true, city: true, province: true,
+          id: true, title: true, city: true, province: true,
           minSalary: true, maxSalary: true, workYears: true, education: true,
-          starLevel: true, starLevelStr: true, brandEndorsement: true, avatar: true,
+          starLevel: true, starLevelStr: true, brandEndorsement: true,
           cuisineIds: true, businessTypeIds: true, jobCategoryId: true,
         },
       }),
       prisma.talent.count({ where }),
     ]);
 
-    res.json({ talents, total, page: parseInt(page as string), pageSize: take });
+    res.json({ talents: talents.map(toTalentSearchSummary), total, page: pageNumber, pageSize: take });
   } catch (err) {
     console.error('Search talent error:', err);
     res.status(500).json({ error: '搜索人才失败' });
   }
 });
 
-// Get public talent detail (with privacy protection)
-router.get('/:id', async (req, res) => {
+// 人才详情只允许企业或管理员查看；企业默认得到去标识化职业资料。
+router.get('/:id', authMiddleware, requireRole('ENTERPRISE', 'ADMIN'), async (req: AuthRequest, res) => {
   try {
     const talent = await prisma.talent.findUnique({
-      where: { id: req.params.id },
+      where: { id: req.params.id as string },
       select: {
         id: true, userId: true, realName: true, title: true, currentCompany: true,
         city: true, province: true, minSalary: true, maxSalary: true, workYears: true,
         education: true, starLevel: true, starLevelStr: true, brandEndorsement: true,
         headBrandExp: true, projectExp: true, selfIntro: true, avatar: true,
-        gender: true, birthYear: true, birthMonth: true, hometown: true,
-        hometownProvince: true, cuisineIds: true, businessTypeIds: true,
+        cuisineIds: true, businessTypeIds: true,
         acceptPartner: true, privacyMode: true, jobCategoryId: true,
         // 工作经历（不含背景调查隐私信息）
         workExperiences: {
@@ -444,13 +490,53 @@ router.get('/:id', async (req, res) => {
     });
     if (!talent) return res.status(404).json({ error: '人才不存在' });
 
-    // Apply privacy: ANONYMOUS mode hides real name
-    if (talent.privacyMode === 'ANONYMOUS') {
-      (talent as any).realName = '匿名人才';
+    let hasApplication = false;
+    let hasMatch = false;
+    if (req.userRole === 'ENTERPRISE') {
+      const enterprise = await prisma.enterprise.findUnique({
+        where: { userId: req.userId! },
+        select: { id: true },
+      });
+      if (enterprise) {
+        const [application, match] = await Promise.all([
+          prisma.jobApplication.findFirst({
+            where: { talentId: talent.id, job: { enterpriseId: enterprise.id } },
+            select: { id: true },
+          }),
+          prisma.match.findFirst({
+            where: {
+              talentId: talent.id,
+              hardFilterPassed: true,
+              job: { enterpriseId: enterprise.id },
+            },
+            select: { id: true },
+          }),
+        ]);
+        hasApplication = Boolean(application);
+        hasMatch = Boolean(match);
+      }
     }
-    delete (talent as any).privacyMode;
 
-    res.json(talent);
+    const revealIdentity = canRevealTalentIdentity({
+      requesterRole: req.userRole,
+      privacyMode: talent.privacyMode,
+      hasApplication,
+      hasMatch,
+    });
+    const canContact = canContactTalent({ requesterRole: req.userRole, hasApplication, hasMatch });
+    if (revealIdentity) {
+      await prisma.sensitiveAccessLog.create({
+        data: {
+          actorUserId: req.userId,
+          subjectType: 'TALENT',
+          subjectId: talent.id,
+          action: 'READ_IDENTITY',
+          metadata: JSON.stringify({ role: req.userRole, hasApplication, hasMatch }),
+        },
+      });
+    }
+
+    res.json(toTalentDetailResponse(talent, revealIdentity, canContact));
   } catch (err) {
     console.error('Get talent detail error:', err);
     res.status(500).json({ error: '获取人才信息失败' });

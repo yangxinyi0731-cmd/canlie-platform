@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { ownsStoredUploadReferences } from '../security/storedUploadAuthorization.js';
 
 const router = Router();
 
@@ -10,7 +11,9 @@ const router = Router();
 router.get('/', async (req, res) => {
   try {
     const { category, page = '1', pageSize = '10' } = req.query;
-    const skip = (parseInt(page as string) - 1) * parseInt(pageSize as string);
+    const pageNumber = Math.max(1, Number.parseInt(page as string, 10) || 1);
+    const take = Math.min(50, Math.max(1, Number.parseInt(pageSize as string, 10) || 10));
+    const skip = (pageNumber - 1) * take;
     const where: any = { status: 'VISIBLE' };
     if (category) where.category = category;
 
@@ -18,7 +21,7 @@ router.get('/', async (req, res) => {
       prisma.sharePost.findMany({
         where,
         skip,
-        take: parseInt(pageSize as string),
+        take,
         orderBy: { createdAt: 'desc' },
         include: {
           user: { select: { id: true, name: true, avatar: true } },
@@ -27,7 +30,7 @@ router.get('/', async (req, res) => {
       }),
       prisma.sharePost.count({ where }),
     ]);
-    res.json({ posts, total, page: parseInt(page as string), pageSize: parseInt(pageSize as string) });
+    res.json({ posts, total, page: pageNumber, pageSize: take });
   } catch (err) {
     res.status(500).json({ error: '获取分享列表失败' });
   }
@@ -98,6 +101,29 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
     if (!['STARTUP', 'LEARNING'].includes(category)) {
       return res.status(400).json({ error: '分类无效' });
     }
+    const [imagesAllowed, videoAllowed] = await Promise.all([
+      images && Array.isArray(images)
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: images,
+          purposes: ['SHARE_IMAGE'],
+          accessLevel: 'PUBLIC',
+        })
+        : !images,
+      videoUrl
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: [videoUrl],
+          purposes: ['SHARE_VIDEO'],
+          accessLevel: 'PUBLIC',
+        })
+        : true,
+    ]);
+    if (!imagesAllowed || !videoAllowed) {
+      return res.status(400).json({ error: '分享媒体不存在、用途不符或不属于当前账号' });
+    }
     const post = await prisma.sharePost.create({
       data: {
         userId: req.userId!,
@@ -124,6 +150,35 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
     if (post.userId !== req.userId) return res.status(403).json({ error: '无权修改' });
 
     const { category, title, content, images, videoUrl } = req.body;
+    const existingImages = (() => {
+      try { return JSON.parse(post.images) as string[]; } catch { return []; }
+    })();
+    const newImages = Array.isArray(images)
+      ? images.filter((url: string) => !existingImages.includes(url))
+      : [];
+    const [imagesAllowed, videoAllowed] = await Promise.all([
+      images !== undefined && Array.isArray(images)
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: newImages,
+          purposes: ['SHARE_IMAGE'],
+          accessLevel: 'PUBLIC',
+        })
+        : images === undefined,
+      videoUrl && videoUrl !== post.videoUrl
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: [videoUrl],
+          purposes: ['SHARE_VIDEO'],
+          accessLevel: 'PUBLIC',
+        })
+        : true,
+    ]);
+    if (!imagesAllowed || !videoAllowed) {
+      return res.status(400).json({ error: '分享媒体不存在、用途不符或不属于当前账号' });
+    }
     const updated = await prisma.sharePost.update({
       where: { id: post.id },
       data: {

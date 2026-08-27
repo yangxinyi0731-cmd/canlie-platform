@@ -10,7 +10,7 @@ export interface User {
 
 export interface Enterprise {
   id: string
-  userId: string
+  userId?: string
   companyName: string
   companyLogo?: string
   businessLicense?: string
@@ -93,8 +93,8 @@ export interface Talent {
 
 export interface WorkExperience {
   id: string
-  talentId: string
-  companyName: string
+  talentId?: string
+  companyName?: string
   position: string
   startYear: number
   startMonth: number

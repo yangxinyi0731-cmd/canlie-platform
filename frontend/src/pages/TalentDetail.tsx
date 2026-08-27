@@ -183,7 +183,9 @@ export default function TalentDetail() {
                   </div>
                   <div className="flex-1">
                     <h4 className="text-sm font-semibold text-gray-900">{exp.position}</h4>
-                    <p className="text-xs text-gray-600">{exp.companyName}</p>
+                    <p className="text-xs text-gray-600">
+                      {exp.companyName || '企业名称未授权展示'}
+                    </p>
                     <p className="text-xs text-gray-400 mt-0.5">{formatDateRange(exp)}</p>
                     {exp.description && <p className="text-xs text-gray-500 mt-1 leading-relaxed">{exp.description}</p>}
                     {exp.isCurrent && <span className="inline-block mt-1.5 px-2 py-0.5 bg-green-50 text-green-600 text-[10px] rounded-full">现任</span>}
@@ -247,7 +249,7 @@ export default function TalentDetail() {
       </div>
 
       {/* Floating Chat Button - Only for Enterprise */}
-      {user?.role === 'ENTERPRISE' && (
+      {user?.role === 'ENTERPRISE' && talent.userId && (
         <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-100">
           <div className="px-4 py-3">
             <button
@@ -259,6 +261,15 @@ export default function TalentDetail() {
               </svg>
               立即沟通
             </button>
+          </div>
+        </div>
+      )}
+      {user?.role === 'ENTERPRISE' && !talent.userId && (
+        <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-100">
+          <div className="px-4 py-3">
+            <div className="w-full min-h-12 rounded-xl border border-orange-100 bg-orange-50 px-4 py-3 text-center text-sm text-orange-800">
+              建立投递或匹配关系后可发起沟通
+            </div>
           </div>
         </div>
       )}

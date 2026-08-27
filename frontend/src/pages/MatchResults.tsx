@@ -211,17 +211,16 @@ export default function MatchResults() {
                       {/* Talent Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-gray-900">{talent?.realName || '未知'}</span>
+                          <span className="font-semibold text-gray-900">{talent?.realName || '匿名人才'}</span>
                           <StarDisplay level={talent?.starLevel ?? 0} str={talent?.starLevelStr} />
                         </div>
                         <div className="text-sm text-gray-500 truncate">{talent?.title || '-'}</div>
                         <div className="text-xs text-gray-400 truncate mt-0.5">
-                          {[talent?.currentCompany, talent?.city].filter(Boolean).join(' · ') || '-'}
+                          {[talent?.currentCompany, talent?.city].filter(Boolean).join(' · ') || '企业名称未授权展示'}
                         </div>
                         <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                           {talent?.workYears != null && <span>🏗 {talent.workYears}年经验</span>}
                           {talent?.education && <span>🎓 {talent.education === 'BACHELOR' ? '本科' : talent.education === 'MASTER' ? '硕士' : talent.education === 'DOCTOR' ? '博士' : talent.education === 'ASSOCIATE' ? '大专' : talent.education === 'HIGH_SCHOOL' ? '高中' : talent.education}</span>}
-                          {talent?.maritalStatus && <span>{talent.maritalStatus === 'MARRIED' ? '💍 已婚' : '👤 单身'}</span>}
                         </div>
                       </div>
                     </div>

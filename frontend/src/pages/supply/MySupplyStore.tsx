@@ -85,7 +85,7 @@ export default function MySupplyStore() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const res = await uploadApi.upload(file);
+      const res = await uploadApi.upload(file, 'SUPPLY_LICENSE');
       setLicenseUrl(res.data.url);
     } catch {
       setError('营业执照上传失败');
@@ -167,7 +167,7 @@ export default function MySupplyStore() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const res = await uploadApi.upload(file);
+      const res = await uploadApi.upload(file, 'SUPPLY_PRODUCT_IMAGE');
       setProductImages((prev) => [...prev, res.data.url]);
     } catch {
       setError('图片上传失败');

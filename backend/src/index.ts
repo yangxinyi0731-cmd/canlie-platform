@@ -84,13 +84,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  setHeaders: (res) => {
-    // 上传内容一律按附件下载，禁止当 HTML/脚本执行（防 XSS via 上传）
-    res.setHeader('Content-Disposition', 'attachment');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-  },
-}));
+// 旧版上传目录不再作为公开静态资源。文件必须通过带元数据和权限检查的 API 读取。
+app.use('/uploads', (_req, res) => {
+  res.status(410).json({ error: '旧文件地址已停用，请重新上传' });
+});
 
 // 全局 API 限流：每个客户端 IP 每分钟最多 120 次请求（常规使用够用，防扫描/暴力）
 // trust proxy=1 已设置，默认 keyGenerator 自动用 req.ip 取真实客户端 IP，且原生支持 IPv6

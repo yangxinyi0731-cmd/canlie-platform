@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { ownsStoredUploadReferences } from '../security/storedUploadAuthorization.js';
 
 const router = Router();
 
@@ -25,7 +26,9 @@ router.get('/categories', async (_req, res) => {
 router.get('/companies', async (req, res) => {
   try {
     const { categoryId, keyword, page = '1', pageSize = '20' } = req.query;
-    const skip = (parseInt(page as string) - 1) * parseInt(pageSize as string);
+    const pageNumber = Math.max(1, Number.parseInt(page as string, 10) || 1);
+    const take = Math.min(50, Math.max(1, Number.parseInt(pageSize as string, 10) || 20));
+    const skip = (pageNumber - 1) * take;
     const where: any = { status: 'APPROVED' };
     if (categoryId) where.categoryId = categoryId;
     if (keyword) where.companyName = { contains: keyword as string };
@@ -34,7 +37,7 @@ router.get('/companies', async (req, res) => {
       prisma.supplyCompany.findMany({
         where,
         skip,
-        take: parseInt(pageSize as string),
+        take,
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -50,7 +53,7 @@ router.get('/companies', async (req, res) => {
       }),
       prisma.supplyCompany.count({ where }),
     ]);
-    res.json({ companies, total, page: parseInt(page as string), pageSize: parseInt(pageSize as string) });
+    res.json({ companies, total, page: pageNumber, pageSize: take });
   } catch (err) {
     res.status(500).json({ error: '获取商家列表失败' });
   }
@@ -117,6 +120,15 @@ router.post('/my/company', authMiddleware, async (req: AuthRequest, res) => {
     if (existing) {
       return res.status(400).json({ error: '您已开设店铺，请前往店铺管理修改' });
     }
+    if (businessLicense && !await ownsStoredUploadReferences({
+      prisma,
+      ownerId: req.userId!,
+      urls: [businessLicense],
+      purposes: ['SUPPLY_LICENSE'],
+      accessLevel: 'PRIVATE',
+    })) {
+      return res.status(400).json({ error: '营业执照文件不存在、用途不符或不属于当前账号' });
+    }
 
     const company = await prisma.supplyCompany.create({
       data: {
@@ -149,6 +161,15 @@ router.put('/my/company', authMiddleware, async (req: AuthRequest, res) => {
     if (!company) return res.status(404).json({ error: '店铺不存在' });
 
     const shouldReset = businessLicense && company.businessLicense !== businessLicense;
+    if (shouldReset && !await ownsStoredUploadReferences({
+      prisma,
+      ownerId: req.userId!,
+      urls: [businessLicense],
+      purposes: ['SUPPLY_LICENSE'],
+      accessLevel: 'PRIVATE',
+    })) {
+      return res.status(400).json({ error: '营业执照文件不存在、用途不符或不属于当前账号' });
+    }
 
     const updated = await prisma.supplyCompany.update({
       where: { id: company.id },
@@ -181,6 +202,15 @@ router.post('/my/company/products', authMiddleware, async (req: AuthRequest, res
 
     const { name, price, images, description, cuisineIds } = req.body;
     if (!name) return res.status(400).json({ error: '请填写产品名称' });
+    if (images && (!Array.isArray(images) || !await ownsStoredUploadReferences({
+      prisma,
+      ownerId: req.userId!,
+      urls: images,
+      purposes: ['SUPPLY_PRODUCT_IMAGE'],
+      accessLevel: 'PUBLIC',
+    }))) {
+      return res.status(400).json({ error: '产品图片不存在、用途不符或不属于当前账号' });
+    }
 
     const product = await prisma.supplyProduct.create({
       data: {
@@ -210,6 +240,21 @@ router.put('/my/company/products/:id', authMiddleware, async (req: AuthRequest, 
     if (!product) return res.status(404).json({ error: '产品不存在' });
 
     const { name, price, images, description, cuisineIds } = req.body;
+    const existingImages = (() => {
+      try { return JSON.parse(product.images) as string[]; } catch { return []; }
+    })();
+    const newImages = Array.isArray(images)
+      ? images.filter((url: string) => !existingImages.includes(url))
+      : [];
+    if (images && (!Array.isArray(images) || !await ownsStoredUploadReferences({
+      prisma,
+      ownerId: req.userId!,
+      urls: newImages,
+      purposes: ['SUPPLY_PRODUCT_IMAGE'],
+      accessLevel: 'PUBLIC',
+    }))) {
+      return res.status(400).json({ error: '产品图片不存在、用途不符或不属于当前账号' });
+    }
     const updated = await prisma.supplyProduct.update({
       where: { id: product.id },
       data: {

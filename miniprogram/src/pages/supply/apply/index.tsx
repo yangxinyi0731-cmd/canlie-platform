@@ -74,7 +74,7 @@ export default function ApplySupplyStore() {
       const filePath = choose.tempFilePaths?.[0]
       if (!filePath) return
       setLicenseUploading(true)
-      const res = await uploadApi.upload(filePath)
+      const res = await uploadApi.upload(filePath, 'SUPPLY_LICENSE')
       setLicenseUrl((res.data as any)?.url || '')
     } catch {
       setError('营业执照上传失败')
@@ -89,7 +89,7 @@ export default function ApplySupplyStore() {
       const filePath = choose.tempFilePaths?.[0]
       if (!filePath) return
       setProductUploading(true)
-      const res = await uploadApi.upload(filePath)
+      const res = await uploadApi.upload(filePath, 'SUPPLY_PRODUCT_IMAGE')
       setProductImages(prev => [...prev, (res.data as any)?.url || ''])
     } catch {
       setError('产品图片上传失败')

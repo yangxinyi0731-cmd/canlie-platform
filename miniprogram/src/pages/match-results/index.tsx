@@ -185,19 +185,16 @@ export default function MatchResults() {
                       {/* 人才信息 */}
                       <View className='mr-talent-info'>
                         <View className='mr-talent-name-row'>
-                          <Text className='mr-talent-name'>{talent?.realName || '未知'}</Text>
+                          <Text className='mr-talent-name'>{talent?.realName || '匿名人才'}</Text>
                           <StarDisplay level={talent?.starLevel ?? 0} />
                         </View>
                         <Text className='mr-talent-title'>{talent?.title || '-'}</Text>
                         <Text className='mr-talent-meta'>
-                          {[talent?.currentCompany, talent?.city].filter(Boolean).join(' · ') || '-'}
+                          {[talent?.currentCompany, talent?.city].filter(Boolean).join(' · ') || '企业名称未授权展示'}
                         </Text>
                         <View className='mr-talent-tags'>
                           {talent?.workYears != null ? <Text className='mr-talent-tag'>🏗 {talent.workYears}年经验</Text> : null}
                           {talent?.education ? <Text className='mr-talent-tag'>🎓 {talent.education}</Text> : null}
-                          {talent?.maritalStatus ? (
-                            <Text className='mr-talent-tag'>{talent.maritalStatus === 'MARRIED' ? '💍 已婚' : '👤 单身'}</Text>
-                          ) : null}
                         </View>
                       </View>
                     </View>

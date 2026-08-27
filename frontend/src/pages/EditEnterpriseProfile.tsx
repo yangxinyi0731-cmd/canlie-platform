@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { enterpriseApi, uploadApi } from '../api';
 import type { Enterprise } from '../types';
 import { useAuthStore } from '../stores/authStore';
+import SecureUploadPreview from '../components/SecureUploadPreview';
 
 const companySizes = ['1-50人', '50-200人', '200-500人', '500-2000人', '2000人以上'];
 const revenues = ['100万以下', '100-500万', '500-1000万', '1000-5000万', '5000万以上'];
@@ -92,7 +93,7 @@ export default function EditEnterpriseProfile() {
     if (!file) return;
     try {
       setError('');
-      const res = await uploadApi.upload(file);
+      const res = await uploadApi.upload(file, 'ENTERPRISE_LOGO');
       setCompanyLogo(res.data.url);
       setSuccess('Logo上传成功');
     } catch (err: any) {
@@ -105,7 +106,7 @@ export default function EditEnterpriseProfile() {
     if (!file) return;
     try {
       setError('');
-      const res = await uploadApi.upload(file);
+      const res = await uploadApi.upload(file, 'ENTERPRISE_LICENSE');
       setBusinessLicense(res.data.url);
       setSuccess('营业执照上传成功，等待平台审核');
     } catch (err: any) {
@@ -118,7 +119,7 @@ export default function EditEnterpriseProfile() {
     if (!file) return;
     try {
       setError('');
-      const res = await uploadApi.upload(file);
+      const res = await uploadApi.upload(file, 'PERSONAL_ID');
       setPersonalIdFront(res.data.url);
       setSuccess('身份证正面上传成功');
     } catch (err: any) {
@@ -131,7 +132,7 @@ export default function EditEnterpriseProfile() {
     if (!file) return;
     try {
       setError('');
-      const res = await uploadApi.upload(file);
+      const res = await uploadApi.upload(file, 'PERSONAL_ID');
       setPersonalIdBack(res.data.url);
       setSuccess('身份证反面上传成功');
     } catch (err: any) {
@@ -352,7 +353,7 @@ export default function EditEnterpriseProfile() {
                 <label className="block text-xs text-gray-500 mb-1">身份证正面（人像面）</label>
                 {personalIdFront ? (
                   <div className="flex items-center gap-3">
-                    <img src={personalIdFront} alt="身份证正面" className="w-20 h-14 rounded object-cover" />
+                    <SecureUploadPreview url={personalIdFront} label="安全查看正面" />
                     <label className="text-xs text-[#FF6B00] cursor-pointer">
                       重新上传 <input type="file" accept=".jpg,.jpeg,.png" onChange={handleUploadPersonalIdFront} className="hidden" />
                     </label>
@@ -368,7 +369,7 @@ export default function EditEnterpriseProfile() {
                 <label className="block text-xs text-gray-500 mb-1">身份证反面（国徽面）</label>
                 {personalIdBack ? (
                   <div className="flex items-center gap-3">
-                    <img src={personalIdBack} alt="身份证反面" className="w-20 h-14 rounded object-cover" />
+                    <SecureUploadPreview url={personalIdBack} label="安全查看反面" />
                     <label className="text-xs text-[#FF6B00] cursor-pointer">
                       重新上传 <input type="file" accept=".jpg,.jpeg,.png" onChange={handleUploadPersonalIdBack} className="hidden" />
                     </label>
@@ -386,9 +387,7 @@ export default function EditEnterpriseProfile() {
               <p className="text-xs text-gray-400 mb-3">上传营业执照照片或扫描件（支持 jpg/png/pdf，不超过 10MB）</p>
               {businessLicense ? (
                 <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden">
-                    <img src={businessLicense} alt="营业执照" className="w-full h-full object-cover" />
-                  </div>
+                  <SecureUploadPreview url={businessLicense} label="安全查看营业执照" />
                   <div className="flex-1">
                     <span className={`text-xs px-2 py-1 rounded-full ${licenseVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                       {licenseVerified ? '已认证' : '待审核'}

@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { getStoredUploadId } from './privacy.js';
 
 const uploadPathSchema = z
   .string()
   .trim()
-  .regex(
-    /^\/uploads\/[A-Za-z0-9][A-Za-z0-9._-]{0,254}$/,
-    '认证文件必须来自平台上传接口',
+  .refine(
+    (value) => Boolean(getStoredUploadId(value, 'private')),
+    '认证文件必须来自平台私有上传接口',
   );
 
 const referenceVerificationSchema = z.object({

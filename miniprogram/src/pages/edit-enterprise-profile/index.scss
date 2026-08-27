@@ -236,6 +236,30 @@
   border-radius: 12rpx;
 }
 
+.eep-protected-file {
+  min-width: 240rpx;
+  min-height: 80rpx;
+  padding: 16rpx 20rpx;
+  border: 2rpx solid rgba(255, 107, 0, 0.22);
+  border-radius: 16rpx;
+  background: #fff7ed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eep-protected-file-large {
+  min-width: 300rpx;
+  min-height: 112rpx;
+}
+
+.eep-protected-file-text {
+  color: $primary-dark;
+  font-size: 24rpx;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .eep-license-right {
   display: flex;
   flex-direction: column;

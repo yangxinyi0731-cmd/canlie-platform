@@ -15,7 +15,7 @@ import {
 test('认证材料拒绝 talentId/status 和其他批量赋值字段', () => {
   const result = verificationSubmissionSchema.safeParse({
     type: 'CERTIFICATE',
-    certFileUrl: '/uploads/123456-certificate.pdf',
+    certFileUrl: '/api/uploads/private/ck1234567890',
     talentId: 'another-talent',
     status: 'VERIFIED',
   });
@@ -37,7 +37,7 @@ test('认证材料按类型只接受对应字段和平台上传路径', () => {
 
   assert.equal(verificationSubmissionSchema.safeParse({
     type: 'CERTIFICATE',
-    salaryFileUrl: '/uploads/wrong-field.pdf',
+    salaryFileUrl: '/api/uploads/private/ck0987654321',
   }).success, false);
 });
 

@@ -23,7 +23,7 @@ export default function ShareCreate() {
       const selected = Array.from(files).slice(0, remain);
       const urls: string[] = [];
       for (const file of selected) {
-        const res = await uploadApi.upload(file);
+        const res = await uploadApi.upload(file, 'SHARE_IMAGE');
         urls.push(res.data.url);
       }
       setImages((prev) => [...prev, ...urls]);

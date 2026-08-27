@@ -220,7 +220,7 @@ export default function EditTalentProfile() {
       const exp = workExperiences[index];
       setWorkExpForm({
         id: exp.id,
-        companyName: exp.companyName,
+        companyName: exp.companyName || '',
         position: exp.position,
         startYear: exp.startYear.toString(),
         startMonth: exp.startMonth.toString(),
@@ -386,7 +386,7 @@ export default function EditTalentProfile() {
     if (!file) return;
     try {
       setError('');
-      const uploadRes = await uploadApi.upload(file);
+      const uploadRes = await uploadApi.upload(file, 'TALENT_CERTIFICATE');
       const res = await talentsApi.addVerification({ type: 'CERTIFICATE', certFileUrl: uploadRes.data.url });
       setVerifications(prev => [res.data, ...prev]);
       setSuccess('离职证明上传成功');
@@ -400,7 +400,7 @@ export default function EditTalentProfile() {
     if (!file) return;
     try {
       setError('');
-      const uploadRes = await uploadApi.upload(file);
+      const uploadRes = await uploadApi.upload(file, 'TALENT_SALARY_PROOF');
       const res = await talentsApi.addVerification({ type: 'SALARY_FLOW', salaryFileUrl: uploadRes.data.url });
       setVerifications(prev => [res.data, ...prev]);
       setSuccess('工资流水上传成功');

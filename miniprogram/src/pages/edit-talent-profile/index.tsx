@@ -358,7 +358,8 @@ export default function EditTalentProfile() {
       const filePath = choose.tempFilePaths?.[0]
       if (!filePath) return
       setError('')
-      const uploadRes = await uploadApi.upload(filePath)
+      const purpose = type === 'CERTIFICATE' ? 'TALENT_CERTIFICATE' : 'TALENT_SALARY_PROOF'
+      const uploadRes = await uploadApi.upload(filePath, purpose)
       const res = await talentsApi.addVerification({ type, [type === 'CERTIFICATE' ? 'certFileUrl' : 'salaryFileUrl']: (uploadRes.data as any)?.url })
       setVerifications(prev => [res.data, ...prev])
       setSuccess(successMsg)

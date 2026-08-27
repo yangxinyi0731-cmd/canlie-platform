@@ -132,7 +132,7 @@ export default function TalentSearch() {
             <Input
               className='ts-search-input'
               value={filters.keyword}
-              placeholder='搜索人才（姓名、职位、公司）'
+              placeholder='搜索职位、技能或品牌经历'
               placeholderClass='ts-placeholder'
               confirmType='search'
               onInput={(e) => setFilters(f => ({ ...f, keyword: e.detail.value }))}
@@ -341,7 +341,7 @@ export default function TalentSearch() {
                     <Text className='talent-star-label'>{talent.starLevelStr || STAR_LABELS[talent.starLevel] || ''}</Text>
                   </View>
                   <Text className='talent-title'>
-                    {talent.title || '未填写职位'}{talent.currentCompany ? ` | ${talent.currentCompany}` : ''}
+                    {talent.title || '未填写职位'}
                   </Text>
                   <View className='talent-meta'>
                     <Text className='talent-salary'>

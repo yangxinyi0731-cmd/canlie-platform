@@ -27,6 +27,38 @@ model User {
   sentMessages  ChatMessage[] @relation("senderMessages")
   chatParticipants ChatParticipant[]
   referralCodes ReferralCode[]
+  storedUploads StoredUpload[]
+}
+
+model StoredUpload {
+  id          String    @id @default(cuid())
+  ownerId     String
+  purpose     String
+  accessLevel String    @default("PRIVATE")
+  storageKey  String    @unique
+  mimeType    String
+  size        Int
+  sha256      String
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  owner       User      @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId, purpose])
+  @@index([accessLevel, deletedAt])
+}
+
+model SensitiveAccessLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  subjectType String
+  subjectId   String
+  action      String
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  @@index([actorUserId, createdAt])
+  @@index([subjectType, subjectId, createdAt])
 }
 
 model Enterprise {

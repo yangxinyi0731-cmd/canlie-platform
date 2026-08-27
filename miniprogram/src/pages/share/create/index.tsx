@@ -33,7 +33,7 @@ export default function ShareCreate() {
       setError('')
       const urls: string[] = []
       for (const file of files) {
-        const res = await uploadApi.upload(file)
+        const res = await uploadApi.upload(file, 'SHARE_IMAGE')
         urls.push((res.data as any)?.url || '')
       }
       setImages(prev => [...prev, ...urls.filter(Boolean)])

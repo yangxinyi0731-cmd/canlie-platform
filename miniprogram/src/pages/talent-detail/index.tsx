@@ -192,7 +192,7 @@ export default function TalentDetail() {
                   </View>
                   <View className='td-exp-content'>
                     <Text className='td-exp-position'>{exp.position}</Text>
-                    <Text className='td-exp-company'>{exp.companyName}</Text>
+                    <Text className='td-exp-company'>{exp.companyName || '企业名称未授权展示'}</Text>
                     <Text className='td-exp-date'>{formatDateRange(exp)}</Text>
                     {exp.description ? <Text className='td-exp-desc'>{exp.description}</Text> : null}
                     {exp.isCurrent ? <Text className='td-exp-badge'>现任</Text> : null}
@@ -259,11 +259,17 @@ export default function TalentDetail() {
       </View>
 
       {/* 底部沟通按钮（仅企业端可见，还原网页版） */}
-      {user?.role === 'ENTERPRISE' ? (
+      {user?.role === 'ENTERPRISE' && talent.userId ? (
         <View className='td-bottom-bar safe-bottom'>
           <View className='td-contact-btn' onClick={() => Taro.navigateTo({ url: `/pages/chat-conversation/index?chatWith=${talent.userId}` })}>
             <Icon name='message-square' size={36} color='#ffffff' />
             <Text className='td-contact-text'>立即沟通</Text>
+          </View>
+        </View>
+      ) : user?.role === 'ENTERPRISE' ? (
+        <View className='td-bottom-bar safe-bottom'>
+          <View className='td-contact-btn td-contact-disabled'>
+            <Text className='td-contact-text'>建立投递或匹配关系后可沟通</Text>
           </View>
         </View>
       ) : null}

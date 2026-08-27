@@ -3,6 +3,7 @@ import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { createNotification } from './notifications.js';
 import { authorizeChatRelationship } from '../security/chatAuthorization.js';
+import { shouldMaskTalentIdentity } from '../security/privacy.js';
 
 const router = Router();
 
@@ -39,8 +40,16 @@ router.get('/conversations', authMiddleware, async (req: AuthRequest, res) => {
         } else if (otherUser?.role === 'TALENT') {
           otherProfile = await prisma.talent.findUnique({
             where: { userId: otherUser.id },
-            select: { realName: true, title: true, avatar: true },
+            select: { realName: true, title: true, avatar: true, privacyMode: true },
           });
+          if (shouldMaskTalentIdentity(req.userRole, otherProfile?.privacyMode)) {
+            otherUser.name = '匿名人才';
+            otherUser.avatar = null;
+            if (otherProfile) {
+              otherProfile.realName = '匿名人才';
+              otherProfile.avatar = null;
+            }
+          }
         }
 
         let jobInfo = null;
@@ -107,7 +116,12 @@ router.get('/messages/:chatWith', authMiddleware, async (req: AuthRequest, res) 
         skip,
         take,
         include: {
-          sender: { select: { id: true, name: true, avatar: true, role: true } },
+          sender: {
+            select: {
+              id: true, name: true, avatar: true, role: true,
+              talent: { select: { privacyMode: true } },
+            },
+          },
         },
       }),
       prisma.chatMessage.count({ where }),
@@ -125,7 +139,17 @@ router.get('/messages/:chatWith', authMiddleware, async (req: AuthRequest, res) 
       data: { unreadCount: 0 },
     });
 
-    res.json({ messages: messages.reverse(), total });
+    const safeMessages = messages.reverse().map((message) => {
+      const { talent: senderTalent, ...publicSender } = message.sender;
+      if (!shouldMaskTalentIdentity(req.userRole, senderTalent?.privacyMode)) {
+        return { ...message, sender: publicSender };
+      }
+      return {
+        ...message,
+        sender: { ...publicSender, name: '匿名人才', avatar: null },
+      };
+    });
+    res.json({ messages: safeMessages, total });
   } catch (err) {
     res.status(500).json({ error: '获取消息失败' });
   }
@@ -194,12 +218,22 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
     }
 
     // 通知接收方有新消息
-    const sender = await prisma.user.findUnique({ where: { id: req.userId! }, select: { name: true } });
+    const [sender, receiver] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: req.userId! },
+        select: { name: true, role: true, talent: { select: { privacyMode: true } } },
+      }),
+      prisma.user.findUnique({ where: { id: receiverId }, select: { role: true } }),
+    ]);
+    const senderName = sender?.role === 'TALENT'
+      && shouldMaskTalentIdentity(receiver?.role, sender.talent?.privacyMode)
+      ? '匿名人才'
+      : (sender?.name || '用户');
     await createNotification(
       receiverId,
       'MESSAGE',
       '收到新消息',
-      `${sender?.name || '用户'}：${content.length > 30 ? content.slice(0, 30) + '...' : content}`,
+      `${senderName}：${content.length > 30 ? content.slice(0, 30) + '...' : content}`,
       JSON.stringify({ chatWith: req.userId!, jobId: access.jobId })
     );
 

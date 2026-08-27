@@ -160,7 +160,7 @@ export default function TalentSearch() {
             value={filters.keyword}
             onChange={(e) => setFilters((f) => ({ ...f, keyword: e.target.value }))}
             onKeyDown={handleKeyDown}
-            placeholder="搜索人才（姓名、职位、公司）"
+            placeholder="搜索职位、技能或品牌经历"
             className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]"
           />
         </div>
@@ -425,7 +425,6 @@ export default function TalentSearch() {
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {talent.title || '未填写职位'}
-                      {talent.currentCompany ? ` | ${talent.currentCompany}` : ''}
                     </p>
                     <div className="flex items-center gap-3 mt-1.5 text-xs">
                       <span className="text-[#FF6B00] font-medium">

@@ -7,6 +7,7 @@ import {
   canManageJob,
   hasMatchDetailBusinessRelation,
 } from '../security/policies.js';
+import { canRevealTalentIdentity, toTalentDetailResponse } from '../security/privacy.js';
 
 const router = Router();
 
@@ -455,11 +456,24 @@ router.get('/job/:jobId', authMiddleware, async (req: AuthRequest, res) => {
             learningAbility: true, thinkingStyle: true, personalSkills: true,
             brandExperienceDetail: true, parentInfo: true, gender: true,
             projectExpDetail: true, preferredBusinessModel: true,
+            privacyMode: true, jobCategoryId: true,
           },
         },
       },
     });
-    res.json(matches);
+    res.json(matches.map((match) => ({
+      ...match,
+      talent: toTalentDetailResponse(
+        match.talent,
+        canRevealTalentIdentity({
+          requesterRole: req.userRole,
+          privacyMode: match.talent.privacyMode,
+          hasApplication: false,
+          hasMatch: true,
+        }),
+        true,
+      ),
+    })));
   } catch (err) {
     console.error('Get job matches error:', err);
     res.status(500).json({ error: '获取匹配结果失败' });
@@ -486,8 +500,8 @@ router.get('/talent', authMiddleware, async (req: AuthRequest, res) => {
                 id: true, companyName: true, companyLogo: true, city: true, province: true,
                 starLevel: true, starLevelStr: true, companySize: true, status: true,
                 welfareBenefits: true, developmentPlan: true, mainMarkets: true,
-                currentStatus: true, bossInfo: true, equityOpportunity: true,
-                businessModelDescription: true, shareholderInfo: true, description: true,
+                currentStatus: true, equityOpportunity: true,
+                businessModelDescription: true, description: true,
               },
             },
           },
@@ -735,12 +749,18 @@ router.get('/detail/:jobId/:talentId', authMiddleware, async (req: AuthRequest, 
     if (!talent) return res.status(404).json({ error: '数据不存在' });
 
     const result = calculateComprehensiveMatch(job, talent, talent.workExperiences, job.enterprise);
+    const revealIdentity = canRevealTalentIdentity({
+      requesterRole: req.userRole,
+      privacyMode: talent.privacyMode,
+      hasApplication: false,
+      hasMatch: true,
+    });
 
     res.json({
       jobId: job.id,
       jobTitle: job.title,
       talentId: talent.id,
-      talentName: talent.realName,
+      talentName: revealIdentity ? talent.realName : '匿名人才',
       ...result,
     });
   } catch (err) {

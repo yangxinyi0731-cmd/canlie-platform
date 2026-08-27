@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 import { View, Text, Image, Picker, ScrollView, Input } from '@tarojs/components'
-import { adminApi, refApi, supplyApi, sharesApi, getImageUrl, safeArray } from '../../api'
+import { adminApi, refApi, supplyApi, sharesApi, uploadApi, getImageUrl, safeArray } from '../../api'
 import api from '../../api/request'
 import { useAuthStore } from '../../stores/authStore'
 import { useRequireAuth } from '../../hooks/useAuth'
@@ -247,6 +247,22 @@ export default function AdminDashboard() {
     Taro.previewImage({ urls: [full], current: full })
   }
 
+  const previewProtectedFile = async (url: string) => {
+    Taro.showLoading({ title: '验证权限中', mask: true })
+    try {
+      const filePath = await uploadApi.downloadPrivate(url)
+      try {
+        await Taro.previewImage({ urls: [filePath], current: filePath })
+      } catch {
+        await Taro.openDocument({ filePath, showMenu: true })
+      }
+    } catch (err: any) {
+      Taro.showToast({ title: err?.message || '资料读取失败', icon: 'none' })
+    } finally {
+      Taro.hideLoading()
+    }
+  }
+
   return (
     <View className='admin-page'>
       {/* 头部（还原网页版：橙色标题 + 退出） */}
@@ -369,12 +385,9 @@ export default function AdminDashboard() {
                         {p?.businessLicense ? (
                           <View className='admin-license-section'>
                             <Text className='admin-license-label'>营业执照：</Text>
-                            <Image
-                              src={getImageUrl(p.businessLicense) || p.businessLicense}
-                              className='admin-license-img'
-                              mode='widthFix'
-                              onClick={() => previewImage(p.businessLicense)}
-                            />
+                            <View className='admin-protected-file' onClick={() => previewProtectedFile(p.businessLicense)}>
+                              <Text className='admin-protected-file-text'>验证管理员权限并查看</Text>
+                            </View>
                           </View>
                         ) : null}
 
@@ -499,23 +512,17 @@ export default function AdminDashboard() {
                       {v.type === 'CERTIFICATE' && v.certFileUrl ? (
                         <View className='admin-license-section'>
                           <Text className='admin-license-label'>离职证明：</Text>
-                          <Image
-                            src={getImageUrl(v.certFileUrl) || v.certFileUrl}
-                            className='admin-license-img'
-                            mode='widthFix'
-                            onClick={() => previewImage(v.certFileUrl)}
-                          />
+                          <View className='admin-protected-file' onClick={() => previewProtectedFile(v.certFileUrl)}>
+                            <Text className='admin-protected-file-text'>验证管理员权限并查看</Text>
+                          </View>
                         </View>
                       ) : null}
                       {v.type === 'SALARY_FLOW' && v.salaryFileUrl ? (
                         <View className='admin-license-section'>
                           <Text className='admin-license-label'>工资流水：</Text>
-                          <Image
-                            src={getImageUrl(v.salaryFileUrl) || v.salaryFileUrl}
-                            className='admin-license-img'
-                            mode='widthFix'
-                            onClick={() => previewImage(v.salaryFileUrl)}
-                          />
+                          <View className='admin-protected-file' onClick={() => previewProtectedFile(v.salaryFileUrl)}>
+                            <Text className='admin-protected-file-text'>验证管理员权限并查看</Text>
+                          </View>
                         </View>
                       ) : null}
 
@@ -581,12 +588,9 @@ export default function AdminDashboard() {
                       {c.businessLicense ? (
                         <View className='admin-license-section'>
                           <Text className='admin-license-label'>营业执照：</Text>
-                          <Image
-                            src={getImageUrl(c.businessLicense) || c.businessLicense}
-                            className='admin-license-img'
-                            mode='widthFix'
-                            onClick={() => previewImage(c.businessLicense)}
-                          />
+                          <View className='admin-protected-file' onClick={() => previewProtectedFile(c.businessLicense)}>
+                            <Text className='admin-protected-file-text'>验证管理员权限并查看</Text>
+                          </View>
                         </View>
                       ) : null}
 

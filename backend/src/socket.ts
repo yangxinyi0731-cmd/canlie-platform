@@ -3,6 +3,7 @@ import { prisma } from './index.js';
 import { createNotification } from './routes/notifications.js';
 import { verifySocketToken } from './middleware/auth.js';
 import { authorizeChatRelationship } from './security/chatAuthorization.js';
+import { shouldMaskTalentIdentity } from './security/privacy.js';
 
 const userSockets = new Map<string, string[]>();
 
@@ -78,12 +79,28 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
           jobId: access.jobId,
         },
         include: {
-          sender: { select: { id: true, name: true } },
+          sender: {
+            select: {
+              id: true, name: true, role: true,
+              talent: { select: { privacyMode: true } },
+            },
+          },
         },
       });
 
       // 发送给接收者
-      io.to(`user:${data.receiverId}`).emit('newMessage', message);
+      const receiver = await prisma.user.findUnique({
+        where: { id: data.receiverId },
+        select: { role: true },
+      });
+      const maskSender = message.sender.role === 'TALENT'
+        && shouldMaskTalentIdentity(receiver?.role, message.sender.talent?.privacyMode);
+      const { talent: _senderTalent, ...publicSender } = message.sender;
+      const publicMessage = { ...message, sender: publicSender };
+      const receiverMessage = maskSender
+        ? { ...publicMessage, sender: { ...publicSender, name: '匿名人才' } }
+        : publicMessage;
+      io.to(`user:${data.receiverId}`).emit('newMessage', receiverMessage);
 
       // 更新会话记录
       for (const uid of [data.senderId, data.receiverId]) {
@@ -116,17 +133,17 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
       }
 
       // 通知接收方
-      const sender = await prisma.user.findUnique({ where: { id: data.senderId }, select: { name: true } });
+      const senderName = maskSender ? '匿名人才' : (message.sender.name || '用户');
       await createNotification(
         data.receiverId,
         'MESSAGE',
         '收到新消息',
-        `${sender?.name || '用户'}：${data.content.length > 30 ? data.content.slice(0, 30) + '...' : data.content}`,
+        `${senderName}：${data.content.length > 30 ? data.content.slice(0, 30) + '...' : data.content}`,
         JSON.stringify({ chatWith: data.senderId, jobId: access.jobId })
       );
 
       // 确认发送成功
-      socket.emit('messageSent', message);
+      socket.emit('messageSent', publicMessage);
     } catch (err) {
       console.error('Socket message error:', err);
       socket.emit('messageError', { error: '消息发送失败' });

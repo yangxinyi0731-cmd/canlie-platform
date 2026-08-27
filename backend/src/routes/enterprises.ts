@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { ownsStoredUploadReferences } from '../security/storedUploadAuthorization.js';
 
 const router = Router();
 
@@ -32,6 +33,42 @@ router.put('/profile', authMiddleware, requireRole('ENTERPRISE'), async (req: Au
 
     // If businessLicense is being updated, reset verification status to PENDING
     const existing = await prisma.enterprise.findUnique({ where: { userId: req.userId } });
+    const [logoAllowed, licenseAllowed, personalIdAllowed] = await Promise.all([
+      companyLogo && companyLogo !== existing?.companyLogo
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: [companyLogo],
+          purposes: ['ENTERPRISE_LOGO'],
+          accessLevel: 'PUBLIC',
+        })
+        : true,
+      businessLicense && businessLicense !== existing?.businessLicense
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: [businessLicense],
+          purposes: ['ENTERPRISE_LICENSE'],
+          accessLevel: 'PRIVATE',
+        })
+        : true,
+      (personalIdFront && personalIdFront !== existing?.personalIdFront)
+        || (personalIdBack && personalIdBack !== existing?.personalIdBack)
+        ? ownsStoredUploadReferences({
+          prisma,
+          ownerId: req.userId!,
+          urls: [
+            personalIdFront !== existing?.personalIdFront ? personalIdFront : null,
+            personalIdBack !== existing?.personalIdBack ? personalIdBack : null,
+          ],
+          purposes: ['PERSONAL_ID'],
+          accessLevel: 'PRIVATE',
+        })
+        : true,
+    ]);
+    if (!logoAllowed || !licenseAllowed || !personalIdAllowed) {
+      return res.status(400).json({ error: '上传文件不存在、用途不符或不属于当前账号' });
+    }
     const shouldResetVerification = businessLicense && existing?.businessLicense !== businessLicense;
 
     const enterprise = await prisma.enterprise.upsert({
@@ -66,6 +103,7 @@ router.put('/profile', authMiddleware, requireRole('ENTERPRISE'), async (req: Au
       create: {
         userId: req.userId!,
         companyName: companyName || '',
+        companyLogo,
         businessLicense,
         isPreparation: isPreparation || false,
         personalIdFront,

@@ -260,6 +260,21 @@
   border: 2rpx solid $gray-200;
 }
 
+.admin-protected-file {
+  max-width: 420rpx;
+  padding: 20rpx 24rpx;
+  border: 2rpx solid rgba(255, 107, 0, 0.22);
+  border-radius: 16rpx;
+  background: #fff7ed;
+  text-align: center;
+}
+
+.admin-protected-file-text {
+  color: $primary-dark;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
 // 审核按钮
 .admin-actions {
   display: flex;
