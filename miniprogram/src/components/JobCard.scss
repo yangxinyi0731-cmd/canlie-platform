@@ -1,88 +1,112 @@
-// 职位卡片（还原网页版 Home 职位卡：bg-white rounded-xl p-4 shadow-sm）
-.job-card {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
-  margin-bottom: 24rpx;
+.job-card-v2 {
+  width: 100%;
+  display: block;
+  margin-bottom: $space-list;
+  padding: $space-card;
+  border: 1PX solid $color-border;
+  border-radius: $radius-card;
+  background: $color-surface;
+  text-align: left;
+}
 
-  &.job-card-hover {
-    background: #fafafa;
-  }
+.job-card-v2-pressed {
+  background: #FCFCFD;
+  border-color: #D8DADF;
 }
 
 .job-card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 16rpx;
+  min-width: 0;
 }
 
 .job-title {
+  flex: 1;
+  min-width: 0;
+  margin-right: 20rpx;
+  overflow: hidden;
+  color: $color-text-primary;
   font-size: 32rpx;
   font-weight: 600;
-  color: $gray-900;
-  flex: 1;
-  margin-right: 24rpx;
-  line-height: 1.4;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .job-salary {
-  font-size: 28rpx;
-  font-weight: 700;
-  color: $primary;
+  flex-shrink: 0;
+  color: $brand-primary;
+  font-size: 30rpx;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
   white-space: nowrap;
+}
+
+.job-card-meta {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-top: 12rpx;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.job-card-location {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.job-card-meta-text,
+.job-card-meta-dot {
+  color: $color-text-secondary;
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
+.job-card-meta-dot {
+  margin: 0 10rpx;
+  color: $color-text-muted;
 }
 
 .job-card-tags {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 16rpx;
+  margin-top: 12rpx;
 }
 
-// 小 chip（网页版 px-2 py-0.5 text-xs rounded-md）
-.chip {
-  font-size: 24rpx;
-  padding: 4rpx 16rpx;
-  border-radius: 12rpx;
-  margin-right: 16rpx;
-  line-height: 1.4;
+.job-card-tag {
+  margin-right: 10rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  background: $color-page;
+  color: $color-text-secondary;
+  font-size: 22rpx;
+  line-height: 1.45;
 }
 
-.chip-orange {
-  background: $orange-50;
-  color: $primary;
-}
-
-.chip-blue {
-  background: $blue-50;
-  color: $blue-600;
-}
-
-.job-location {
-  font-size: 24rpx;
-  color: $gray-400;
-}
-
-.job-card-footer {
+.job-card-company {
   display: flex;
   align-items: center;
+  min-width: 0;
+  margin-top: 16rpx;
   padding-top: 16rpx;
-  border-top: 1PX solid $gray-50;
+  border-top: 1PX solid $color-border;
 }
 
-// 企业 logo（网页版 w-6 h-6 rounded bg-gray-100）
 .company-logo-wrap {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 8rpx;
-  background: $gray-100;
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 12rpx;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  margin-right: 16rpx;
+  flex-shrink: 0;
+  border-radius: 8rpx;
+  background: $brand-primary-soft;
 }
 
 .company-logo-img {
@@ -91,18 +115,30 @@
 }
 
 .company-logo-text {
+  color: $brand-primary;
   font-size: 20rpx;
-  font-weight: 700;
-  color: $primary;
+  font-weight: 600;
 }
 
 .company-name {
+  min-width: 0;
+  overflow: hidden;
+  color: $color-text-secondary;
   font-size: 24rpx;
-  color: $gray-500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.company-size {
+  flex-shrink: 0;
+  color: $color-text-muted;
+  font-size: 22rpx;
 }
 
 .job-time {
-  font-size: 24rpx;
-  color: $gray-300;
   margin-left: auto;
+  padding-left: 12rpx;
+  flex-shrink: 0;
+  color: $color-text-muted;
+  font-size: 22rpx;
 }

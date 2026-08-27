@@ -1,5 +1,6 @@
 export default definePageConfig({
   navigationBarTitleText: '餐猎',
-  backgroundColor: '#F3F4F6',
+  backgroundColor: '#F7F8FA',
   enablePullDownRefresh: true,
+  onReachBottomDistance: 120,
 })

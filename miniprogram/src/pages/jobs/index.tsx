@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import Taro, { usePullDownRefresh } from '@tarojs/taro'
-import { View, Text, Input, ScrollView } from '@tarojs/components'
+import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
+import { Button, View, Text } from '@tarojs/components'
 import { jobsApi, refApi, safeArray } from '../../api'
 import { useAuthStore } from '../../stores/authStore'
 import { useRequireAuth } from '../../hooks/useAuth'
@@ -9,8 +9,11 @@ import JobCard from '../../components/JobCard'
 import Loading from '../../components/Loading'
 import Empty from '../../components/Empty'
 import Icon from '../../components/Icon'
+import SearchBar from '../../components/SearchBar'
+import FilterBar, { type FilterBarItem } from '../../components/FilterBar'
+import BottomSheet from '../../components/BottomSheet'
 import { STATUS_BAR_HEIGHT } from '../../components/NavBar'
-import type { Job } from '../../types'
+import type { Job, JobCategory } from '../../types'
 import './index.scss'
 
 interface RefItem {
@@ -18,52 +21,37 @@ interface RefItem {
   name: string
 }
 
-// 全国热门城市（还原网页版 Home.tsx 硬编码全量城市）
-const HOT_CITIES = [
-  '全部', '北京', '上海', '广州', '深圳',
-  '杭州', '宁波', '温州', '绍兴', '嘉兴', '金华', '台州',
-  '南京', '苏州', '无锡', '常州', '南通', '徐州', '扬州',
-  '成都', '绵阳', '宜宾', '泸州',
-  '重庆', '万州',
-  '武汉', '宜昌', '襄阳', '荆州',
-  '长沙', '株洲', '湘潭', '衡阳', '岳阳', '常德',
-  '郑州', '洛阳', '开封', '新乡',
-  '西安', '咸阳', '宝鸡',
-  '济南', '青岛', '烟台', '潍坊', '临沂', '淄博',
-  '福州', '厦门', '泉州', '漳州',
-  '合肥', '芜湖', '蚌埠',
-  '南昌', '九江', '赣州',
-  '昆明', '大理', '丽江', '曲靖',
-  '贵阳', '遵义',
-  '南宁', '桂林', '柳州', '北海',
-  '海口', '三亚',
-  '石家庄', '唐山', '保定', '廊坊',
-  '太原', '大同',
-  '沈阳', '大连', '鞍山',
-  '长春', '吉林', '延边',
-  '哈尔滨', '大庆', '齐齐哈尔',
-  '兰州', '天水',
-  '乌鲁木齐', '伊犁',
-  '呼和浩特', '包头', '鄂尔多斯',
-  '银川',
-  '西宁',
-  '拉萨',
-  '天津',
-  '佛山', '东莞', '珠海', '中山', '惠州', '汕头', '湛江',
-]
+const FALLBACK_CITIES = ['北京', '上海', '广州', '深圳', '杭州', '成都', '重庆', '武汉', '长沙', '南京', '苏州', '西安']
+const PAGE_SIZE = 10
 
-const PAGE_SIZE = 20
+type SheetKind = 'city' | 'category' | 'cuisine' | 'business' | null
+
+interface JobQuery {
+  keyword: string
+  city: string
+  categoryId: string
+  cuisineId: string
+  businessTypeId: string
+}
 
 export default function Jobs() {
-  const { user } = useRequireAuth()
-  // 管理员不进首页，直接跳管理后台（还原网页版 Home 的 ADMIN 分流）
+  const { user, initialized } = useRequireAuth()
+
   useEffect(() => {
     if (user?.role === 'ADMIN') {
       Taro.reLaunch({ url: '/pages/admin/index' })
     }
   }, [user])
 
-  if (user?.role === 'ENTERPRISE') {
+  if (!initialized || !user || user.role === 'ADMIN') {
+    return (
+      <View className='role-routing'>
+        <Loading text={user?.role === 'ADMIN' ? '正在进入管理端…' : '正在确认登录状态…'} />
+      </View>
+    )
+  }
+
+  if (user.role === 'ENTERPRISE') {
     return (
       <Layout active='/pages/jobs/index'>
         <EnterpriseHome />
@@ -78,23 +66,30 @@ export default function Jobs() {
   )
 }
 
-// ========== 人才端首页：职位搜索（还原网页版 TalentHome）==========
+// ========== 人才端首页：同城职位流 ==========
 function TalentHome() {
   const { user } = useAuthStore()
   const talent = (user?.profile || {}) as { realName?: string }
 
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [error, setError] = useState('')
+  const [loadMoreError, setLoadMoreError] = useState('')
   const [cuisines, setCuisines] = useState<RefItem[]>([])
   const [businessTypes, setBusinessTypes] = useState<RefItem[]>([])
+  const [jobCategories, setJobCategories] = useState<JobCategory[]>([])
+  const [popularCities, setPopularCities] = useState<string[]>(FALLBACK_CITIES)
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedCuisine, setSelectedCuisine] = useState('')
+  const [selectedBusinessType, setSelectedBusinessType] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
-  // 请求序号：丢弃迟到的旧响应
+  const [sheetKind, setSheetKind] = useState<SheetKind>(null)
   const reqSeqRef = useRef(0)
-  // 关键词防抖
+  const appendSeqRef = useRef(0)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const cuisineMap: Record<string, string> = {}
@@ -102,168 +97,267 @@ function TalentHome() {
   const bizTypeMap: Record<string, string> = {}
   businessTypes.forEach(b => { bizTypeMap[b.id] = b.name })
 
-  const loadData = async (p = 1) => {
+  const currentQuery = (): JobQuery => ({
+    keyword,
+    city: selectedCity,
+    categoryId: selectedCategory,
+    cuisineId: selectedCuisine,
+    businessTypeId: selectedBusinessType,
+  })
+
+  const loadJobs = async (p: number, append: boolean, query: JobQuery) => {
+    if (append && appendSeqRef.current !== 0) return
     const seq = ++reqSeqRef.current
-    setLoading(true)
+    if (append) {
+      appendSeqRef.current = seq
+      setLoadingMore(true)
+      setLoadMoreError('')
+    } else {
+      appendSeqRef.current = 0
+      setLoading(true)
+      setLoadingMore(false)
+      setError('')
+      setLoadMoreError('')
+      setJobs([])
+      setTotal(0)
+      setPage(1)
+    }
+
     try {
       const params: Record<string, unknown> = { page: p, pageSize: PAGE_SIZE }
-      if (selectedCuisine) params.cuisineId = selectedCuisine
-      if (selectedCity) params.city = selectedCity
-      if (keyword) params.keyword = keyword
+      if (query.cuisineId) params.cuisineId = query.cuisineId
+      if (query.businessTypeId) params.businessTypeId = query.businessTypeId
+      if (query.categoryId) params.jobCategoryId = query.categoryId
+      if (query.city) params.city = query.city
+      if (query.keyword.trim()) params.keyword = query.keyword.trim()
 
-      const [jobsRes, refRes] = await Promise.allSettled([
-        jobsApi.list(params),
-        refApi.getAll(),
-      ])
+      const response = await jobsApi.list(params)
 
       if (seq !== reqSeqRef.current) return
-      if (jobsRes.status === 'fulfilled') {
-        const data: any = jobsRes.value.data
-        setJobs(safeArray(data?.jobs))
-        setTotal(data?.total || 0)
-        setPage(data?.page || p)
-      }
-      if (refRes.status === 'fulfilled') {
-        const ref = refRes.value.data
-        setCuisines(safeArray(ref?.cuisines))
-        setBusinessTypes(safeArray(ref?.businessTypes))
-      }
-    } catch {
-      // 静默处理
+      const data: any = response.data
+      const incoming = safeArray<Job>(data?.jobs)
+      setJobs(previous => {
+        if (!append) return incoming
+        const byId = new Map(previous.map(item => [item.id, item]))
+        incoming.forEach(item => byId.set(item.id, item))
+        return Array.from(byId.values())
+      })
+      setTotal(Number(data?.total || 0))
+      setPage(Number(data?.page || p))
+    } catch (requestError: any) {
+      if (seq !== reqSeqRef.current) return
+      const message = requestError?.message || '职位加载失败，请稍后重试'
+      if (append) setLoadMoreError(message)
+      else setError(message)
     } finally {
-      if (seq === reqSeqRef.current) setLoading(false)
+      if (appendSeqRef.current === seq) appendSeqRef.current = 0
+      if (seq === reqSeqRef.current) {
+        if (append) setLoadingMore(false)
+        else setLoading(false)
+      }
     }
   }
 
   useEffect(() => {
-    loadData(1)
-  }, [])
+    const loadReferences = async () => {
+      const [refResult, cityResult] = await Promise.allSettled([refApi.getAll(), jobsApi.getHotCities()])
+      if (refResult.status === 'fulfilled') {
+        const data: any = refResult.value.data
+        setCuisines(safeArray<RefItem>(data?.cuisines))
+        setBusinessTypes(safeArray<RefItem>(data?.businessTypes))
+        setJobCategories(safeArray<JobCategory>(data?.jobCategories))
+      }
+      if (cityResult.status === 'fulfilled') {
+        const names = safeArray<any>((cityResult.value.data as any)?.cities)
+          .map(item => String(item?.name || '').trim())
+          .filter(Boolean)
+        if (names.length > 0) setPopularCities(Array.from(new Set(names)))
+      }
+    }
 
-  // 筛选条件变化时重新加载（重置到第一页，还原网页版）
-  useEffect(() => {
-    loadData(1)
-  }, [selectedCuisine, selectedCity])
+    void loadReferences()
+    void loadJobs(1, false, { keyword: '', city: '', categoryId: '', cuisineId: '', businessTypeId: '' })
 
-  // 关键词防抖提交（网页版每击键触发，小程序端加 500ms 防抖避免请求风暴）
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => loadData(1), 500)
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
+      reqSeqRef.current += 1
     }
-  }, [keyword])
+  }, [])
 
   usePullDownRefresh(() => {
-    Promise.resolve(loadData(page)).finally(() => Taro.stopPullDownRefresh())
+    Promise.resolve(loadJobs(1, false, currentQuery())).finally(() => Taro.stopPullDownRefresh())
   })
 
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const hasMore = jobs.length < total
+  useReachBottom(() => {
+    if (hasMore && !loading && !loadingMore) {
+      void loadJobs(page + 1, true, currentQuery())
+    }
+  })
 
-  const onKeywordInput = (e: any) => setKeyword(e.detail.value)
+  const cancelDebounce = () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+  }
+
+  const onKeywordInput = (value: string) => {
+    setKeyword(value)
+    cancelDebounce()
+    const query = { ...currentQuery(), keyword: value }
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null
+      void loadJobs(1, false, query)
+    }, 300)
+  }
+
+  const clearKeyword = () => {
+    cancelDebounce()
+    setKeyword('')
+    void loadJobs(1, false, { ...currentQuery(), keyword: '' })
+  }
+
+  const chooseSheetOption = (value: string) => {
+    const query = currentQuery()
+    if (sheetKind === 'city') {
+      setSelectedCity(value)
+      query.city = value
+    }
+    if (sheetKind === 'category') {
+      setSelectedCategory(value)
+      query.categoryId = value
+    }
+    if (sheetKind === 'cuisine') {
+      setSelectedCuisine(value)
+      query.cuisineId = value
+    }
+    if (sheetKind === 'business') {
+      setSelectedBusinessType(value)
+      query.businessTypeId = value
+    }
+    cancelDebounce()
+    setSheetKind(null)
+    void loadJobs(1, false, query)
+  }
+
+  const clearFilters = () => {
+    cancelDebounce()
+    setKeyword('')
+    setSelectedCity('')
+    setSelectedCategory('')
+    setSelectedCuisine('')
+    setSelectedBusinessType('')
+    setSheetKind(null)
+    void loadJobs(1, false, { keyword: '', city: '', categoryId: '', cuisineId: '', businessTypeId: '' })
+  }
+
+  const categoryName = jobCategories.find(item => item.id === selectedCategory)?.name || '职位类别'
+  const cuisineName = cuisines.find(item => item.id === selectedCuisine)?.name || '菜系'
+  const businessName = businessTypes.find(item => item.id === selectedBusinessType)?.name || '业态'
+  const filters: FilterBarItem[] = [
+    { key: 'category', label: categoryName, active: !!selectedCategory },
+    { key: 'cuisine', label: cuisineName, active: !!selectedCuisine },
+    { key: 'business', label: businessName, active: !!selectedBusinessType },
+  ]
+  const hasActiveFilters = !!(keyword || selectedCity || selectedCategory || selectedCuisine || selectedBusinessType)
+
+  const sheetTitle = sheetKind === 'city'
+    ? '选择城市'
+    : sheetKind === 'category'
+      ? '选择职位类别'
+      : sheetKind === 'cuisine'
+        ? '选择菜系'
+        : '选择业态'
+  const sheetOptions: { id: string; name: string }[] = sheetKind === 'city'
+    ? [{ id: '', name: '全国职位' }, ...popularCities.map(name => ({ id: name, name }))]
+    : sheetKind === 'category'
+      ? [{ id: '', name: '全部职位类别' }, ...jobCategories]
+      : sheetKind === 'cuisine'
+        ? [{ id: '', name: '全部菜系' }, ...cuisines]
+        : [{ id: '', name: '全部业态' }, ...businessTypes]
+  const selectedSheetValue = sheetKind === 'city'
+    ? selectedCity
+    : sheetKind === 'category'
+      ? selectedCategory
+      : sheetKind === 'cuisine'
+        ? selectedCuisine
+        : selectedBusinessType
+
 
   return (
     <View className='home-page'>
-      {/* 顶部搜索区（还原网页版：白底 sticky + 橙色标题 + 灰底搜索框） */}
       <View className='home-header' style={{ paddingTop: `${STATUS_BAR_HEIGHT}px` }}>
-        <View className='px-32'>
+        <View className='home-header-main'>
           <View className='home-title-row'>
             <Text className='home-title'>餐猎</Text>
-            <Text className='home-subtitle'>餐饮酒店高端人才平台</Text>
-            {talent?.realName ? <Text className='home-greeting'>👋 {talent.realName}</Text> : null}
+            <Text className='home-subtitle'>{talent?.realName ? `${talent.realName}，发现同城机会` : '发现同城餐饮酒店机会'}</Text>
+            <Button
+              className='ui-button-reset home-city-entry'
+              hoverClass='home-city-entry-pressed'
+              aria-label={`当前城市${selectedCity || '全国'}，点击选择城市`}
+              onClick={() => setSheetKind('city')}
+            >
+              <Icon name='map-pin' size={24} color='#FF6B00' />
+              <Text className='home-city-text'>{selectedCity || '全国'}</Text>
+              <Icon name='chevron-down' size={22} color='#FF6B00' />
+            </Button>
           </View>
-          <View className='home-search'>
-            <View className='home-search-icon'>
-              <Icon name='search' size={32} color='#9CA3AF' />
-            </View>
-            <Input
-              className='home-search-input'
-              value={keyword}
-              placeholder='搜索职位、公司、地点...'
-              placeholderClass='home-search-placeholder'
-              confirmType='search'
-              onInput={onKeywordInput}
-            />
+          <SearchBar
+            value={keyword}
+            placeholder='搜索职位、公司或地点'
+            loading={loading && !!keyword}
+            onInput={onKeywordInput}
+            onClear={clearKeyword}
+            onConfirm={() => {
+              cancelDebounce()
+              void loadJobs(1, false, currentQuery())
+            }}
+          />
+        </View>
+        <View className='home-filter-row'>
+          <View className='home-filter-main'>
+            <FilterBar items={filters} onSelect={key => setSheetKind(key as SheetKind)} />
           </View>
-        </View>
-
-        {/* 全国热门城市快捷选择 */}
-        <View className='city-chips-wrap'>
-          <ScrollView className='city-chips' scrollY enhanced showScrollbar={false}>
-            <View className='city-chips-inner'>
-              {HOT_CITIES.map(city => {
-                const isSelected = (city === '全部' && !selectedCity) || (city !== '全部' && selectedCity === city)
-                return (
-                  <Text
-                    key={city}
-                    className={`city-chip ${isSelected ? 'city-chip-active' : ''}`}
-                    onClick={() => setSelectedCity(city === '全部' ? '' : city)}
-                  >
-                    {city}
-                  </Text>
-                )
-              })}
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* 菜系筛选（横向滚动） */}
-        <View className='cuisine-bar'>
-          <ScrollView className='cuisine-scroll' scrollX enhanced showScrollbar={false}>
-            <View className='cuisine-scroll-inner'>
-              <Text
-                className={`cuisine-chip ${!selectedCuisine ? 'chip-active' : ''}`}
-                onClick={() => setSelectedCuisine('')}
-              >
-                全部菜系
-              </Text>
-              {cuisines.map(c => (
-                <Text
-                  key={c.id}
-                  className={`cuisine-chip ${selectedCuisine === c.id ? 'chip-active' : ''}`}
-                  onClick={() => setSelectedCuisine(selectedCuisine === c.id ? '' : c.id)}
-                >
-                  {c.name}
-                </Text>
-              ))}
-            </View>
-          </ScrollView>
+          {hasActiveFilters ? (
+            <Button
+              className='ui-button-reset home-filter-clear'
+              hoverClass='home-filter-clear-pressed'
+              aria-label='清空搜索和筛选'
+              onClick={clearFilters}
+            >
+              清除
+            </Button>
+          ) : null}
         </View>
       </View>
 
-      {/* 平台服务入口：供应平台 + 创业分享（还原网页版双卡宫格） */}
-      <View className='platform-entries'>
-        <View className='grid-2'>
-          <View
-            className='g2 platform-card'
-            hoverClass='hover-bg'
-            onClick={() => Taro.navigateTo({ url: '/pages/supply/index' })}
-          >
-            <View className='platform-icon platform-icon-orange'>🏪</View>
-            <View className='platform-text'>
-              <Text className='platform-name'>供应平台</Text>
-              <Text className='platform-desc'>食材 · 设备 · 培训 · 转让</Text>
-            </View>
-          </View>
-          <View
-            className='g2 platform-card'
-            hoverClass='hover-bg'
-            onClick={() => Taro.navigateTo({ url: '/pages/share/index' })}
-          >
-            <View className='platform-icon platform-icon-purple'>🎬</View>
-            <View className='platform-text'>
-              <Text className='platform-name'>创业分享</Text>
-              <Text className='platform-desc'>创业经验 · 学习成长</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
-      {/* 职位列表 */}
       <View className='job-list-wrap'>
-        {loading ? (
-          <Loading />
+        <View className='job-list-meta'>
+          <Text className='job-list-count'>{loading ? '正在查找职位' : `共 ${total} 个在招职位`}</Text>
+          <Text className='job-list-hint'>{selectedCity ? selectedCity : '全国'}</Text>
+        </View>
+
+        {loading && jobs.length === 0 ? (
+          <View className='job-list-state'><Loading text='正在加载职位…' /></View>
+        ) : error && jobs.length === 0 ? (
+          <Empty text={error} icon='alert'>
+            <Button
+              className='ui-button-reset state-action'
+              hoverClass='state-action-pressed'
+              onClick={() => loadJobs(1, false, currentQuery())}
+            >
+              重新加载
+            </Button>
+          </Empty>
         ) : jobs.length === 0 ? (
-          <Empty text='暂无匹配的职位' />
+          <Empty text={hasActiveFilters ? '没有找到符合条件的职位' : '当前暂无在招职位'}>
+            {hasActiveFilters ? (
+              <Button className='ui-button-reset state-action' hoverClass='state-action-pressed' onClick={clearFilters}>
+                清空搜索和筛选
+              </Button>
+            ) : null}
+          </Empty>
         ) : (
           <View>
             {jobs.map(job => (
@@ -276,27 +370,74 @@ function TalentHome() {
               />
             ))}
 
-            {/* 分页（还原网页版上一页/下一页按钮） */}
-            {totalPages > 1 && (
-              <View className='pagination'>
-                <Text
-                  className={`page-btn ${page <= 1 ? 'page-btn-disabled' : ''}`}
-                  onClick={() => page > 1 && loadData(page - 1)}
+            <View className='load-more-region'>
+              {loadingMore ? <Text className='load-more-text'>正在加载更多职位…</Text> : null}
+              {!loadingMore && loadMoreError ? (
+                <Button
+                  className='ui-button-reset load-more-button load-more-button-error'
+                  hoverClass='load-more-button-pressed'
+                  onClick={() => loadJobs(page + 1, true, currentQuery())}
                 >
-                  上一页
-                </Text>
-                <Text className='page-info'>{page} / {totalPages}</Text>
-                <Text
-                  className={`page-btn ${page >= totalPages ? 'page-btn-disabled' : ''}`}
-                  onClick={() => page < totalPages && loadData(page + 1)}
+                  加载失败，点击重试
+                </Button>
+              ) : null}
+              {!loadingMore && !loadMoreError && hasMore ? (
+                <Button
+                  className='ui-button-reset load-more-button'
+                  hoverClass='load-more-button-pressed'
+                  onClick={() => loadJobs(page + 1, true, currentQuery())}
                 >
-                  下一页
-                </Text>
+                  加载更多职位
+                </Button>
+              ) : null}
+              {!loadingMore && !loadMoreError && !hasMore ? (
+                <Text className='load-more-text'>没有更多职位了</Text>
+              ) : null}
+            </View>
+
+            <View className='secondary-services'>
+              <Text className='secondary-services-title'>更多平台服务</Text>
+              <View className='secondary-services-links'>
+                <Button
+                  className='ui-button-reset secondary-service-link'
+                  hoverClass='secondary-service-link-pressed'
+                  onClick={() => Taro.navigateTo({ url: '/pages/supply/index' })}
+                >
+                  供应平台
+                </Button>
+                <View className='secondary-service-divider' />
+                <Button
+                  className='ui-button-reset secondary-service-link'
+                  hoverClass='secondary-service-link-pressed'
+                  onClick={() => Taro.navigateTo({ url: '/pages/share/index' })}
+                >
+                  创业分享
+                </Button>
               </View>
-            )}
+            </View>
           </View>
         )}
       </View>
+
+      <BottomSheet open={sheetKind !== null} title={sheetTitle} onClose={() => setSheetKind(null)}>
+        <View className='sheet-options'>
+          {sheetOptions.map(option => {
+            const active = option.id === selectedSheetValue
+            return (
+              <Button
+                key={`${sheetKind}-${option.id || 'all'}`}
+                className={`ui-button-reset sheet-option ${active ? 'sheet-option-active' : ''}`}
+                hoverClass='sheet-option-pressed'
+                aria-label={`${option.name}${active ? '，已选择' : ''}`}
+                onClick={() => chooseSheetOption(option.id)}
+              >
+                <Text className='sheet-option-label'>{option.name}</Text>
+                {active ? <Icon name='check' size={30} color='#FF6B00' /> : null}
+              </Button>
+            )
+          })}
+        </View>
+      </BottomSheet>
     </View>
   )
 }
