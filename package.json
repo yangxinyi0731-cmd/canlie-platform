@@ -10,7 +10,8 @@
     "start:prod": "cross-env NODE_ENV=production node dist/index.js",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "db:migrate": "cd backend && npx prisma migrate deploy",
-    "db:generate": "cd backend && npx prisma generate"
+    "db:generate": "cd backend && npx prisma generate",
+    "test:client-storage-security": "node scripts/check-client-storage-security.mjs"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",

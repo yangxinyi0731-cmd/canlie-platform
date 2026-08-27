@@ -19,6 +19,17 @@ interface AuthState {
 // 所有应用相关的 storage key，logout 时全部清除
 const APP_KEYS = ['token', 'user', 'remembered_phone', 'remembered_password']
 
+const LEGACY_SENSITIVE_KEYS = ['remembered_password']
+
+export function clearLegacyCredentialStorage() {
+  for (const key of LEGACY_SENSITIVE_KEYS) {
+    try { Taro.removeStorageSync(key) } catch {}
+  }
+}
+
+// 模块随小程序启动加载时立即清除旧版本遗留的明文密码。
+clearLegacyCredentialStorage()
+
 function clearAllAppStorage() {
   for (const key of APP_KEYS) {
     try { Taro.removeStorageSync(key) } catch {}

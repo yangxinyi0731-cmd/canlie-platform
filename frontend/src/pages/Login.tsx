@@ -15,21 +15,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 显示密码 & 记住密码
+  // 显示密码 & 记住账号
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberAccount, setRememberAccount] = useState(false);
 
   // 页面加载时读取记住的账号
   useEffect(() => {
     const savedPhone = localStorage.getItem('remembered_phone');
-    const savedPassword = localStorage.getItem('remembered_password');
     if (savedPhone) {
       setPhone(savedPhone);
-      setRememberMe(true);
-    }
-    if (savedPassword) {
-      setPassword(savedPassword);
+      setRememberAccount(true);
     }
   }, []);
 
@@ -61,13 +57,11 @@ export default function Login() {
         await register(phone, password, role, name.trim());
       } else {
         await login(phone, password);
-        // 记住密码
-        if (rememberMe) {
+        // 只记住非敏感账号标识，绝不持久化密码。
+        if (rememberAccount) {
           localStorage.setItem('remembered_phone', phone);
-          localStorage.setItem('remembered_password', password);
         } else {
           localStorage.removeItem('remembered_phone');
-          localStorage.removeItem('remembered_password');
         }
       }
       // After successful auth, redirect based on role
@@ -112,7 +106,7 @@ export default function Login() {
             {isRegister ? '创建账号' : '欢迎回来'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Phone Input */}
             <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#FF6B00] focus-within:ring-1 focus-within:ring-[#FF6B00] transition-colors">
               <span className="flex items-center gap-1 px-3 py-3 text-sm text-gray-500 bg-gray-50 border-r border-gray-200 whitespace-nowrap">
@@ -233,11 +227,11 @@ export default function Login() {
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
+                    checked={rememberAccount}
+                    onChange={(e) => setRememberAccount(e.target.checked)}
                     className="w-4 h-4 text-[#FF6B00] focus:ring-[#FF6B00] rounded"
                   />
-                  <span className="text-xs text-gray-500">记住密码</span>
+                  <span className="text-xs text-gray-500">记住账号</span>
                 </label>
               </div>
             )}

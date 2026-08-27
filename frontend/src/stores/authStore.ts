@@ -20,6 +20,19 @@ const APP_KEYS = [
   'token', 'user', 'remembered_phone', 'remembered_password',
 ];
 
+const LEGACY_SENSITIVE_KEYS = ['remembered_password'];
+
+export function clearLegacyCredentialStorage() {
+  if (typeof window === 'undefined') return;
+  for (const key of LEGACY_SENSITIVE_KEYS) {
+    try { localStorage.removeItem(key); } catch {}
+    try { sessionStorage.removeItem(key); } catch {}
+  }
+}
+
+// 模块随应用启动加载时立即清除旧版本遗留的明文密码。
+clearLegacyCredentialStorage();
+
 function clearAllAppStorage() {
   for (const key of APP_KEYS) {
     try { localStorage.removeItem(key); } catch {}

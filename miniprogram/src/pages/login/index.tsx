@@ -17,11 +17,11 @@ export default function Login() {
   const [role, setRole] = useState<'TALENT' | 'ENTERPRISE'>('TALENT')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [rememberAccount, setRememberAccount] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  // 启动时读取记住的账号密码并回填（还原网页版 remembered_phone/password）
+  // 启动时只读取记住的账号；旧版明文密码由 authStore 在模块加载时清除。
   useEffect(() => {
     const t = Taro.getStorageSync('token')
     if (t && t !== 'null' && t !== 'undefined') {
@@ -29,13 +29,9 @@ export default function Login() {
       return
     }
     const savedPhone = Taro.getStorageSync('remembered_phone')
-    const savedPassword = Taro.getStorageSync('remembered_password')
     if (savedPhone) {
       setPhone(String(savedPhone))
-      setRememberMe(true)
-    }
-    if (savedPassword) {
-      setPassword(String(savedPassword))
+      setRememberAccount(true)
     }
   }, [])
 
@@ -73,13 +69,11 @@ export default function Login() {
         await register(phone, password, role, name.trim())
       } else {
         await login(phone, password)
-        // 记住密码（还原网页版）
-        if (rememberMe) {
+        // 只记住非敏感账号标识，绝不持久化密码。
+        if (rememberAccount) {
           Taro.setStorageSync('remembered_phone', phone)
-          Taro.setStorageSync('remembered_password', password)
         } else {
           Taro.removeStorageSync('remembered_phone')
-          Taro.removeStorageSync('remembered_password')
         }
       }
       // 按角色跳转（还原网页版：人才/企业进首页，管理员进后台）
@@ -186,13 +180,13 @@ export default function Login() {
             </View>
           )}
 
-          {/* 记住密码（仅登录，还原网页版 checkbox） */}
+          {/* 记住账号（仅登录，不保存密码） */}
           {mode === 'login' && (
-            <View className='remember-row' onClick={() => setRememberMe(!rememberMe)}>
-              <View className={`checkbox ${rememberMe ? 'checked' : ''}`}>
-                {rememberMe && <Icon name='check' size={24} color='#ffffff' strokeWidth={3} />}
+            <View className='remember-row' onClick={() => setRememberAccount(!rememberAccount)}>
+              <View className={`checkbox ${rememberAccount ? 'checked' : ''}`}>
+                {rememberAccount && <Icon name='check' size={24} color='#ffffff' strokeWidth={3} />}
               </View>
-              <Text className='remember-text'>记住密码</Text>
+              <Text className='remember-text'>记住账号</Text>
             </View>
           )}
 
