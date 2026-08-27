@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { prisma } from '../index.js';
 import { generateToken, authMiddleware, AuthRequest } from '../middleware/auth.js';
+import {
+  createEnvironmentResetCodeSender,
+  PasswordResetCodeService,
+} from '../security/passwordReset.js';
 
 const router = Router();
 
@@ -16,28 +20,54 @@ const authLimiter = rateLimit({
   message: { error: '尝试过于频繁，请稍后再试' },
 });
 
-// 发送验证码限流：同一手机号每分钟最多 1 次、每小时最多 5 次（防短信轰炸/骚扰）
-const codeLimiter = rateLimit({
+function requestPhone(req: { body?: unknown }): string {
+  if (!req.body || typeof req.body !== 'object' || !('phone' in req.body)) return '';
+  const phone = (req.body as { phone?: unknown }).phone;
+  return typeof phone === 'string' ? phone.trim() : '';
+}
+
+function requestIpKey(req: { ip?: string; socket: { remoteAddress?: string } }): string {
+  return ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? 'unknown');
+}
+
+// 短时限流：同一手机号或来源每分钟最多请求 1 次。
+const codeBurstLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 1,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `code-minute:${requestPhone(req) || requestIpKey(req)}`,
+  message: { error: '验证码请求过于频繁，请稍后再试' },
+});
+
+// 长时限流：同一手机号或来源每小时最多请求 5 次，防短信轰炸。
+const codeHourlyLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 小时窗口
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  // 按手机号限流；无手机号时回退到 IP（用 ipKeyGenerator 助手以兼容 IPv6）
-  keyGenerator: (req, res) => `code:${req.body?.phone || ipKeyGenerator(req, res)}`,
+  keyGenerator: (req) => `code-hour:${requestPhone(req) || requestIpKey(req)}`,
   message: { error: '验证码请求过于频繁，请稍后再试' },
 });
 
-// 内存验证码存储：Map<phone, { code, expiresAt, used }>
-// 进程重启会清空（需重新获取），可接受。生产可换 Redis。
-const codeStore = new Map<string, { code: string; expiresAt: number; used: boolean }>();
+// 密码重置尝试同时按手机号与来源限制；单个验证码内部另有 5 次失败上限。
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `reset:${requestPhone(req) || 'missing'}:${requestIpKey(req)}`,
+  message: { error: '重置尝试过于频繁，请稍后再试' },
+});
 
-// 定期清理过期验证码（每 5 分钟）
-setInterval(() => {
-  const now = Date.now();
-  for (const [k, v] of codeStore) {
-    if (v.expiresAt < now) codeStore.delete(k);
-  }
-}, 5 * 60 * 1000).unref();
+const resetDigestSecret = process.env.PASSWORD_RESET_HASH_SECRET || process.env.JWT_SECRET;
+if (!resetDigestSecret) {
+  throw new Error('JWT_SECRET or PASSWORD_RESET_HASH_SECRET is required for password reset.');
+}
+const passwordResetCodes = new PasswordResetCodeService({
+  digestSecret: resetDigestSecret,
+  sender: createEnvironmentResetCodeSender(),
+});
 
 // Register
 router.post('/register', authLimiter, async (req, res) => {
@@ -175,37 +205,61 @@ router.put('/profile', authMiddleware, async (req: AuthRequest, res) => {
   }
 });
 
-// 发送验证码（服务端生成随机码存储，不返回给客户端）
-router.post('/send-code', codeLimiter, async (req, res) => {
+// 发送一次性验证码。响应、页面和日志均不得包含验证码明文。
+router.post('/send-code', codeBurstLimiter, codeHourlyLimiter, async (req, res) => {
   try {
-    const { phone } = req.body;
-    if (!phone || !/^1\d{10}$/.test(phone)) {
+    res.set('Cache-Control', 'no-store');
+    const phone = requestPhone(req);
+    if (!/^1\d{10}$/.test(phone)) {
       return res.status(400).json({ error: '手机号格式不正确' });
     }
 
-    const user = await prisma.user.findUnique({ where: { phone } });
-    if (!user) {
-      return res.status(400).json({ error: '手机号未注册' });
+    // 未配置短信通道时对所有手机号统一返回 503，避免产生无法送达的验证码。
+    if (!passwordResetCodes.isDeliveryConfigured()) {
+      return res.status(503).json({ error: '短信服务未配置，暂时无法重置密码' });
     }
 
-    // 生成 6 位随机验证码，5 分钟有效
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    codeStore.set(phone, { code, expiresAt: Date.now() + 5 * 60 * 1000, used: false });
+    const genericResponse = {
+      success: true,
+      message: '如果该手机号已注册，验证码将通过短信发送',
+    };
+    const user = await prisma.user.findUnique({
+      where: { phone },
+      select: { id: true },
+    });
+    if (!user) {
+      // 与已注册账号使用一致的成功状态和文案，避免手机号枚举。
+      return res.status(202).json(genericResponse);
+    }
 
-    // ⚠️ 无真实短信通道，仅在服务端日志输出便于测试/调试。绝不返回给客户端。
-    console.log(`[验证码] ${phone} -> ${code}（5分钟内有效）`);
+    const issueResult = await passwordResetCodes.issue(phone);
+    if (issueResult.status === 'rate_limited') {
+      res.set('Retry-After', String(issueResult.retryAfterSeconds));
+      return res.status(429).json({ error: '验证码请求过于频繁，请稍后再试' });
+    }
+    if (issueResult.status === 'unavailable') {
+      return res.status(503).json({ error: '短信服务未配置，暂时无法重置密码' });
+    }
+    if (issueResult.status === 'delivery_failed') {
+      // 不记录手机号、验证码、供应商响应或请求体。
+      console.warn('Password reset delivery failed.');
+      return res.status(202).json(genericResponse);
+    }
 
-    res.json({ success: true, message: '验证码已发送' });
-  } catch (err) {
-    console.error('Send code error:', err);
+    return res.status(202).json(genericResponse);
+  } catch {
+    console.error('Password reset request failed.');
     res.status(500).json({ error: '发送验证码失败' });
   }
 });
 
-// 重置密码（校验服务端存储的验证码）
-router.post('/reset-password', authLimiter, async (req, res) => {
+// 重置密码：验证码验证成功即同步消费，不能重复使用。
+router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
   try {
-    const { phone, code, newPassword } = req.body;
+    res.set('Cache-Control', 'no-store');
+    const phone = requestPhone(req);
+    const code = typeof req.body?.code === 'string' ? req.body.code.trim() : '';
+    const newPassword = typeof req.body?.newPassword === 'string' ? req.body.newPassword : '';
 
     if (!phone || !code || !newPassword) {
       return res.status(400).json({ error: '请填写完整信息' });
@@ -219,9 +273,7 @@ router.post('/reset-password', authLimiter, async (req, res) => {
       return res.status(400).json({ error: '密码至少6位' });
     }
 
-    // 校验服务端存储的验证码：必须存在、未过期、未使用过
-    const entry = codeStore.get(phone);
-    if (!entry || entry.used || entry.expiresAt < Date.now() || entry.code !== code) {
+    if (!/^\d{6}$/.test(code) || !passwordResetCodes.verifyAndConsume(phone, code)) {
       return res.status(400).json({ error: '验证码错误或已过期' });
     }
 
@@ -236,13 +288,9 @@ router.post('/reset-password', authLimiter, async (req, res) => {
       data: { password: hashed },
     });
 
-    // 验证码用后即失效，防止重复使用
-    entry.used = true;
-    codeStore.delete(phone);
-
     res.json({ success: true, message: '密码已重置' });
-  } catch (err) {
-    console.error('Reset password error:', err);
+  } catch {
+    console.error('Password reset failed.');
     res.status(500).json({ error: '重置密码失败' });
   }
 });

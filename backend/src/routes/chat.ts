@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { createNotification } from './notifications.js';
+import { authorizeChatRelationship } from '../security/chatAuthorization.js';
 
 const router = Router();
 
@@ -16,6 +17,14 @@ router.get('/conversations', authMiddleware, async (req: AuthRequest, res) => {
     // Get other user info for each conversation
     const conversations = await Promise.all(
       participants.map(async (p) => {
+        // 历史参与记录不能充当授权凭证；每次读取都按当前投递/匹配关系重新校验。
+        const access = await authorizeChatRelationship(
+          prisma,
+          req.userId!,
+          p.chatWith,
+        );
+        if (!access.allowed) return null;
+
         const otherUser = await prisma.user.findUnique({
           where: { id: p.chatWith },
           select: { id: true, name: true, avatar: true, role: true },
@@ -35,9 +44,12 @@ router.get('/conversations', authMiddleware, async (req: AuthRequest, res) => {
         }
 
         let jobInfo = null;
-        if (p.jobId) {
+        // ChatParticipant.jobId 是历史缓存字段，展示时使用本次授权解析出的职位，
+        // 避免旧记录或被污染的 jobId 被当成可信上下文。
+        const conversationJobId = access.jobId;
+        if (conversationJobId) {
           jobInfo = await prisma.job.findUnique({
-            where: { id: p.jobId },
+            where: { id: conversationJobId },
             select: { id: true, title: true },
           });
         }
@@ -45,7 +57,7 @@ router.get('/conversations', authMiddleware, async (req: AuthRequest, res) => {
         return {
           id: p.id,
           chatWith: p.chatWith,
-          jobId: p.jobId,
+          jobId: conversationJobId,
           unreadCount: p.unreadCount,
           lastMessage: p.lastMessage,
           lastTime: p.lastTime,
@@ -56,7 +68,7 @@ router.get('/conversations', authMiddleware, async (req: AuthRequest, res) => {
       })
     );
 
-    res.json(conversations);
+    res.json(conversations.filter((conversation) => conversation !== null));
   } catch (err) {
     res.status(500).json({ error: '获取聊天列表失败' });
   }
@@ -66,7 +78,15 @@ router.get('/conversations', authMiddleware, async (req: AuthRequest, res) => {
 router.get('/messages/:chatWith', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const chatWith = req.params.chatWith as string;
+    if (req.query.jobId !== undefined && typeof req.query.jobId !== 'string') {
+      return res.status(400).json({ error: 'jobId 格式不正确' });
+    }
     const jobId = req.query.jobId as string | undefined;
+    const access = await authorizeChatRelationship(prisma, req.userId!, chatWith, jobId);
+    if (!access.allowed) {
+      return res.status(access.status).json({ error: access.error });
+    }
+
     const page = req.query.page as string || '1';
     const pageSize = req.query.pageSize as string || '50';
     const skip = (parseInt(page) - 1) * parseInt(pageSize);
@@ -117,17 +137,19 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
     const { receiverId, content, jobId } = req.body;
 
     // 验证必填字段
-    if (!receiverId || !content?.trim()) {
+    if (typeof receiverId !== 'string' || typeof content !== 'string' || !content.trim()) {
       return res.status(400).json({ error: '接收者和消息内容不能为空' });
     }
     if (content.length > 2000) {
       return res.status(400).json({ error: '消息内容过长' });
     }
+    if (jobId !== undefined && typeof jobId !== 'string') {
+      return res.status(400).json({ error: 'jobId 格式不正确' });
+    }
 
-    // 验证接收者是否存在
-    const receiver = await prisma.user.findUnique({ where: { id: receiverId } });
-    if (!receiver) {
-      return res.status(400).json({ error: '接收者不存在' });
+    const access = await authorizeChatRelationship(prisma, req.userId!, receiverId, jobId);
+    if (!access.allowed) {
+      return res.status(access.status).json({ error: access.error });
     }
 
     const message = await prisma.chatMessage.create({
@@ -135,7 +157,7 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
         senderId: req.userId!,
         receiverId,
         content: content.trim(),
-        jobId: jobId || null,
+        jobId: access.jobId,
       },
       include: {
         sender: { select: { id: true, name: true, avatar: true, role: true } },
@@ -150,14 +172,19 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
       if (existing) {
         await prisma.chatParticipant.update({
           where: { id: existing.id },
-          data: { lastMessage: content.trim(), lastTime: new Date(), unreadCount: uid === receiverId ? { increment: 1 } : 0 },
+          data: {
+            jobId: access.jobId,
+            lastMessage: content.trim(),
+            lastTime: new Date(),
+            unreadCount: uid === receiverId ? { increment: 1 } : 0,
+          },
         });
       } else {
         await prisma.chatParticipant.create({
           data: {
             userId: uid,
             chatWith: uid === req.userId ? receiverId : req.userId!,
-            jobId: jobId || null,
+            jobId: access.jobId,
             lastMessage: content.trim(),
             lastTime: new Date(),
             unreadCount: uid === receiverId ? 1 : 0,
@@ -173,7 +200,7 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
       'MESSAGE',
       '收到新消息',
       `${sender?.name || '用户'}：${content.length > 30 ? content.slice(0, 30) + '...' : content}`,
-      JSON.stringify({ chatWith: req.userId! })
+      JSON.stringify({ chatWith: req.userId!, jobId: access.jobId })
     );
 
     res.json(message);
@@ -187,6 +214,11 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/read/:chatWith', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const chatWith = req.params.chatWith as string;
+    const access = await authorizeChatRelationship(prisma, req.userId!, chatWith);
+    if (!access.allowed) {
+      return res.status(access.status).json({ error: access.error });
+    }
+
     await prisma.chatMessage.updateMany({
       where: { senderId: chatWith, receiverId: req.userId, read: false },
       data: { read: true },

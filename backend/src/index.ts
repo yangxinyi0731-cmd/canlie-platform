@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -56,7 +57,8 @@ app.use(helmet({
       objectSrc: ["'none'"],
       frameAncestors: ["'none'"],
       // 仅在 HTTPS 下升级不安全请求；http 部署开启会致资源加载失败
-      upgradeInsecureRequests: serveHttps ? true : null,
+      // Helmet/CSP 以空数组表示无参数指令；null 表示不发送该指令。
+      upgradeInsecureRequests: serveHttps ? [] : null,
     },
   } : false,
   crossOriginEmbedderPolicy: false,

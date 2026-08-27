@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
 import { createNotification } from './notifications.js';
+import {
+  canTransitionApplicationStatus,
+  isApplicationStatus,
+  isApplicationStatusNoop,
+} from '../security/policies.js';
 
 const router = Router();
 
@@ -357,7 +362,7 @@ router.get('/:id/applications', authMiddleware, requireRole('ENTERPRISE'), async
           // 数据最小化：仅返回简历展示字段，不返回 idNumber / phone / email /
           // maritalStatus / hasChildren / hometown / parentInfo 等敏感信息
           select: {
-            id: true, realName: true, title: true, currentCompany: true,
+            id: true, userId: true, realName: true, title: true, currentCompany: true,
             city: true, province: true, minSalary: true, maxSalary: true,
             workYears: true, education: true, starLevel: true, starLevelStr: true,
             brandEndorsement: true, avatar: true, selfIntro: true,
@@ -377,27 +382,56 @@ router.patch('/:id/applications/:appId', authMiddleware, requireRole('ENTERPRISE
   try {
     const jobId = req.params.id as string;
     const appId = req.params.appId as string;
-    const { status } = req.body; // VIEWED, CONTACTED, REJECTED, ACCEPTED
+    const status = req.body?.status;
+
+    if (!isApplicationStatus(status)) {
+      return res.status(400).json({ error: '投递状态无效' });
+    }
 
     const enterprise = await prisma.enterprise.findUnique({ where: { userId: req.userId } });
     const job = await prisma.job.findUnique({ where: { id: jobId } });
     if (!job) return res.status(404).json({ error: '职位不存在' });
     if (job.enterpriseId !== enterprise?.id) return res.status(403).json({ error: '无权操作' });
 
-    const application = await prisma.jobApplication.findUnique({
-      where: { id: appId },
+    // appId 必须确实属于 URL 指定的 jobId，不能借用自己职位的 URL 更新其他职位投递。
+    const application = await prisma.jobApplication.findFirst({
+      where: { id: appId, jobId },
       include: { talent: { select: { userId: true } } },
     });
     if (!application) return res.status(404).json({ error: '投递记录不存在' });
 
-    const updated = await prisma.jobApplication.update({
-      where: { id: appId },
+    // 相同状态是安全重试，不写库、不重复发通知。
+    if (isApplicationStatusNoop(application.status, status)) {
+      const { talent: _talent, ...currentApplication } = application;
+      return res.json(currentApplication);
+    }
+
+    // PENDING 仅能由投递创建流程设置，不能从其他状态回退。
+    if (status === 'PENDING') {
+      return res.status(400).json({ error: '投递状态不能回退为 PENDING' });
+    }
+
+    if (!canTransitionApplicationStatus(application.status, status)) {
+      return res.status(409).json({
+        error: `投递状态不能从 ${application.status} 变更为 ${status}`,
+      });
+    }
+
+    // 带旧状态条件的原子更新，避免两个管理员页面并发造成非法回退。
+    const updateResult = await prisma.jobApplication.updateMany({
+      where: { id: appId, jobId, status: application.status },
       data: { status },
     });
+    if (updateResult.count !== 1) {
+      return res.status(409).json({ error: '投递状态已变化，请刷新后重试' });
+    }
+
+    const updated = await prisma.jobApplication.findUnique({ where: { id: appId } });
 
     // 通知人才状态变更
     const statusText: Record<string, string> = {
       VIEWED: '您的简历已被查看',
+      CONTACTED: '企业正在与您沟通',
       INTERVIEWED: '企业邀请您面试',
       REJECTED: '您的申请未被通过',
       ACCEPTED: '恭喜！您的申请已通过',

@@ -4,7 +4,7 @@
   "description": "canlie weapp",
   "appid": "wx936945c203adb98a",
   "setting": {
-    "urlCheck": false,
+    "urlCheck": true,
     "es6": false,
     "enhance": false,
     "compileHotReLoad": false,

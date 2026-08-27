@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { prisma } from './index.js';
 import { createNotification } from './routes/notifications.js';
 import { verifySocketToken } from './middleware/auth.js';
+import { authorizeChatRelationship } from './security/chatAuthorization.js';
 
 const userSockets = new Map<string, string[]>();
 
@@ -9,8 +10,8 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
   let currentUserId: string | null = null;
 
   // 加入房间 - 必须验证 token（旧版"无 token 兼容"分支已移除：任何人可冒充任意用户收发消息）
-  socket.on('join', (data: { userId: string; token?: string }) => {
-    if (!data.token) {
+  socket.on('join', (data: { userId: string; token?: string } | undefined) => {
+    if (!data || typeof data.userId !== 'string' || typeof data.token !== 'string') {
       socket.emit('authError', { error: '缺少认证令牌' });
       return;
     }
@@ -36,13 +37,13 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
     jobId?: string;
   }) => {
     // 验证发送者身份
-    if (!currentUserId || currentUserId !== data.senderId) {
+    if (!data || !currentUserId || currentUserId !== data.senderId) {
       socket.emit('messageError', { error: '身份验证失败' });
       return;
     }
 
     // 验证消息内容
-    if (!data.content?.trim() || !data.receiverId) {
+    if (typeof data.content !== 'string' || typeof data.receiverId !== 'string' || !data.content.trim()) {
       socket.emit('messageError', { error: '消息内容不能为空' });
       return;
     }
@@ -51,15 +52,30 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
       socket.emit('messageError', { error: '消息内容过长' });
       return;
     }
+    if (data.jobId !== undefined && typeof data.jobId !== 'string') {
+      socket.emit('messageError', { error: 'jobId 格式不正确' });
+      return;
+    }
 
     try {
+      const access = await authorizeChatRelationship(
+        prisma,
+        data.senderId,
+        data.receiverId,
+        data.jobId,
+      );
+      if (!access.allowed) {
+        socket.emit('messageError', { error: access.error });
+        return;
+      }
+
       // 创建消息记录
       const message = await prisma.chatMessage.create({
         data: {
           senderId: data.senderId,
           receiverId: data.receiverId,
           content: data.content.trim(),
-          jobId: data.jobId || null,
+          jobId: access.jobId,
         },
         include: {
           sender: { select: { id: true, name: true } },
@@ -79,6 +95,7 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
           await prisma.chatParticipant.update({
             where: { id: existing.id },
             data: {
+              jobId: access.jobId,
               lastMessage: data.content,
               lastTime: new Date(),
               unreadCount: uid === data.receiverId ? { increment: 1 } : 0,
@@ -89,7 +106,7 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
             data: {
               userId: uid,
               chatWith,
-              jobId: data.jobId || null,
+              jobId: access.jobId,
               lastMessage: data.content,
               lastTime: new Date(),
               unreadCount: uid === data.receiverId ? 1 : 0,
@@ -105,7 +122,7 @@ export function setupSocketHandlers(io: Server, socket: Socket) {
         'MESSAGE',
         '收到新消息',
         `${sender?.name || '用户'}：${data.content.length > 30 ? data.content.slice(0, 30) + '...' : data.content}`,
-        JSON.stringify({ chatWith: data.senderId })
+        JSON.stringify({ chatWith: data.senderId, jobId: access.jobId })
       );
 
       // 确认发送成功

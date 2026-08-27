@@ -59,9 +59,10 @@ cd miniprogram && npm install && npm run build:weapp
 
 ## 小程序上线待办
 
-1. 备案域名 + HTTPS 证书（正式版强制要求）
-2. `miniprogram/src/api/index.ts` 的 BASE_URL 切换为 HTTPS 域名
-3. 小程序后台配置 request 合法域名
-4. 开发者工具上传代码 → 提交审核（招聘类目可能需要人力资源服务许可证）
+1. 准备已备案、证书有效且公网可达的 HTTPS 域名；当前 `gongchuangweilai.top` 会被阿里云未备案页拦截，不能用于正式构建
+2. 将该域名配置为微信小程序的 request/uploadFile/downloadFile 合法域名
+3. 构建前设置 `TARO_APP_API_BASE_URL=https://你的合法域名/canlie`；生产构建会拒绝 HTTP、裸 IP、localhost 和缺失配置
+4. 保持 `miniprogram/project.config.json` 的 `urlCheck: true`，并在真机关闭开发调试后验收
+5. 开发者工具上传代码 → 提交审核（招聘类目可能需要人力资源服务许可证）
 
 > 敏感信息（服务器凭据、测试账号）保存在本地 `HANDOFF.md`，已通过 .gitignore 排除在仓库之外。

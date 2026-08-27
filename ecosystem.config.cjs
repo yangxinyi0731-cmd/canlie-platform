@@ -1,3 +1,15 @@
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!jwtSecret) {
+  throw new Error(
+    'JWT_SECRET is required. Set it in the process environment before starting PM2.',
+  );
+}
+
+if (Buffer.byteLength(jwtSecret, 'utf8') < 32) {
+  throw new Error('JWT_SECRET must be at least 32 bytes long.');
+}
+
 module.exports = {
   apps: [
     {
@@ -15,8 +27,8 @@ module.exports = {
       merge_logs: true,
       env: {
         NODE_ENV: 'production',
-        // 生产环境必须设置 JWT_SECRET（强随机值），否则后端拒绝启动
-        JWT_SECRET: '0c889769d0cbe64e6a8f1b5f7362d0113a590bb8b36b308b8efe67daec2d066c71c7a58f2a45d5cddb06c02452779feb',
+        // Never commit this value. PM2 inherits it from the launch environment.
+        JWT_SECRET: jwtSecret,
       },
     },
     {

@@ -12,6 +12,6 @@ services:
       - key: DATABASE_URL
         value: file:./dev.db
       - key: JWT_SECRET
-        value: canlie-secret-key-2024
+        sync: false
       - key: PORT
         value: "10000"

@@ -1,6 +1,8 @@
-// 后端基地址。开发期连裸 IP http（微信开发者工具需勾选"不校验合法域名"）。
-// 发布前改为 HTTPS + 已备案域名，并在小程序后台配置 request 合法域名。
-export const BASE_URL = 'http://8.163.71.93'
+declare const __CANLIE_API_BASE_URL__: string
+
+// 由 Taro 构建配置注入：生产默认 HTTPS，开发默认本机服务。
+// 如需覆盖，请在构建环境设置 TARO_APP_API_BASE_URL。
+export const BASE_URL = __CANLIE_API_BASE_URL__.replace(/\/+$/, '')
 
 // API 前缀
 export const API_PREFIX = '/api'

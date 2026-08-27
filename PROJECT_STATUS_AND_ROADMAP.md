@@ -129,7 +129,7 @@
 
 - `frontend/src/pages/Login.tsx` 将 `remembered_password` 写入 `localStorage`。
 - `miniprogram/src/pages/login/index.tsx` 将同一字段写入微信本地存储。
-- 后端生成随机验证码并只写服务器日志；网页端仍在客户端硬编码校验 `123456`，两边协议不一致。
+- 旧版本曾在客户端校验固定验证码并把验证码写入日志；当前修复要求由服务端生成一次性随机码，仅保存带密钥摘要，短时有效且验证成功立即消费。
 
 **整改**
 

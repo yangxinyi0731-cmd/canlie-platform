@@ -31,7 +31,7 @@ echo  前端地址: http://localhost:5173
 echo  手机访问: http://10.22.42.178:5173
 echo         （需在同一WiFi下）
 echo.
-echo  管理员: 13800000000 / admin123
+echo  测试凭据不会显示在脚本中，请通过安全渠道获取。
 echo ========================================
 echo.
 pause

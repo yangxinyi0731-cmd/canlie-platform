@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { verificationSubmissionSchema } from '../security/policies.js';
 
 const router = Router();
 
@@ -262,7 +263,8 @@ router.put('/work-experiences/:id', authMiddleware, requireRole('TALENT'), async
     const talent = await prisma.talent.findUnique({ where: { userId: req.userId } });
     if (!talent) return res.status(400).json({ error: '人才信息不存在' });
 
-    const exp = await prisma.workExperience.findUnique({ where: { id: req.params.id } });
+    const experienceId = req.params.id as string;
+    const exp = await prisma.workExperience.findUnique({ where: { id: experienceId } });
     if (!exp || exp.talentId !== talent.id) {
       return res.status(403).json({ error: '无权修改此工作经历' });
     }
@@ -270,7 +272,7 @@ router.put('/work-experiences/:id', authMiddleware, requireRole('TALENT'), async
     const { companyName, position, startYear, startMonth, endYear, endMonth, isCurrent, description, bgRefName, bgRefTitle, bgRefPhone } = req.body;
 
     const updated = await prisma.workExperience.update({
-      where: { id: req.params.id },
+      where: { id: experienceId },
       data: {
         companyName, position, startYear, startMonth,
         endYear: isCurrent ? null : (endYear || null),
@@ -295,28 +297,53 @@ router.delete('/work-experiences/:id', authMiddleware, requireRole('TALENT'), as
     const talent = await prisma.talent.findUnique({ where: { userId: req.userId } });
     if (!talent) return res.status(400).json({ error: '人才信息不存在' });
 
-    const exp = await prisma.workExperience.findUnique({ where: { id: req.params.id } });
+    const experienceId = req.params.id as string;
+    const exp = await prisma.workExperience.findUnique({ where: { id: experienceId } });
     if (!exp || exp.talentId !== talent.id) {
       return res.status(403).json({ error: '无权删除此工作经历' });
     }
 
-    await prisma.workExperience.delete({ where: { id: req.params.id } });
+    await prisma.workExperience.delete({ where: { id: experienceId } });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: '删除工作经历失败' });
   }
 });
 
-// ========== Verification (unchanged) ==========
+// ========== Verification ==========
 
 router.post('/verification', authMiddleware, requireRole('TALENT'), async (req: AuthRequest, res) => {
   try {
-    const { type, ...data } = req.body;
+    const parsed = verificationSubmissionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: '认证材料字段不合法',
+        details: parsed.error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+        })),
+      });
+    }
+
     const talent = await prisma.talent.findUnique({ where: { userId: req.userId } });
     if (!talent) return res.status(400).json({ error: '人才信息不存在' });
 
+    const payload = parsed.data;
     const verification = await prisma.verification.create({
-      data: { talentId: talent.id, type, ...data },
+      data: {
+        talentId: talent.id,
+        status: 'PENDING',
+        type: payload.type,
+        ...(payload.type === 'REFERENCE'
+          ? {
+            refName: payload.refName,
+            refTitle: payload.refTitle,
+            refPhone: payload.refPhone,
+          }
+          : payload.type === 'CERTIFICATE'
+            ? { certFileUrl: payload.certFileUrl }
+            : { salaryFileUrl: payload.salaryFileUrl }),
+      },
     });
     res.json(verification);
   } catch (err) {
@@ -342,7 +369,7 @@ router.get('/verifications', authMiddleware, requireRole('TALENT'), async (req: 
 // ========== Public APIs ==========
 
 // Talent search (for enterprises)
-router.get('/search', authMiddleware, async (req, res) => {
+router.get('/search', authMiddleware, requireRole('ENTERPRISE', 'ADMIN'), async (req, res) => {
   try {
     const { keyword, city, province, cuisineId, businessTypeId, jobCategoryId, minSalary, maxSalary, starLevel, page = '1', pageSize = '20' } = req.query;
     const skip = (parseInt(page as string) - 1) * parseInt(pageSize as string);
