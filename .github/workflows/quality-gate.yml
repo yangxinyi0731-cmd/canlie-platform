@@ -1,0 +1,93 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - ui-v2-mobile
+      - 'bugfix/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secret-scan:
+    name: Current tree secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Scan current source with Gitleaks
+        run: >-
+          docker run --rm
+          -v "${{ github.workspace }}:/repo"
+          ghcr.io/gitleaks/gitleaks:v8.30.1
+          detect --source=/repo --no-git --redact --exit-code=1
+
+  build-and-test:
+    name: Build, test, and dependency gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            miniprogram/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate
+
+      - name: Test and build backend
+        working-directory: backend
+        run: |
+          npm run test:security
+          npm run build
+          npm audit --omit=dev --audit-level=high
+
+      - name: Install, audit, and build web client
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --omit=dev --audit-level=high
+          npm run build
+
+      - name: Install, audit, and build WeChat miniprogram
+        working-directory: miniprogram
+        env:
+          TARO_APP_API_BASE_URL: https://example.com/canlie/api
+          TARO_APP_SOCKET_URL: https://example.com/canlie
+        run: |
+          npm ci
+          npm audit --omit=dev --audit-level=high
+          npm run typecheck
+          npm run build:weapp
+
+      - name: Run repository safety gates
+        run: |
+          npm run test:client-storage-security
+          npm run test:test-data-safety
+          npm run test:miniprogram-v2
+
+      - name: Lint the design contract
+        run: npx -p @google/design.md@0.4.0 designmd lint DESIGN.md
