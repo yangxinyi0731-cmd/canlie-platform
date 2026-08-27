@@ -2,7 +2,6 @@ import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import { promises as fsPromises } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { Router } from 'express';
 import multer from 'multer';
 import { prisma } from '../index.js';
@@ -16,9 +15,9 @@ import {
   getUploadKindMimeType,
   isUploadPurpose,
 } from '../security/privacy.js';
+import { runtimeStorage } from '../config/storage.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadDir = path.join(__dirname, '../../uploads');
+const uploadDir = runtimeStorage.uploadDir;
 const MAX_STANDARD_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_VIDEO_FILE_SIZE = 100 * 1024 * 1024;
 

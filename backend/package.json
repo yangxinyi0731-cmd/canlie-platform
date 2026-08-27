@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "test:security": "tsx --test test/security-policies.test.ts test/password-reset.test.ts test/privacy-media-policies.test.ts test/billing-safety.test.ts",
+    "test:security": "tsx --test test/security-policies.test.ts test/password-reset.test.ts test/privacy-media-policies.test.ts test/billing-safety.test.ts test/storage-safety.test.ts",
     "start": "node dist/index.js",
-    "start:prod": "cross-env NODE_ENV=production node dist/index.js",
+    "start:prod": "node scripts/start-production.mjs",
+    "db:prepare": "node scripts/prepare-production-storage.mjs",
+    "data:backup": "node scripts/backup-data.mjs",
+    "data:verify-backup": "node scripts/verify-backup.mjs",
+    "data:restore": "node scripts/restore-data.mjs",
     "db:push": "prisma db push",
     "db:seed": "tsx src/seed.ts",
     "data:cleanup-demo": "tsx src/cleanupDemoData.ts"

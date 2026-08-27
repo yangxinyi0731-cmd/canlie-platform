@@ -22,6 +22,7 @@ import notificationRoutes from './routes/notifications.js';
 import supplyRoutes from './routes/supply.js';
 import shareRoutes from './routes/shares.js';
 import { setupSocketHandlers } from './socket.js';
+import { startBackupScheduler } from './backupScheduler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -166,12 +167,14 @@ const serverInstance = server.listen(PORT, () => {
     console.log(`📦 Serving frontend from ${frontendDistPath}`);
   }
 });
+const stopBackupScheduler = startBackupScheduler();
 
 // 优雅关闭：PM2 重启 / 系统关机时先停止接收新连接，处理完存量再退出
 let shuttingDown = false;
 async function gracefulShutdown(signal: string) {
   if (shuttingDown) return;
   shuttingDown = true;
+  stopBackupScheduler();
   console.log(`\n${signal} received, shutting down gracefully...`);
   // 1) 关闭 Socket.IO（断开所有客户端连接）
   io.close();
