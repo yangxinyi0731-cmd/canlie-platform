@@ -1,16 +1,49 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
 
 const prisma = new PrismaClient();
 
+const MIN_SEED_PASSWORD_BYTES = 16;
+
+function resolveSeedPassword(environmentName: string): string {
+  const configuredPassword = process.env[environmentName];
+
+  if (configuredPassword) {
+    if (Buffer.byteLength(configuredPassword, 'utf8') < MIN_SEED_PASSWORD_BYTES) {
+      throw new Error(
+        `${environmentName} must be at least ${MIN_SEED_PASSWORD_BYTES} bytes long.`,
+      );
+    }
+    return configuredPassword;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`${environmentName} is required when seeding production data.`);
+  }
+
+  console.warn(
+    `⚠️ ${environmentName} is not set; using an unlogged random credential for this seed run.`,
+  );
+  return randomBytes(24).toString('base64url');
+}
+
 async function main() {
+  // Resolve every required credential before the first database write so a
+  // production seed cannot fail halfway through because one variable is absent.
+  const [adminPassword, enterprisePassword, talentPassword] = await Promise.all([
+    bcrypt.hash(resolveSeedPassword('SEED_ADMIN_PASSWORD'), 12),
+    bcrypt.hash(resolveSeedPassword('SEED_ENTERPRISE_PASSWORD'), 12),
+    bcrypt.hash(resolveSeedPassword('SEED_TALENT_PASSWORD'), 12),
+  ]);
+
   console.log('🌱 Seeding database...');
 
   // Create admin user
-  const adminPassword = await bcrypt.hash('admin123', 10);
   await prisma.user.upsert({
     where: { phone: '13800000000' },
-    update: {},
+    update: { password: adminPassword },
     create: {
       phone: '13800000000',
       password: adminPassword,
@@ -223,11 +256,9 @@ async function main() {
   }
 
   // ========== 演示企业用户 ==========
-  const enterprisePassword = await bcrypt.hash('enterprise123', 10);
-
   const enterpriseUser = await prisma.user.upsert({
     where: { phone: '13800000001' },
-    update: {},
+    update: { password: enterprisePassword },
     create: {
       phone: '13800000001',
       password: enterprisePassword,
@@ -257,7 +288,7 @@ async function main() {
 
   const enterprise2User = await prisma.user.upsert({
     where: { phone: '13800000002' },
-    update: {},
+    update: { password: enterprisePassword },
     create: {
       phone: '13800000002',
       password: enterprisePassword,
@@ -288,7 +319,7 @@ async function main() {
   // 第三个企业 - 筹备阶段
   const enterprise3User = await prisma.user.upsert({
     where: { phone: '13800000003' },
-    update: {},
+    update: { password: enterprisePassword },
     create: {
       phone: '13800000003',
       password: enterprisePassword,
@@ -430,8 +461,6 @@ async function main() {
   console.log(`✅ ${jobs.length}个职位创建完成`);
 
   // ========== 演示人才用户 ==========
-  const talentPassword = await bcrypt.hash('talent123', 10);
-
   const talentsData = [
     {
       phone: '13900000001',
@@ -735,7 +764,7 @@ async function main() {
 
   console.log('🎉 Seed completed!');
   console.log('');
-  console.log('📋 测试账号密码见 .env 或项目文档（不在日志打印明文凭证）');
+  console.log('📋 Seed credentials were not printed; distribute configured credentials securely.');
 }
 
 main()

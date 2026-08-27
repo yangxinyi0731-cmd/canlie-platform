@@ -6,7 +6,7 @@ import NavBar from '../../components/NavBar'
 import Icon from '../../components/Icon'
 import './index.scss'
 
-// 三步重置密码（1 手机号 → 2 验证码 → 3 新密码，还原网页版 ResetPassword.tsx）
+// 三步重置密码：验证码只在最终提交时由服务端验证并立即消费。
 export default function ResetPassword() {
   const [step, setStep] = useState(1)
   const [phone, setPhone] = useState('')
@@ -24,9 +24,8 @@ export default function ResetPassword() {
     setError('')
     setLoading(true)
     try {
-      const res = await api.post('/auth/send-code', { phone })
-      // 后端安全策略：验证码仅打印在服务器日志（res.data.message 提示）
-      setSuccess((res.data as any)?.message || '验证码已发送')
+      await api.post('/auth/send-code', { phone })
+      setSuccess('如果该手机号已注册，验证码将通过短信发送')
       setStep(2)
     } catch (err: any) {
       setError(err?.message || '发送验证码失败')
@@ -35,9 +34,9 @@ export default function ResetPassword() {
     }
   }
 
-  const handleVerifyCode = () => {
-    if (!code.trim()) {
-      setError('请输入验证码')
+  const handleContinue = () => {
+    if (!/^\d{6}$/.test(code)) {
+      setError('请输入6位验证码')
       return
     }
     setError('')
@@ -112,7 +111,7 @@ export default function ResetPassword() {
         {/* Step 2: 验证码 */}
         {step === 2 && (
           <View>
-            <Text className='rp-hint'>请输入收到的验证码（验证码已发送至服务器日志）</Text>
+            <Text className='rp-hint'>请输入短信收到的验证码</Text>
             <View className='rp-field'>
               <Input
                 className='rp-input rp-code-input'
@@ -126,9 +125,9 @@ export default function ResetPassword() {
             </View>
             <View
               className={`rp-btn ${code.length !== 6 ? 'rp-btn-disabled' : ''}`}
-              onClick={() => code.length === 6 && handleVerifyCode()}
+              onClick={() => code.length === 6 && handleContinue()}
             >
-              <Text className='rp-btn-text'>验证</Text>
+              <Text className='rp-btn-text'>下一步</Text>
             </View>
             <View className='rp-reget' onClick={() => setStep(1)}>
               <Text className='rp-reget-text'>重新获取验证码</Text>

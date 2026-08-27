@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth.js';
+import { isVerificationReviewStatus } from '../security/policies.js';
 
 const router = Router();
 
@@ -85,7 +86,7 @@ router.put('/talents/:id/star', async (req, res) => {
 // Verify enterprise
 router.put('/enterprises/:id/verify', async (req, res) => {
   try {
-    const { status } = req.body;
+    const status = req.body?.status;
     const enterprise = await prisma.enterprise.update({
       where: { id: req.params.id },
       data: { status, licenseVerified: status === 'APPROVED' },
@@ -133,8 +134,13 @@ router.get('/talents/:id/detail', async (req, res) => {
 router.put('/verifications/:id', async (req, res) => {
   try {
     const { status } = req.body;
+    if (!isVerificationReviewStatus(status)) {
+      return res.status(400).json({ error: '认证审核状态无效' });
+    }
+
+    const verificationId = req.params.id as string;
     const verification = await prisma.verification.update({
-      where: { id: req.params.id },
+      where: { id: verificationId },
       data: { status },
     });
     res.json(verification);

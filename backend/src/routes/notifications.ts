@@ -33,8 +33,13 @@ router.get('/unread-count', authMiddleware, async (req: AuthRequest, res) => {
 // 标记单条通知已读
 router.patch('/:id/read', authMiddleware, async (req: AuthRequest, res) => {
   try {
+    const { id } = req.params;
+    if (typeof id !== 'string') {
+      return res.status(400).json({ error: '通知 ID 格式不正确' });
+    }
+
     const notification = await prisma.notification.update({
-      where: { id: req.params.id },
+      where: { id },
       data: { read: true },
     });
     res.json(notification);

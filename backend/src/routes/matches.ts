@@ -1,6 +1,12 @@
 import { Router } from 'express';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
+import {
+  buildStaleMatchCleanupWhere,
+  canManageJob,
+  hasMatchDetailBusinessRelation,
+} from '../security/policies.js';
 
 const router = Router();
 
@@ -425,12 +431,14 @@ function calculateComprehensiveMatch(job: any, talent: any, talentWorkExps: any[
 router.get('/job/:jobId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const jobId = req.params.jobId as string;
-    const job = await prisma.job.findUnique({ where: { id: jobId } });
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: { enterprise: { select: { userId: true } } },
+    });
     if (!job) return res.status(404).json({ error: '职位不存在' });
 
-    const enterprise = await prisma.enterprise.findUnique({ where: { userId: req.userId } });
-    if (!enterprise || job.enterpriseId !== enterprise.id) {
-      if (req.userRole !== 'ADMIN') return res.status(403).json({ error: '权限不足' });
+    if (!canManageJob(req.userId, req.userRole, job.enterprise.userId)) {
+      return res.status(403).json({ error: '无权查看该职位的匹配结果' });
     }
 
     const matches = await prisma.match.findMany({
@@ -439,7 +447,7 @@ router.get('/job/:jobId', authMiddleware, async (req: AuthRequest, res) => {
       include: {
         talent: {
           select: {
-            id: true, realName: true, title: true, currentCompany: true, city: true, province: true,
+            id: true, userId: true, realName: true, title: true, currentCompany: true, city: true, province: true,
             minSalary: true, maxSalary: true, workYears: true, education: true,
             starLevel: true, starLevelStr: true, brandEndorsement: true, headBrandExp: true,
             projectExp: true, avatar: true, cuisineIds: true, businessTypeIds: true,
@@ -461,6 +469,9 @@ router.get('/job/:jobId', authMiddleware, async (req: AuthRequest, res) => {
 // 获取人才的匹配职位
 router.get('/talent', authMiddleware, async (req: AuthRequest, res) => {
   try {
+    if (req.userRole !== 'TALENT') {
+      return res.status(403).json({ error: '仅人才账号可查看个人匹配职位' });
+    }
     const talent = await prisma.talent.findUnique({ where: { userId: req.userId } });
     if (!talent) return res.status(400).json({ error: '人才信息不存在' });
 
@@ -494,10 +505,17 @@ router.get('/talent', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/run/:jobId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const jobId = req.params.jobId as string;
-    const job = await prisma.job.findUnique({ where: { id: jobId } });
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: { enterprise: true },
+    });
     if (!job) return res.status(404).json({ error: '职位不存在' });
 
-    const enterprise = await prisma.enterprise.findUnique({ where: { id: job.enterpriseId } });
+    if (!canManageJob(req.userId, req.userRole, job.enterprise.userId)) {
+      return res.status(403).json({ error: '仅职位所属企业或管理员可运行匹配' });
+    }
+
+    const enterprise = job.enterprise;
 
     // 获取所有活跃人才及其工作经历
     const talents = await prisma.talent.findMany({
@@ -505,8 +523,7 @@ router.post('/run/:jobId', authMiddleware, async (req: AuthRequest, res) => {
       include: { workExperiences: true },
     });
 
-    let matchedCount = 0;
-    const matchResults = [];
+    const matchResults: Prisma.MatchUncheckedCreateInput[] = [];
 
     for (const talent of talents) {
       const result = calculateComprehensiveMatch(job, talent, talent.workExperiences, enterprise);
@@ -535,21 +552,39 @@ router.post('/run/:jobId', authMiddleware, async (req: AuthRequest, res) => {
     }
 
     // 按总分排序
-    matchResults.sort((a, b) => b.totalScore - a.totalScore);
+    matchResults.sort((a, b) => Number(b.totalScore ?? 0) - Number(a.totalScore ?? 0));
 
-    // Upsert 匹配结果
-    for (const m of matchResults) {
-      await prisma.match.upsert({
-        where: { jobId_talentId: { jobId: m.jobId, talentId: m.talentId } },
-        update: m,
-        create: m,
+    const retainedTalentIds = matchResults.map((match) => match.talentId);
+
+    // 清理和写入必须处于同一事务：没有通过本轮硬筛（包括已停用）的人才，
+    // 其旧 Match 不再保留，也不能继续作为聊天授权凭证。
+    const staleMatchCount = await prisma.$transaction(async (tx) => {
+      const cleanup = await tx.match.deleteMany({
+        where: buildStaleMatchCleanupWhere(jobId, retainedTalentIds),
       });
-      matchedCount++;
-    }
+
+      for (const match of matchResults) {
+        await tx.match.upsert({
+          where: {
+            jobId_talentId: {
+              jobId: match.jobId,
+              talentId: match.talentId,
+            },
+          },
+          update: match,
+          create: match,
+        });
+      }
+
+      return cleanup.count;
+    });
+
+    const matchedCount = matchResults.length;
 
     res.json({
       matched: matchedCount,
       total: talents.length,
+      removedStale: staleMatchCount,
       message: `匹配完成：${talents.length} 位人才中，${matchedCount} 位通过硬性筛选`,
     });
   } catch (err) {
@@ -565,8 +600,9 @@ router.post('/evaluate-enterprise/:enterpriseId', authMiddleware, async (req: Au
   try {
     if (req.userRole !== 'ADMIN') return res.status(403).json({ error: '仅管理员可操作' });
 
+    const enterpriseId = req.params.enterpriseId as string;
     const enterprise = await prisma.enterprise.findUnique({
-      where: { id: req.params.enterpriseId },
+      where: { id: enterpriseId },
       include: { jobs: { where: { status: 'ACTIVE' } }, subscriptions: { where: { status: 'ACTIVE' } } },
     });
     if (!enterprise) return res.status(404).json({ error: '企业不存在' });
@@ -616,8 +652,9 @@ router.post('/evaluate-talent/:talentId', authMiddleware, async (req: AuthReques
   try {
     if (req.userRole !== 'ADMIN') return res.status(403).json({ error: '仅管理员可操作' });
 
+    const talentId = req.params.talentId as string;
     const talent = await prisma.talent.findUnique({
-      where: { id: req.params.talentId },
+      where: { id: talentId },
       include: { workExperiences: true },
     });
     if (!talent) return res.status(404).json({ error: '人才不存在' });
@@ -663,16 +700,41 @@ router.post('/evaluate-all-talents', authMiddleware, async (req: AuthRequest, re
 // 获取匹配详情（包含所有维度的分解）
 router.get('/detail/:jobId/:talentId', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const { jobId, talentId } = req.params;
-    const job = await prisma.job.findUnique({ where: { id: jobId } });
+    const jobId = req.params.jobId as string;
+    const talentId = req.params.talentId as string;
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      include: { enterprise: true },
+    });
+    if (!job) return res.status(404).json({ error: '数据不存在' });
+    if (!canManageJob(req.userId, req.userRole, job.enterprise.userId)) {
+      return res.status(403).json({ error: '无权查看该职位的匹配详情' });
+    }
+
+    if (req.userRole !== 'ADMIN') {
+      const [hardFilterMatch, application] = await Promise.all([
+        prisma.match.findFirst({
+          where: { jobId, talentId, hardFilterPassed: true },
+          select: { id: true },
+        }),
+        prisma.jobApplication.findUnique({
+          where: { jobId_talentId: { jobId, talentId } },
+          select: { id: true },
+        }),
+      ]);
+
+      if (!hasMatchDetailBusinessRelation(Boolean(hardFilterMatch), Boolean(application))) {
+        return res.status(403).json({ error: '该人才与此职位不存在可查看的匹配或投递关系' });
+      }
+    }
+
     const talent = await prisma.talent.findUnique({
       where: { id: talentId },
       include: { workExperiences: true },
     });
-    if (!job || !talent) return res.status(404).json({ error: '数据不存在' });
+    if (!talent) return res.status(404).json({ error: '数据不存在' });
 
-    const enterprise = await prisma.enterprise.findUnique({ where: { id: job.enterpriseId } });
-    const result = calculateComprehensiveMatch(job, talent, talent.workExperiences, enterprise);
+    const result = calculateComprehensiveMatch(job, talent, talent.workExperiences, job.enterprise);
 
     res.json({
       jobId: job.id,

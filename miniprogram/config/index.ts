@@ -2,9 +2,27 @@ import { defineConfig } from '@tarojs/cli'
 import devConfig from './dev'
 import prodConfig from './prod'
 import path from 'path'
+import { isIP } from 'node:net'
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig(async (merge) => {
+  const configuredApiBaseUrl = process.env.TARO_APP_API_BASE_URL?.trim()
+  if (process.env.NODE_ENV === 'production' && !configuredApiBaseUrl) {
+    throw new Error('TARO_APP_API_BASE_URL is required for production mini program builds')
+  }
+
+  const apiBaseUrl = (configuredApiBaseUrl || 'http://127.0.0.1:3001').replace(/\/+$/, '')
+  if (process.env.NODE_ENV === 'production') {
+    const apiUrl = new URL(apiBaseUrl)
+    if (
+      apiUrl.protocol !== 'https:'
+      || isIP(apiUrl.hostname) !== 0
+      || apiUrl.hostname === 'localhost'
+    ) {
+      throw new Error('Production mini program API URL must use an HTTPS domain name')
+    }
+  }
+
   const baseConfig = {
     projectName: 'miniprogram',
     date: '2026-8-20',
@@ -17,7 +35,9 @@ export default defineConfig(async (merge) => {
     sourceRoot: 'src',
     outputRoot: 'dist',
     plugins: [],
-    defineConstants: {},
+    defineConstants: {
+      __CANLIE_API_BASE_URL__: JSON.stringify(apiBaseUrl)
+    },
     copy: {
       patterns: [],
       options: {}

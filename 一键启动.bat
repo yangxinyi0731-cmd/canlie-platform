@@ -82,9 +82,7 @@ echo  电脑访问: http://localhost:5173
 echo  手机访问: http://%LOCAL_IP%:5173
 echo         （需在同一WiFi下）
 echo.
-echo  管理员: 13800000000 / admin123
-echo  企业:   13800000001 / enterprise123
-echo  人才:   13900000001 / talent123
+echo  测试凭据不会显示在脚本中，请通过安全渠道获取。
 echo ========================================
 echo.
 echo 按任意键打开浏览器...

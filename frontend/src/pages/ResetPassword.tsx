@@ -22,8 +22,8 @@ export default function ResetPassword() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post('/auth/send-code', { phone });
-      setSuccess(`验证码已发送：${res.data.code}`);
+      await api.post('/auth/send-code', { phone });
+      setSuccess('如果该手机号已注册，验证码将通过短信发送');
       setStep(2);
     } catch (err: any) {
       setError(err.response?.data?.error || '发送验证码失败');
@@ -32,20 +32,11 @@ export default function ResetPassword() {
     }
   };
 
-  const handleVerifyCode = async () => {
-    if (!code.trim()) {
-      setError('请输入验证码');
-      return;
-    }
-    if (code !== '123456') {
-      setError('验证码错误');
-      return;
-    }
-    setError('');
-    setStep(3);
-  };
-
   const handleResetPassword = async () => {
+    if (!/^\d{6}$/.test(code)) {
+      setError('请输入6位验证码');
+      return;
+    }
     if (newPassword.length < 6) {
       setError('密码至少6位');
       return;
@@ -124,10 +115,10 @@ export default function ResetPassword() {
           </div>
         )}
 
-        {/* Step 2: Code */}
+        {/* Step 2: Code and new password; the server verifies and consumes the code. */}
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 mb-6">请输入收到的验证码（测试验证码：123456）</p>
+            <p className="text-sm text-gray-500 mb-6">请输入短信收到的验证码并设置新密码</p>
             <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#FF6B00] focus-within:ring-1 focus-within:ring-[#FF6B00]">
               <input
                 type="text"
@@ -138,26 +129,6 @@ export default function ResetPassword() {
                 className="flex-1 px-4 py-3 text-sm outline-none bg-transparent text-center text-xl tracking-widest"
               />
             </div>
-            <button
-              onClick={handleVerifyCode}
-              disabled={code.length !== 6}
-              className="w-full py-3 bg-[#FF6B00] text-white rounded-xl font-medium disabled:opacity-50"
-            >
-              验证
-            </button>
-            <button
-              onClick={() => setStep(1)}
-              className="w-full py-3 text-gray-500 text-sm"
-            >
-              重新获取验证码
-            </button>
-          </div>
-        )}
-
-        {/* Step 3: New Password */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500 mb-6">请设置新密码</p>
             <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#FF6B00] focus-within:ring-1 focus-within:ring-[#FF6B00]">
               <span className="flex items-center px-3 py-3 text-gray-400 bg-gray-50 border-r border-gray-200">
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -175,10 +146,16 @@ export default function ResetPassword() {
             </div>
             <button
               onClick={handleResetPassword}
-              disabled={loading || newPassword.length < 6}
+              disabled={loading || code.length !== 6 || newPassword.length < 6}
               className="w-full py-3 bg-[#FF6B00] text-white rounded-xl font-medium disabled:opacity-50"
             >
               {loading ? '重置中...' : '确认重置'}
+            </button>
+            <button
+              onClick={() => setStep(1)}
+              className="w-full py-3 text-gray-500 text-sm"
+            >
+              重新获取验证码
             </button>
           </div>
         )}
