@@ -400,7 +400,7 @@ export default function EditEnterpriseProfile() {
         {/* 企业简介 */}
         <View className='eep-card'>
           <Text className='eep-card-title'>企业简介</Text>
-          <Textarea className='eep-textarea' value={description} placeholder='请简要介绍企业背景、主营业务、企业文化等...' placeholderClass='eep-placeholder' maxlength={2000} onInput={(e) => setDescription(e.detail.value)} />
+          <Textarea className='eep-textarea resize-none' value={description} placeholder='请简要介绍企业背景、主营业务、企业文化等...' placeholderClass='eep-placeholder' maxlength={2000} onInput={(e) => setDescription(e.detail.value)} />
         </View>
 
         {/* AI 企业画像 */}
@@ -409,15 +409,15 @@ export default function EditEnterpriseProfile() {
           <Text className='eep-hint'>完善以下信息可大幅提升 AI 匹配与星级评估准确度</Text>
           <View className='eep-field'>
             <Text className='eep-label'>商业模式</Text>
-            <Textarea className='eep-textarea short' value={businessModelDescription} placeholder='如：直营连锁+加盟，主打品质湘菜中高端市场...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setBusinessModelDescription(e.detail.value)} />
+            <Textarea className='eep-textarea short resize-none' value={businessModelDescription} placeholder='如：直营连锁+加盟，主打品质湘菜中高端市场...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setBusinessModelDescription(e.detail.value)} />
           </View>
           <View className='eep-field'>
             <Text className='eep-label'>发展规划</Text>
-            <Textarea className='eep-textarea short' value={developmentPlan} placeholder='如：未来3年目标开设50家门店，布局华东市场...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setDevelopmentPlan(e.detail.value)} />
+            <Textarea className='eep-textarea short resize-none' value={developmentPlan} placeholder='如：未来3年目标开设50家门店，布局华东市场...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setDevelopmentPlan(e.detail.value)} />
           </View>
           <View className='eep-field'>
             <Text className='eep-label'>股东结构</Text>
-            <Textarea className='eep-textarea short' value={shareholderInfo} placeholder='如：创始人持股60%，核心团队持股40%...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setShareholderInfo(e.detail.value)} />
+            <Textarea className='eep-textarea short resize-none' value={shareholderInfo} placeholder='如：创始人持股60%，核心团队持股40%...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setShareholderInfo(e.detail.value)} />
           </View>
           <View className='eep-field'>
             <Text className='eep-label'>主要发展市场</Text>
@@ -425,15 +425,15 @@ export default function EditEnterpriseProfile() {
           </View>
           <View className='eep-field'>
             <Text className='eep-label'>福利待遇</Text>
-            <Textarea className='eep-textarea short' value={welfareBenefits} placeholder='如：五险一金、包吃住、年终奖、股权激励...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setWelfareBenefits(e.detail.value)} />
+            <Textarea className='eep-textarea short resize-none' value={welfareBenefits} placeholder='如：五险一金、包吃住、年终奖、股权激励...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setWelfareBenefits(e.detail.value)} />
           </View>
           <View className='eep-field'>
             <Text className='eep-label'>经营现状</Text>
-            <Textarea className='eep-textarea short' value={currentStatus} placeholder='如：现有8家门店，单店日均营业额3-5万，经营稳定盈利...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setCurrentStatus(e.detail.value)} />
+            <Textarea className='eep-textarea short resize-none' value={currentStatus} placeholder='如：现有8家门店，单店日均营业额3-5万，经营稳定盈利...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setCurrentStatus(e.detail.value)} />
           </View>
           <View className='eep-field'>
             <Text className='eep-label'>老板个人情况</Text>
-            <Textarea className='eep-textarea short' value={bossInfo} placeholder='如：创始人深耕餐饮20年，为人务实，重视人才...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setBossInfo(e.detail.value)} />
+            <Textarea className='eep-textarea short resize-none' value={bossInfo} placeholder='如：创始人深耕餐饮20年，为人务实，重视人才...' placeholderClass='eep-placeholder' maxlength={500} onInput={(e) => setBossInfo(e.detail.value)} />
           </View>
           {/* 投资入股开关 */}
           <View className='eep-checkbox-row' onClick={() => setEquityOpportunity(!equityOpportunity)}>
@@ -450,7 +450,7 @@ export default function EditEnterpriseProfile() {
         {/* 备注 */}
         <View className='eep-card'>
           <Text className='eep-card-title'>备注信息</Text>
-          <Textarea className='eep-textarea' value={notes} placeholder='如：本企业招聘酒店总经理、星级酒店总厨等特殊职位...' placeholderClass='eep-placeholder' maxlength={1000} onInput={(e) => setNotes(e.detail.value)} />
+          <Textarea className='eep-textarea resize-none' value={notes} placeholder='如：本企业招聘酒店总经理、星级酒店总厨等特殊职位...' placeholderClass='eep-placeholder' maxlength={1000} onInput={(e) => setNotes(e.detail.value)} />
         </View>
 
         {/* 联系方式 */}

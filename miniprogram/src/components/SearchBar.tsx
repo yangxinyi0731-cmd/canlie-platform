@@ -22,7 +22,7 @@ export default function SearchBar({
   return (
     <View className='search-bar'>
       <View className='search-bar-icon' aria-hidden>
-        <Icon name='search' size={32} color='#86909C' />
+        <Icon name='search' size={32} color='#5F6B7A' />
       </View>
       <Input
         className='search-bar-input'
@@ -43,7 +43,7 @@ export default function SearchBar({
             aria-label='清空搜索'
             onClick={onClear}
           >
-            <Icon name='x' size={28} color='#86909C' />
+            <Icon name='x' size={28} color='#5F6B7A' />
           </Button>
         ) : null}
       </View>

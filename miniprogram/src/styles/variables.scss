@@ -3,19 +3,19 @@
 // 换算规则：网页 1px = 2rpx（Taro designWidth 750）。
 // 此文件通过 config/index.ts 的 sass.resource 全局注入所有 scss。
 
-$brand-primary: #FF6B00;
-$brand-primary-pressed: #E85F00;
+$brand-primary: #C2410C;
+$brand-primary-pressed: #9A3412;
 $brand-primary-soft: #FFF3E8;
 
 $color-page: #F7F8FA;
 $color-surface: #FFFFFF;
 $color-text-primary: #1F2329;
 $color-text-secondary: #4E5969;
-$color-text-muted: #86909C;
+$color-text-muted: #5F6B7A;
 $color-border: #E5E6EB;
-$color-success: #00A870;
+$color-success: #047857;
 $color-warning: #F59E0B;
-$color-danger: #E5484D;
+$color-danger: #B91C1C;
 
 $radius-control: 16rpx;
 $radius-card: 24rpx;
@@ -32,8 +32,8 @@ $z-sheet: 700;
 // ========== V1 兼容别名 ==========
 // 旧页面可继续使用原变量；触达的 V2 页面优先消费上面的语义变量。
 $primary: $brand-primary;
-$primary-light: #FF8C38;
-$primary-dark: #E06000;
+$primary-light: #EA580C;
+$primary-dark: $brand-primary-pressed;
 
 // Tailwind 色板（网页版使用的实际色值）
 $orange-50: #FFF7ED;

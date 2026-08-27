@@ -91,7 +91,7 @@ export default function JobCard({ job, cuisineMap = {}, bizTypeMap = {}, onClick
 
       <View className='job-card-meta'>
         <View className='job-card-location'>
-          <Icon name='map-pin' size={24} color='#86909C' />
+          <Icon name='map-pin' size={24} color='#5F6B7A' />
           <Text className='job-card-meta-text'>{location}</Text>
         </View>
         <Text className='job-card-meta-dot'>·</Text>

@@ -9,6 +9,6 @@ export const API_PREFIX = '/api'
 
 // 主色等品牌常量
 export const THEME = {
-  primary: '#FF6B00',
-  primaryLight: '#FF8C38',
+  primary: '#C2410C',
+  primaryLight: '#EA580C',
 }

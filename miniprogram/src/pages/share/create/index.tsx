@@ -137,7 +137,7 @@ export default function ShareCreate() {
             onInput={(e) => setTitle(e.detail.value)}
           />
           <Textarea
-            className='sc-textarea'
+            className='sc-textarea resize-none'
             value={content}
             placeholder='分享你的故事、经验、干货内容...'
             placeholderClass='sc-placeholder'

@@ -26,7 +26,7 @@ export default function FilterBar({ items, onSelect }: FilterBarProps) {
             onClick={() => onSelect(item.key)}
           >
             <Text className='filter-bar-label'>{item.label}</Text>
-            <Icon name='chevron-down' size={24} color={item.active ? '#FF6B00' : '#4E5969'} />
+            <Icon name='chevron-down' size={24} color={item.active ? '#C2410C' : '#4E5969'} />
           </Button>
         ))}
       </View>

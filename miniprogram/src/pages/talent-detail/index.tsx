@@ -180,7 +180,7 @@ export default function TalentDetail() {
         {workExperiences.length > 0 ? (
           <View className='td-card'>
             <View className='td-section-title-row'>
-              <Icon name='calendar' size={32} color='#FF6B00' />
+              <Icon name='calendar' size={32} color='#C2410C' />
               <Text className='td-section-title'>工作经历</Text>
             </View>
             <View>
@@ -249,7 +249,7 @@ export default function TalentDetail() {
         {/* 合伙开放提示（还原网页版橙底卡） */}
         {talent.acceptPartner ? (
           <View className='td-partner-card'>
-            <Icon name='users' size={48} color='#FF6B00' />
+            <Icon name='users' size={48} color='#C2410C' />
             <View className='td-partner-text'>
               <Text className='td-partner-title'>接受合伙/投资机会</Text>
               <Text className='td-partner-sub'>该人才对合伙或投资机会持开放态度</Text>

@@ -717,7 +717,7 @@ export default function EditTalentProfile() {
               ) : null}
               <View className='etp-field'>
                 <Text className='etp-label'>工作描述</Text>
-                <Textarea className='etp-textarea short' value={workExpForm.description} placeholder='在此公司的职责和成就...' placeholderClass='etp-placeholder' maxlength={1000} onInput={(e) => setWorkExpForm(prev => ({ ...prev, description: e.detail.value }))} />
+                <Textarea className='etp-textarea short resize-none' value={workExpForm.description} placeholder='在此公司的职责和成就...' placeholderClass='etp-placeholder' maxlength={1000} onInput={(e) => setWorkExpForm(prev => ({ ...prev, description: e.detail.value }))} />
               </View>
 
               {/* 背景调查（仅平台可见） */}
@@ -802,19 +802,19 @@ export default function EditTalentProfile() {
           <Text className='etp-card-title'>品牌经历与自我介绍</Text>
           <View className='etp-field'>
             <Text className='etp-label'>品牌背书</Text>
-            <Textarea className='etp-textarea short' value={brandEndorsement} placeholder='如：曾任米其林餐厅主厨、黑珍珠三钻餐厅总厨...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setBrandEndorsement(e.detail.value)} />
+            <Textarea className='etp-textarea short resize-none' value={brandEndorsement} placeholder='如：曾任米其林餐厅主厨、黑珍珠三钻餐厅总厨...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setBrandEndorsement(e.detail.value)} />
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>头部品牌经历</Text>
-            <Textarea className='etp-textarea short' value={headBrandExp} placeholder='如：曾在海底捞、西贝、外婆家等头部品牌任职...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setHeadBrandExp(e.detail.value)} />
+            <Textarea className='etp-textarea short resize-none' value={headBrandExp} placeholder='如：曾在海底捞、西贝、外婆家等头部品牌任职...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setHeadBrandExp(e.detail.value)} />
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>项目经验</Text>
-            <Textarea className='etp-textarea short' value={projectExp} placeholder='如：成功筹备并开业3家餐厅、主导菜品体系搭建...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setProjectExp(e.detail.value)} />
+            <Textarea className='etp-textarea short resize-none' value={projectExp} placeholder='如：成功筹备并开业3家餐厅、主导菜品体系搭建...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setProjectExp(e.detail.value)} />
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>成功项目经验详情</Text>
-            <Textarea className='etp-textarea' value={projectExpDetail} placeholder='如：操盘新品牌从0到1落地，3年门店从1家开到20家，单店月营收突破100万...' placeholderClass='etp-placeholder' maxlength={1000} onInput={(e) => setProjectExpDetail(e.detail.value)} />
+            <Textarea className='etp-textarea resize-none' value={projectExpDetail} placeholder='如：操盘新品牌从0到1落地，3年门店从1家开到20家，单店月营收突破100万...' placeholderClass='etp-placeholder' maxlength={1000} onInput={(e) => setProjectExpDetail(e.detail.value)} />
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>更适合的业态模型</Text>
@@ -838,15 +838,15 @@ export default function EditTalentProfile() {
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>个人擅长能力</Text>
-            <Textarea className='etp-textarea short' value={personalSkills} placeholder='如：团队搭建、成本管控、菜品研发、门店运营...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setPersonalSkills(e.detail.value)} />
+            <Textarea className='etp-textarea short resize-none' value={personalSkills} placeholder='如：团队搭建、成本管控、菜品研发、门店运营...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setPersonalSkills(e.detail.value)} />
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>知名品牌经验详情</Text>
-            <Textarea className='etp-textarea short' value={brandExperienceDetail} placeholder='如：在某头部品牌经历了从初创到扩张阶段，主导中央厨房搭建...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setBrandExperienceDetail(e.detail.value)} />
+            <Textarea className='etp-textarea short resize-none' value={brandExperienceDetail} placeholder='如：在某头部品牌经历了从初创到扩张阶段，主导中央厨房搭建...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setBrandExperienceDetail(e.detail.value)} />
           </View>
           <View className='etp-field'>
             <Text className='etp-label'>自我介绍</Text>
-            <Textarea className='etp-textarea' value={selfIntro} placeholder='请简要介绍你的职业经历、核心优势和成就...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setSelfIntro(e.detail.value)} />
+            <Textarea className='etp-textarea resize-none' value={selfIntro} placeholder='请简要介绍你的职业经历、核心优势和成就...' placeholderClass='etp-placeholder' maxlength={500} onInput={(e) => setSelfIntro(e.detail.value)} />
             <Text className='etp-counter'>{selfIntro.length} / 500</Text>
           </View>
         </View>

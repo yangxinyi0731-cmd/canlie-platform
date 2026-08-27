@@ -76,8 +76,8 @@ export default function Layout({ children, active }: LayoutProps) {
                   <Icon
                     name={tab.icon}
                     size={44}
-                    color={isActive ? '#FF6B00' : '#86909C'}
-                    fill={isActive ? '#FF6B00' : 'none'}
+                    color={isActive ? '#C2410C' : '#5F6B7A'}
+                    fill={isActive ? '#C2410C' : 'none'}
                   />
                   {tab.path === TABS.notifications.path && unreadCount > 0 && (
                     <Text className='tab-badge'>{unreadCount > 99 ? '99+' : unreadCount}</Text>

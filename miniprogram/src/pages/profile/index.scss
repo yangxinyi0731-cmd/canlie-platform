@@ -24,22 +24,26 @@
   width: 160rpx;
   height: 160rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+  background: $brand-primary-soft;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 16rpx 32rpx rgba(255, 107, 0, 0.2);
+  border: 1PX solid rgba(255, 107, 0, 0.18);
   margin-bottom: 28rpx;
 }
 
 .pf-avatar-admin {
-  background: linear-gradient(135deg, #A855F7, #6B21A8);
+  background: $purple-50;
 }
 
 .pf-avatar-text {
-  color: #fff;
+  color: $brand-primary;
   font-size: 48rpx;
   font-weight: 700;
+}
+
+.pf-avatar-admin .pf-avatar-text {
+  color: $purple-600;
 }
 
 .pf-name {
@@ -124,16 +128,16 @@
   width: 128rpx;
   height: 128rpx;
   border-radius: 24rpx;
-  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+  background: $brand-primary-soft;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 16rpx 32rpx rgba(255, 107, 0, 0.2);
+  border: 1PX solid rgba(255, 107, 0, 0.18);
   flex-shrink: 0;
 }
 
 .pf-ent-logo-text {
-  color: #fff;
+  color: $brand-primary;
   font-size: 40rpx;
   font-weight: 700;
 }

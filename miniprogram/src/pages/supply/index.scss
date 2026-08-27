@@ -6,7 +6,7 @@
 
 // ========== 渐变头部 ==========
 .supply-header {
-  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+  background: $brand-primary;
   padding: 0 32rpx 128rpx;
 }
 

@@ -67,7 +67,7 @@
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #C084FC, #9333EA);
+  background: $purple-600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -212,7 +212,7 @@
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FDBA74, #F97316);
+  background: $brand-primary;
   display: flex;
   align-items: center;
   justify-content: center;

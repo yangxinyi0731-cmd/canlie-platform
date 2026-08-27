@@ -144,7 +144,7 @@ export default function TalentSearch() {
             className={`ts-filter-btn ${showFilters || hasActiveFilters ? 'ts-filter-btn-active' : ''}`}
             onClick={() => setShowFilters(!showFilters)}
           >
-            <Icon name='filter' size={36} color={showFilters || hasActiveFilters ? '#FF6B00' : '#9CA3AF'} />
+            <Icon name='filter' size={36} color={showFilters || hasActiveFilters ? '#C2410C' : '#5F6B7A'} />
           </View>
         </View>
 

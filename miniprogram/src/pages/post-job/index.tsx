@@ -280,7 +280,7 @@ export default function PostJob() {
             <View className='pj-field'>
               <Text className='pj-label'>职位描述 <Text className='pj-required'>*</Text></Text>
               <Textarea
-                className='pj-textarea'
+                className='pj-textarea resize-none'
                 value={description}
                 placeholder='请描述岗位职责...'
                 placeholderClass='pj-placeholder'
@@ -291,7 +291,7 @@ export default function PostJob() {
             <View className='pj-field'>
               <Text className='pj-label'>任职要求 <Text className='pj-required'>*</Text></Text>
               <Textarea
-                className='pj-textarea'
+                className='pj-textarea resize-none'
                 value={requirements}
                 placeholder='请描述任职要求...'
                 placeholderClass='pj-placeholder'

@@ -164,7 +164,7 @@ function TalentProfile({ profile }: { profile: Talent }) {
         <SectionRow icon='log-out' label='退出登录' danger onClick={logout} />
       </View>
 
-      <Text className='pf-version'>餐猎 v1.0.0</Text>
+      <Text className='pf-version'>餐猎 · 改进版</Text>
     </View>
   )
 }
@@ -227,7 +227,7 @@ function EnterpriseProfile({ profile }: { profile: Enterprise }) {
         <SectionRow icon='log-out' label='退出登录' danger onClick={logout} />
       </View>
 
-      <Text className='pf-version'>餐猎 v1.0.0</Text>
+      <Text className='pf-version'>餐猎 · 改进版</Text>
     </View>
   )
 }
@@ -253,7 +253,7 @@ function AdminProfile() {
         <SectionRow icon='log-out' label='退出登录' danger onClick={logout} />
       </View>
 
-      <Text className='pf-version'>餐猎 v1.0.0</Text>
+      <Text className='pf-version'>餐猎 · 改进版</Text>
     </View>
   )
 }

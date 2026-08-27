@@ -71,6 +71,7 @@ HANDOFF.md
 # 截图与调试产物
 preview_shots/
 console_capture*.txt
+premium-audit.json
 *.tar.gz
 tunnel.log
 tunnel-url.txt

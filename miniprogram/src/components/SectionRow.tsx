@@ -22,7 +22,7 @@ interface SectionRowProps {
 const TINT_ICON_COLOR: Record<string, string> = {
   gray: '#6B7280',
   blue: '#3B82F6',
-  orange: '#FF6B00',
+  orange: '#C2410C',
   purple: '#9333EA',
   green: '#22C55E',
   red: '#F87171',

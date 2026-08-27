@@ -1,17 +1,17 @@
-// 登录页（1:1 还原网页版 Login.tsx：渐变头 + 上浮表单卡 + 左图标输入行）
+// 登录页：微信原生心智的紧凑品牌头 + 稳定表单卡。
 .login-page {
   min-height: 100vh;
-  background: #fff;
+  background: $color-page;
   display: flex;
   flex-direction: column;
 }
 
-// ========== 品牌渐变头 ==========
+// ========== 品牌头 ==========
 .brand-header {
   position: relative;
-  padding: 0 48rpx 96rpx;
-  border-radius: 0 0 64rpx 64rpx;
-  background: linear-gradient(135deg, #FF6B00 0%, #FF8C38 100%);
+  padding: 0 48rpx 48rpx;
+  background: $color-surface;
+  border-bottom: 1PX solid $color-border;
 }
 
 .brand-center {
@@ -21,26 +21,21 @@
 }
 
 .brand-title {
-  font-size: 72rpx;
+  font-size: 52rpx;
   font-weight: 700;
-  color: #fff;
-  letter-spacing: 8rpx;
+  color: $brand-primary;
+  letter-spacing: 4rpx;
 }
 
 .brand-sub {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 24rpx;
-  letter-spacing: 2rpx;
+  font-size: 26rpx;
+  color: $color-text-secondary;
+  margin-top: 12rpx;
 }
 
-// 装饰圆（还原网页版 bg-white/10）
+// V2 不使用装饰性海报圆形。
 .brand-deco {
-  position: relative;
-  height: 80rpx;
-  margin-top: 48rpx;
-  display: flex;
-  justify-content: center;
+  display: none;
 }
 
 .deco-circle-lg {
@@ -63,28 +58,26 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-// ========== 上浮表单卡 ==========
+// ========== 表单卡 ==========
 .form-wrap {
   flex: 1;
-  padding: 0 48rpx;
-  margin-top: -48rpx;
+  padding: 32rpx;
   position: relative;
-  z-index: 2;
 }
 
 .form-card {
-  background: #fff;
-  border-radius: 32rpx;
-  box-shadow: 0 -8rpx 40rpx rgba(0, 0, 0, 0.06);
-  padding: 64rpx 48rpx;
+  background: $color-surface;
+  border: 1PX solid $color-border;
+  border-radius: $radius-card;
+  padding: 40rpx 32rpx;
 }
 
 .form-title {
   display: block;
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: 600;
   color: $gray-900;
-  margin-bottom: 48rpx;
+  margin-bottom: 32rpx;
 }
 
 // ========== 输入行（左图标区 + 输入框 + 右眼睛）==========
@@ -92,9 +85,9 @@
   display: flex;
   align-items: center;
   border: 2rpx solid $gray-200;
-  border-radius: 24rpx;
+  border-radius: $radius-control;
   overflow: hidden;
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
   background: #fff;
 }
 
@@ -104,7 +97,7 @@
   padding: 24rpx;
   background: $gray-50;
   border-right: 2rpx solid $gray-200;
-  height: 100rpx;
+  height: 96rpx;
   box-sizing: border-box;
 }
 
@@ -117,7 +110,7 @@
 
 .field-input {
   flex: 1;
-  height: 100rpx;
+  height: 96rpx;
   padding: 0 24rpx;
   font-size: 28rpx;
   background: transparent;
@@ -225,19 +218,18 @@
   margin-left: 16rpx;
 }
 
-// ========== 提交按钮（渐变 + 橙色投影）==========
+// ========== 提交按钮 ==========
 .submit-btn {
   width: 100%;
   padding: 28rpx 0;
-  border-radius: 24rpx;
+  border-radius: $radius-control;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FF6B00 0%, #FF8C38 100%);
-  box-shadow: 0 16rpx 32rpx rgba(255, 107, 0, 0.2);
+  background: $brand-primary;
 
   &.submitting {
-    background: linear-gradient(135deg, #FF8C38 0%, #FF6B00 100%);
+    background: $brand-primary-pressed;
     opacity: 0.9;
   }
 }
@@ -291,7 +283,7 @@
 
 // ========== 底部协议 ==========
 .login-footer {
-  padding: 48rpx;
+  padding: 24rpx 48rpx 48rpx;
   text-align: center;
 }
 

@@ -2,8 +2,8 @@
 
 ## Product context
 
-- Audience: 人才、企业、管理员三类现有角色；本阶段主要迁移人才职位流。
-- Primary jobs: 搜索和筛选职位、查看真实职位详情、收藏、投递、沟通，并在有真实记录时理解匹配依据。
+- Audience: 人才、企业、管理员三类现有角色；供应商与创业分享是原应用内的辅助业务入口。
+- Primary jobs: 完成账号、资料、职位、投递、匹配、沟通、审核闭环；保留供应和分享能力，并在有真实记录时解释匹配依据。
 - Target market(s): 中国大陆餐饮酒店招聘市场。
 - Active locales: 简体中文。
 - Language/content register and native-review policy: 产品化、直接、可核对；业务与合规文案需由产品/法务后续复核。
@@ -21,7 +21,7 @@
 | 安全与上线边界 | `PROJECT_STATUS_AND_ROADMAP.md` | 维护中的风险与路线图 | 2026-08-27 |
 | 视觉与移动端范围 | 当前 V2 任务约束 | 当前任务决策 | 2026-08-27 |
 
-匹配、人才隐私和管理员权限仍存在维护文档列出的后端风险。本阶段不改变这些服务端规则，不把前端隐藏当作授权，也不把 V2 构建通过解释为可公开上线。
+前端隐藏从不作为授权边界。匹配、人才隐私、上传、计费和测试数据均以服务端规则为准；V2 构建通过也不代表备案域名与微信平台配置已经完成。
 
 ## Visual contract
 
@@ -38,7 +38,7 @@
 | Capability | Canonical owner | Source of truth | Allowed variants | Verification |
 |---|---|---|---|---|
 | Select/Listbox | `BottomSheet` + 业务选项按钮；已有表单 `Picker` 暂为 legacy | 本文件 / 微信平台行为 | authored sheet / native Picker legacy | 真机或开发者工具打开态 + 触控 |
-| Form | 既有页面表单，第一阶段不迁移 | 现有页面和 API | create / edit | 后续分阶段验证 |
+| Form | 各业务页面表单 + 共享令牌/校验反馈 | 本文件 / 服务端输入契约 | create / edit / review | typecheck、构建、失败路径 |
 | Scrollbar | 微信页面滚动与 `ScrollView` | 微信平台行为 | 页面 / 底部层内部滚动 | 窄屏与长列表 |
 | Toast | `Taro.showToast`（现有业务反馈） | 现有小程序约定 | success / none(error) | 收藏、投递失败与成功 |
 | CRUD | `jobsApi` + 角色守卫 + 对应页面 | API / 本文件 | browse / apply / favorite / close legacy | 角色矩阵 + 完整流程 |
@@ -55,7 +55,7 @@
 
 ## Dataset navigation
 
-- Admin tables: 第二阶段改为移动任务中心和详情流；禁止桌面表格与 Kanban。
+- Admin tables: 管理员审核已使用移动任务卡和详情流；禁止桌面表格与 Kanban。
 - Exploratory lists: 人才职位使用服务端分页 + 页面上拉追加，并保留可点击“加载更多”恢复路径。
 - URL state: 小程序当前自定义底部导航使用 `reLaunch`，筛选属于当前页面瞬时状态；第一阶段不伪造 Web URL 持久化能力。返回职位详情后由微信页面栈保留列表状态。
 - Page size: 人才职位每次 10 条，以首屏密度和追加反馈为目标；服务端仍返回 total/page/pageSize。
@@ -79,10 +79,10 @@
 ## Navigation and responsive behavior
 
 - Route document title policy: 小程序 page config 维护页面标题；自定义 `NavBar` 显示同一可见标题。
-- Route error / 403 page behavior: 401 由现有请求层清理登录并回登录页；服务端 403 必须保留为权限错误，不伪装空数据。专用 403 页面属于权限阶段后续工作。
+- Route error / 403 page behavior: 401 由请求层清理登录并回登录页；服务端 403 保留为权限错误并使用邻近错误文案或 toast，不伪装空数据。
 - Breadcrumb/tab/route-state policy: 手机端不用面包屑；角色底部导航只显示该角色相关入口，管理员从 jobs 分流至管理页。
 - Sidebar/drawer/bottom-sheet transformation: 城市和短筛选用共享底部层；长表单使用独立页面。
-- Responsive table strategy: 所有角色移动列表使用卡片/任务流，企业与管理员的大型页面在第二阶段迁移。
+- Responsive table strategy: 所有角色移动列表均使用卡片/任务流；企业与管理员页面不使用桌面表格布局。
 - Truncation/full-value access: 职位标题最多两行，详情展示完整标题和内容；企业名一行省略但可进入企业详情。
 - Focus restoration and sticky-obstruction policy: 固定底栏预留正文空间和安全区；底部层关闭返回原筛选上下文。
 
@@ -128,9 +128,9 @@
 
 - Migration ledger location: 本文件 Dataset navigation、Flow ledger 与以下阶段边界。
 - Canonical primitives and owners: `Layout`, `NavBar`, `SearchBar`, `FilterBar`, `BottomSheet`, `StatusBadge`, `StickyActionBar`, `MatchEvidence`, `JobCard`。
-- Current risk-prioritized slices: 第一阶段为人才 jobs → job-detail；第二阶段为消息/匹配、企业任务流、管理员任务中心。
-- Legacy import/token enforcement: 旧 Sass 变量保留；触达页面改用语义变量，新页面不得新增另一套 UI 库或局部等价组件。
-- Rollout/rollback and removal gates: V2 只在 `ui-v2-mobile`；原版标签可复原；用户验收前禁止合并主分支。
+- Current risk-prioritized slices: 28 个原有路由已统一到同一 V2 运行时令牌；职位流使用专用共享组件，其余业务页保持原事件与 API 契约并完成视觉收口。
+- Legacy import/token enforcement: 旧 Sass 变量只作为语义令牌兼容别名；禁止新增另一套 UI 库、渐变海报头或局部等价组件。
+- Rollout/rollback and removal gates: 改进版位于 `bugfix/v2-security-completion`；用户验收前禁止合并 `main`，可按小提交回滚。
 
 ## Verification
 
@@ -139,7 +139,7 @@
 - Accessibility checks: 可见状态文案、24px 最小/约 44px 关键触控区、非颜色单一表达、固定底栏不遮挡。
 - Native-language/domain review and target-user evidence: 中文产品文案按餐饮酒店求职场景审阅；顾问/距离/预约/福利承诺需后端和业务确认后再上线。
 - Component-state/visual regression coverage: jobs 的加载/空/无结果/错误/追加/到底，详情的加载/错误/匹配有记录/无记录/读取失败，以及投递各状态。
-- Canonical sibling flow used for comparison: 现有 `pages/my-favorites`、`pages/my-matches`、`pages/applications` 与企业 jobs 分流。
-- Project audit command/result: 在交付前记录真实结果。
+- Canonical sibling flow used for comparison: `pages/jobs`、`pages/my-favorites`、`pages/my-matches`、`pages/applications` 与企业 jobs 分流。
+- Project audit command/result: premium strict audit 0 errors / 0 unresolved；DESIGN lint、最终构建结果在交付前再次记录。
 - CRUD full-flow evidence: 在交付前记录收藏、投递、沟通路由和返回行为的可执行验证范围。
 - Failure-path evidence: 在交付前记录静态检查、构建及可运行预览结果。

@@ -11,6 +11,10 @@ view, text, image, button, input, scroll-view {
   box-sizing: border-box;
 }
 
+.resize-none {
+  resize: none;
+}
+
 // Taro 原生 Button 的轻量重置。仅显式加入该类的 V2 组件受影响，避免改写旧页面。
 .ui-button-reset {
   margin: 0;
@@ -83,9 +87,9 @@ view, text, image, button, input, scroll-view {
 
 // ========== 卡片（网页版 .card = bg-white rounded-xl shadow-sm）==========
 .card {
-  background: #fff;
-  border-radius: 24rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  background: $color-surface;
+  border: 1PX solid $color-border;
+  border-radius: $radius-card;
 }
 
 // ========== 按钮（网页版 .btn-primary / .btn-outline）==========
@@ -182,15 +186,15 @@ view, text, image, button, input, scroll-view {
 
 // ========== 品牌渐变（网页版 .header-gradient）==========
 .header-gradient {
-  background: linear-gradient(135deg, #FF6B00 0%, #FF8C38 100%);
+  background: $brand-primary;
 }
 
 // ========== 职位卡片（网页版 .job-card）==========
 .job-card {
-  background: #fff;
-  border-radius: 16rpx;
+  background: $color-surface;
+  border: 1PX solid $color-border;
+  border-radius: $radius-card;
   padding: 32rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
 }
 
 // ========== 聊天气泡（网页版 .chat-bubble-mine / .chat-bubble-other）==========

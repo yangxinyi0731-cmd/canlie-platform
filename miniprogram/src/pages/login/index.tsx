@@ -196,11 +196,11 @@ export default function Login() {
               <Text className='role-label'>注册身份</Text>
               <View className='grid-2 role-group'>
                 <View className={`g2 role-card ${role === 'TALENT' ? 'active' : ''}`} onClick={() => setRole('TALENT')}>
-                  <Icon name='user' size={40} color={role === 'TALENT' ? '#FF6B00' : '#9CA3AF'} />
+                  <Icon name='user' size={40} color={role === 'TALENT' ? '#C2410C' : '#5F6B7A'} />
                   <Text className='role-name'>求职者</Text>
                 </View>
                 <View className={`g2 role-card ${role === 'ENTERPRISE' ? 'active' : ''}`} onClick={() => setRole('ENTERPRISE')}>
-                  <Icon name='briefcase' size={40} color={role === 'ENTERPRISE' ? '#FF6B00' : '#9CA3AF'} />
+                  <Icon name='briefcase' size={40} color={role === 'ENTERPRISE' ? '#C2410C' : '#5F6B7A'} />
                   <Text className='role-name'>招聘方</Text>
                 </View>
               </View>

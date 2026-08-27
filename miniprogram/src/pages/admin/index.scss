@@ -83,11 +83,11 @@
 }
 
 .admin-eval-blue {
-  background: linear-gradient(to right, #3B82F6, #2563EB);
+  background: $blue-600;
 }
 
 .admin-eval-purple {
-  background: linear-gradient(to right, #A855F7, #9333EA);
+  background: $purple-600;
 }
 
 .admin-btn-disabled {
@@ -221,7 +221,7 @@
   width: 96rpx;
   height: 96rpx;
   border-radius: 16rpx;
-  background: linear-gradient(135deg, #FF6B00, #FB923C);
+  background: $brand-primary;
   display: flex;
   align-items: center;
   justify-content: center;

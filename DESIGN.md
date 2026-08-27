@@ -1,20 +1,20 @@
 ---
 version: alpha
 name: "餐猎微信小程序 V2"
-description: "以微信原生可信骨架承载同城餐饮酒店职位流，并用克制的规则证据帮助人才快速判断。"
+description: "在同一个餐猎小程序中，以微信原生可信骨架承载招聘、沟通、资料、管理、供应与分享流程。"
 colors:
-  primary: "#FF6B00"
-  primary-pressed: "#E85F00"
+  primary: "#C2410C"
+  primary-pressed: "#9A3412"
   primary-soft: "#FFF3E8"
   page: "#F7F8FA"
   surface: "#FFFFFF"
   text-primary: "#1F2329"
   text-secondary: "#4E5969"
-  text-muted: "#86909C"
+  text-muted: "#5F6B7A"
   border: "#E5E6EB"
-  success: "#00A870"
+  success: "#047857"
   warning: "#F59E0B"
-  danger: "#E5484D"
+  danger: "#B91C1C"
 typography:
   sans:
     fontFamily: "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif"
@@ -41,15 +41,42 @@ spacing:
   card-gap: "8px"
   section-gap: "8px"
 components:
-  navbar: {}
-  tabbar: {}
-  search-bar: {}
-  filter-bar: {}
-  bottom-sheet: {}
-  job-card: {}
-  status-badge: {}
-  sticky-action-bar: {}
-  match-evidence: {}
+  navbar:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text-primary}"
+  tabbar:
+    backgroundColor: "{colors.page}"
+    textColor: "{colors.text-muted}"
+  search-bar:
+    backgroundColor: "{colors.primary-soft}"
+    textColor: "{colors.text-secondary}"
+  filter-current:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.surface}"
+  bottom-sheet:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text-primary}"
+  job-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text-secondary}"
+  status-badge-success:
+    backgroundColor: "{colors.success}"
+    textColor: "{colors.surface}"
+  status-badge-warning:
+    backgroundColor: "{colors.warning}"
+    textColor: "{colors.text-primary}"
+  status-badge-danger:
+    backgroundColor: "{colors.danger}"
+    textColor: "{colors.surface}"
+  pressed-action:
+    backgroundColor: "{colors.primary-pressed}"
+    textColor: "{colors.surface}"
+  disabled-control:
+    backgroundColor: "{colors.border}"
+    textColor: "{colors.text-secondary}"
+  match-evidence:
+    backgroundColor: "{colors.page}"
+    textColor: "{colors.text-primary}"
 ---
 
 # 餐猎微信小程序 V2 Design System
@@ -62,13 +89,13 @@ components:
 
 ### Product context and register
 
-- **Audience and primary job:** 人才需要在碎片时间内浏览、比较、收藏和投递职位；企业与管理员沿用现有角色分流和业务入口。
+- **Audience and primary job:** 人才浏览、比较、收藏、投递和沟通；企业发布职位、筛选人才和处理投递；管理员执行审核；原有供应与分享入口继续保留。
 - **Target market and evidence:** 中国大陆餐饮酒店招聘市场，依据根级 `README.md`、小程序现有中文路由与当前任务约束。
 - **Locale and language policy:** 首期为简体中文；按钮使用用户可预期的动作词，错误说明发生了什么以及如何恢复。
 - **Usage scene:** 微信小程序、单手竖屏、短时高频浏览；职位首屏以至少三张紧凑卡片为密度目标。
 - **Register:** 产品界面。可信、熟悉和任务效率优先于品牌展示。
 - **Memorable signature:** 真实匹配记录的轻量证据条；无记录时显示诚实空态，不合成分数。
-- **Restraint:** 搜索、筛选、职位卡、固定操作栏采用微信原生心智；品牌橙只用于主动作、薪资和当前状态。
+- **Restraint:** 搜索、筛选、表单、卡片、固定操作栏采用微信原生心智；品牌橙只用于主动作、薪资和当前状态，所有页面禁止渐变海报式装饰。
 - **Anti-references:** 不使用桌面表格、Kanban、渐变大头图、玻璃效果、海报式留白、巨大标题或薪资、装饰性餐饮照片，也不把供应链/内容社区大卡放在职位首屏。
 - **Token ownership/runtime mapping:** 采用 Model B。`miniprogram/src/styles/variables.scss` 是运行时令牌源，本文件镜像已接受的语义值；`app.scss` 建立全局页面基线，共享组件消费语义 Sass 变量。每次改令牌同时更新本文件和运行时源，并通过 DESIGN lint、typecheck、构建与截图检查漂移。
 
@@ -104,7 +131,7 @@ components:
 
 ### Navigation and data display
 
-保留自定义微信导航和按角色变化的底部导航。人才职位列表采用紧凑卡片和上拉追加；企业与管理员页面在后续阶段迁移为移动任务流，不引入桌面表格或 Kanban。状态角标由共享 `StatusBadge` 控制语义色和文案。
+保留自定义微信导航和按角色变化的底部导航。28 个原有路由全部保留并消费同一组运行时令牌；人才、企业与管理员都使用移动卡片和任务流，不引入桌面表格或 Kanban。状态角标由共享 `StatusBadge` 控制语义色和文案。
 
 ### Forms and overlays
 
@@ -125,6 +152,6 @@ components:
 ## Do's and Don'ts
 
 - **Do:** 让职位标题、真实薪资、企业、城市和经验要求在一次扫视中完成比较。
-- **Do:** 用共享令牌、搜索、筛选、底部选择和状态组件保持人才/企业/管理员后续迁移一致。
+- **Do:** 用共享令牌、搜索、筛选、底部选择和状态组件保持人才、企业、管理员、供应与分享页面一致。
 - **Don't:** 为提高“丰富度”伪造福利、距离、顾问、预约或匹配结果。
 - **Don't:** 把网页端大卡、桌面表格、复杂看板或营销海报结构直接搬进手机端。

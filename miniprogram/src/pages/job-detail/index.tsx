@@ -49,7 +49,7 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
       <NavBar title='职位详情' />
       <View className='jd-error-page'>
         <View className='jd-error-icon'>
-          <Icon name='briefcase' size={56} color='#FF6B00' />
+          <Icon name='briefcase' size={56} color='#C2410C' />
         </View>
         <Text className='jd-error-text'>{message}</Text>
         <Button
@@ -263,7 +263,7 @@ export default function JobDetail() {
             <Text className='jd-company-name'>{enterprise?.companyName || '企业信息未填写'}</Text>
             <Text className='jd-company-meta'>{[enterprise?.city, enterprise?.companySize].filter(Boolean).join(' · ') || '企业详情'}</Text>
           </View>
-          <Icon name='chevron-right' size={30} color='#86909C' />
+          <Icon name='chevron-right' size={30} color='#5F6B7A' />
         </Button>
       </View>
 
@@ -306,7 +306,7 @@ export default function JobDetail() {
               aria-label={favorited ? '取消收藏' : '收藏职位'}
               onClick={handleToggleFavorite}
             >
-              <Icon name='heart' size={34} color={favorited ? '#E5484D' : '#4E5969'} fill={favorited ? '#E5484D' : 'none'} />
+              <Icon name='heart' size={34} color={favorited ? '#B91C1C' : '#4E5969'} fill={favorited ? '#B91C1C' : 'none'} />
               <Text>{favoriteLoading ? '处理中' : favorited ? '已收藏' : '收藏'}</Text>
             </Button>
 
@@ -331,7 +331,7 @@ export default function JobDetail() {
               disabled={!enterprise?.userId}
               onClick={handleContactEnterprise}
             >
-              <Icon name='message-circle' size={32} color='#FF6B00' />
+              <Icon name='message-circle' size={32} color='#C2410C' />
               <Text>沟通</Text>
             </Button>
           </View>

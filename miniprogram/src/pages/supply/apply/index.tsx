@@ -227,15 +227,15 @@ export default function ApplySupplyStore() {
           <Text className='apply-card-title'>公司信息</Text>
           <View className='apply-field'>
             <Text className='apply-label'>公司服务</Text>
-            <Textarea className='apply-textarea' value={services} placeholder='如：蔬菜水果批发配送、宴会食材定制' placeholderClass='apply-placeholder' maxlength={500} onInput={(e) => setServices(e.detail.value)} />
+            <Textarea className='apply-textarea resize-none' value={services} placeholder='如：蔬菜水果批发配送、宴会食材定制' placeholderClass='apply-placeholder' maxlength={500} onInput={(e) => setServices(e.detail.value)} />
           </View>
           <View className='apply-field'>
             <Text className='apply-label'>公司产品</Text>
-            <Textarea className='apply-textarea' value={productDesc} placeholder='主要经营的产品品类' placeholderClass='apply-placeholder' maxlength={500} onInput={(e) => setProductDesc(e.detail.value)} />
+            <Textarea className='apply-textarea resize-none' value={productDesc} placeholder='主要经营的产品品类' placeholderClass='apply-placeholder' maxlength={500} onInput={(e) => setProductDesc(e.detail.value)} />
           </View>
           <View className='apply-field'>
             <Text className='apply-label'>公司介绍</Text>
-            <Textarea className='apply-textarea tall' value={introduction} placeholder='介绍公司的规模、实力、合作经验等' placeholderClass='apply-placeholder' maxlength={1000} onInput={(e) => setIntroduction(e.detail.value)} />
+            <Textarea className='apply-textarea tall resize-none' value={introduction} placeholder='介绍公司的规模、实力、合作经验等' placeholderClass='apply-placeholder' maxlength={1000} onInput={(e) => setIntroduction(e.detail.value)} />
           </View>
         </View>
 

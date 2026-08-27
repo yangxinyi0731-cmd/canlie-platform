@@ -303,9 +303,9 @@ export default function MySupplyStore() {
                   </View>
                 </View>
               ) : null}
-              <Textarea className='mystore-textarea' value={services} placeholder='公司服务' placeholderClass='mystore-placeholder' maxlength={500} onInput={(e) => setServices(e.detail.value)} />
-              <Textarea className='mystore-textarea' value={productDesc} placeholder='公司产品' placeholderClass='mystore-placeholder' maxlength={500} onInput={(e) => setProductDesc(e.detail.value)} />
-              <Textarea className='mystore-textarea tall' value={introduction} placeholder='公司介绍' placeholderClass='mystore-placeholder' maxlength={1000} onInput={(e) => setIntroduction(e.detail.value)} />
+              <Textarea className='mystore-textarea resize-none' value={services} placeholder='公司服务' placeholderClass='mystore-placeholder' maxlength={500} onInput={(e) => setServices(e.detail.value)} />
+              <Textarea className='mystore-textarea resize-none' value={productDesc} placeholder='公司产品' placeholderClass='mystore-placeholder' maxlength={500} onInput={(e) => setProductDesc(e.detail.value)} />
+              <Textarea className='mystore-textarea tall resize-none' value={introduction} placeholder='公司介绍' placeholderClass='mystore-placeholder' maxlength={1000} onInput={(e) => setIntroduction(e.detail.value)} />
               <View className='mystore-contact-row'>
                 <Input className='mystore-input half' value={contactName} placeholder='联系人' placeholderClass='mystore-placeholder' onInput={(e) => setContactName(e.detail.value)} />
                 <Input className='mystore-input half' type='number' value={contactPhone} placeholder='联系电话' placeholderClass='mystore-placeholder' onInput={(e) => setContactPhone(e.detail.value)} />

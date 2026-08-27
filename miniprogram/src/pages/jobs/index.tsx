@@ -298,9 +298,9 @@ function TalentHome() {
               aria-label={`当前城市${selectedCity || '全国'}，点击选择城市`}
               onClick={() => setSheetKind('city')}
             >
-              <Icon name='map-pin' size={24} color='#FF6B00' />
+              <Icon name='map-pin' size={24} color='#C2410C' />
               <Text className='home-city-text'>{selectedCity || '全国'}</Text>
-              <Icon name='chevron-down' size={22} color='#FF6B00' />
+              <Icon name='chevron-down' size={22} color='#C2410C' />
             </Button>
           </View>
           <SearchBar
@@ -432,7 +432,7 @@ function TalentHome() {
                 onClick={() => chooseSheetOption(option.id)}
               >
                 <Text className='sheet-option-label'>{option.name}</Text>
-                {active ? <Icon name='check' size={30} color='#FF6B00' /> : null}
+                {active ? <Icon name='check' size={30} color='#C2410C' /> : null}
               </Button>
             )
           })}
@@ -565,7 +565,7 @@ function EnterpriseHome() {
             </View>
             <View className='g4 quick-item' onClick={() => Taro.navigateTo({ url: '/pages/enterprise-jobs/index' })}>
               <View className='quick-icon quick-icon-orange'>
-                <Icon name='briefcase' size={40} color='#FF6B00' />
+                <Icon name='briefcase' size={40} color='#C2410C' />
               </View>
               <Text className='quick-label'>职位管理</Text>
             </View>

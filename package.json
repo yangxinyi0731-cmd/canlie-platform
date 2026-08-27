@@ -12,7 +12,8 @@
     "db:migrate": "cd backend && npx prisma migrate deploy",
     "db:generate": "cd backend && npx prisma generate",
     "test:client-storage-security": "node scripts/check-client-storage-security.mjs",
-    "test:test-data-safety": "node scripts/check-test-data-safety.mjs"
+    "test:test-data-safety": "node scripts/check-test-data-safety.mjs",
+    "test:miniprogram-v2": "node scripts/check-miniprogram-v2-integrity.mjs"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",

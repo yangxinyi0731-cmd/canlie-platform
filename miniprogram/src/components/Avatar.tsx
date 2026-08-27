@@ -25,13 +25,13 @@ export default function Avatar({ url, name, size = 80 }: AvatarProps) {
         width: `${size}rpx`,
         height: `${size}rpx`,
         borderRadius: '50%',
-        background: 'linear-gradient(135deg, #FF6B00, #FF8C38)',
+        background: '#FFF3E8',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <Text style={{ color: '#fff', fontSize: `${size * 0.4}rpx`, fontWeight: '600' }}>
+      <Text style={{ color: '#C2410C', fontSize: `${size * 0.4}rpx`, fontWeight: '600' }}>
         {getAvatarText(name)}
       </Text>
     </View>

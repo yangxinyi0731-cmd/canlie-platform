@@ -1,20 +1,21 @@
-// 创业分享信息流（1:1 还原网页版 ShareFeed.tsx）
+// 创业分享信息流：沿用 V2 白色导航与紧凑卡片。
 .feed-page {
   min-height: 100vh;
   background: $gray-50;
 }
 
-// ========== 紫色渐变头 ==========
+// ========== 页面头 ==========
 .feed-header {
-  background: linear-gradient(135deg, #A855F7, #6B21A8);
-  padding: 0 32rpx 112rpx;
+  background: $color-surface;
+  border-bottom: 1PX solid $color-border;
+  padding: 0 32rpx 32rpx;
 }
 
 .feed-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 48rpx;
+  margin-bottom: 24rpx;
   // 右侧让位胶囊按钮
   padding-right: 150rpx;
 }
@@ -23,7 +24,7 @@
   width: 64rpx;
   height: 64rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: $color-page;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,8 +34,8 @@
   display: block;
   width: 18rpx;
   height: 18rpx;
-  border-left: 4rpx solid #fff;
-  border-bottom: 4rpx solid #fff;
+  border-left: 4rpx solid $color-text-primary;
+  border-bottom: 4rpx solid $color-text-primary;
   border-radius: 2rpx;
   transform: rotate(45deg);
   margin-left: 4rpx;
@@ -43,25 +44,25 @@
 .feed-title {
   font-size: 36rpx;
   font-weight: 700;
-  color: #fff;
+  color: $color-text-primary;
 }
 
 .feed-mine {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: $brand-primary;
 }
 
 .feed-desc {
   display: block;
-  color: rgba(255, 255, 255, 0.9);
+  color: $color-text-secondary;
   font-size: 28rpx;
   line-height: 1.7;
 }
 
-// ========== 分段 Tab（-mt-8 上浮）==========
+// ========== 分段 Tab ==========
 .feed-tabs-wrap {
   padding: 0 32rpx;
-  margin-top: -64rpx;
+  margin-top: 16rpx;
   position: relative;
   z-index: 2;
 }
@@ -69,7 +70,7 @@
 .feed-tabs {
   background: #fff;
   border-radius: 24rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $color-border;
   display: flex;
   padding: 8rpx;
 }
@@ -85,9 +86,8 @@
 }
 
 .feed-tab-active {
-  background: linear-gradient(to right, #FF6B00, #FF8C38);
-  color: #fff;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+  background: $brand-primary-soft;
+  color: $brand-primary;
 }
 
 // ========== 信息流 ==========
@@ -98,7 +98,7 @@
 .post-card {
   background: #fff;
   border-radius: 24rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1PX solid $color-border;
   overflow: hidden;
   margin-bottom: 32rpx;
 }
@@ -114,7 +114,7 @@
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #C084FC, #9333EA);
+  background: $purple-600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,11 +308,11 @@
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF6B00, #FF8C38);
+  background: $brand-primary;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 16rpx 32rpx rgba(255, 107, 0, 0.4);
+  box-shadow: 0 8rpx 20rpx rgba(31, 35, 41, 0.12);
   z-index: 10;
 }
 
