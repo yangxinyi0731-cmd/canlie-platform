@@ -246,6 +246,137 @@
   font-size: 28rpx;
 }
 
+.sheet-section {
+  margin-top: 28rpx;
+}
+
+.sheet-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sheet-section-title {
+  display: block;
+  color: $color-text-primary;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.sheet-section-caption {
+  color: $color-text-muted;
+  font-size: 22rpx;
+}
+
+// 菜系只在这个筛选层使用字母索引：八大菜系先给快捷入口，其余按首字母扫描。
+.cuisine-hot-grid,
+.city-option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 12rpx -6rpx 0;
+}
+
+.cuisine-hot-option {
+  width: calc(25% - 12rpx);
+  min-height: 72rpx;
+  margin: 6rpx;
+  padding: 0 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  border: 1PX solid $color-border;
+  border-radius: $radius-control;
+  background: $color-page;
+  color: $color-text-secondary;
+  font-size: 25rpx;
+}
+
+.cuisine-hot-option-active {
+  border-color: $brand-primary;
+  background: $brand-primary-soft;
+  color: $brand-primary;
+  font-weight: 600;
+}
+
+.cuisine-hot-option-pressed,
+.city-option-pressed {
+  opacity: 0.72;
+}
+
+.cuisine-indexed-section {
+  padding-top: 4rpx;
+}
+
+.cuisine-index-group {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12rpx;
+  border-top: 1PX solid $color-border;
+}
+
+.cuisine-index-letter {
+  width: 64rpx;
+  padding-top: 24rpx;
+  flex-shrink: 0;
+  color: $brand-primary;
+  font-size: 28rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cuisine-index-list {
+  min-width: 0;
+  flex: 1;
+}
+
+.cuisine-index-option {
+  min-height: 80rpx;
+}
+
+.city-sheet-explainer {
+  display: block;
+  padding: 20rpx 8rpx 0;
+  color: $color-text-muted;
+  font-size: 23rpx;
+  line-height: 1.6;
+}
+
+.city-option {
+  width: calc(33.333% - 12rpx);
+  min-height: 76rpx;
+  margin: 6rpx;
+  padding: 10rpx 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1PX solid $color-border;
+  border-radius: $radius-control;
+  background: $color-page;
+  color: $color-text-secondary;
+}
+
+.city-option-active {
+  border-color: $brand-primary;
+  background: $brand-primary-soft;
+  color: $brand-primary;
+}
+
+.city-option-name {
+  font-size: 25rpx;
+  font-weight: 500;
+}
+
+.city-option-count {
+  margin-left: 6rpx;
+  color: $color-text-muted;
+  font-size: 20rpx;
+}
+
+.city-option-active .city-option-count {
+  color: $brand-primary;
+}
+
 // ========== 企业端首页 ==========
 .ent-header {
   background: #fff;

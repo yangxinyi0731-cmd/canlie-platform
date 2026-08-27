@@ -13,6 +13,7 @@ import SearchBar from '../../components/SearchBar'
 import FilterBar, { type FilterBarItem } from '../../components/FilterBar'
 import BottomSheet from '../../components/BottomSheet'
 import { STATUS_BAR_HEIGHT } from '../../components/NavBar'
+import { buildCuisineIndex, type CuisineOption } from '../../utils/cuisineIndex'
 import type { Job, JobCategory } from '../../types'
 import './index.scss'
 
@@ -23,6 +24,11 @@ interface RefItem {
 
 const FALLBACK_CITIES = ['北京', '上海', '广州', '深圳', '杭州', '成都', '重庆', '武汉', '长沙', '南京', '苏州', '西安']
 const PAGE_SIZE = 10
+
+interface HotCity {
+  name: string
+  count: number
+}
 
 type SheetKind = 'city' | 'category' | 'cuisine' | 'business' | null
 
@@ -76,10 +82,10 @@ function TalentHome() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [loadMoreError, setLoadMoreError] = useState('')
-  const [cuisines, setCuisines] = useState<RefItem[]>([])
+  const [cuisines, setCuisines] = useState<CuisineOption[]>([])
   const [businessTypes, setBusinessTypes] = useState<RefItem[]>([])
   const [jobCategories, setJobCategories] = useState<JobCategory[]>([])
-  const [popularCities, setPopularCities] = useState<string[]>(FALLBACK_CITIES)
+  const [activeCities, setActiveCities] = useState<HotCity[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedCuisine, setSelectedCuisine] = useState('')
   const [selectedBusinessType, setSelectedBusinessType] = useState('')
@@ -94,6 +100,7 @@ function TalentHome() {
 
   const cuisineMap: Record<string, string> = {}
   cuisines.forEach(c => { cuisineMap[c.id] = c.name })
+  const cuisineIndex = buildCuisineIndex(cuisines)
   const bizTypeMap: Record<string, string> = {}
   businessTypes.forEach(b => { bizTypeMap[b.id] = b.name })
 
@@ -163,15 +170,18 @@ function TalentHome() {
       const [refResult, cityResult] = await Promise.allSettled([refApi.getAll(), jobsApi.getHotCities()])
       if (refResult.status === 'fulfilled') {
         const data: any = refResult.value.data
-        setCuisines(safeArray<RefItem>(data?.cuisines))
+        setCuisines(safeArray<CuisineOption>(data?.cuisines))
         setBusinessTypes(safeArray<RefItem>(data?.businessTypes))
         setJobCategories(safeArray<JobCategory>(data?.jobCategories))
       }
       if (cityResult.status === 'fulfilled') {
-        const names = safeArray<any>((cityResult.value.data as any)?.cities)
-          .map(item => String(item?.name || '').trim())
-          .filter(Boolean)
-        if (names.length > 0) setPopularCities(Array.from(new Set(names)))
+        const unique = new Map<string, HotCity>()
+        safeArray<any>((cityResult.value.data as any)?.cities).forEach(item => {
+          const name = String(item?.name || '').trim()
+          if (!name || unique.has(name)) return
+          unique.set(name, { name, count: Math.max(0, Number(item?.count || 0)) })
+        })
+        setActiveCities(Array.from(unique.values()))
       }
     }
 
@@ -261,21 +271,19 @@ function TalentHome() {
     { key: 'business', label: businessName, active: !!selectedBusinessType },
   ]
   const hasActiveFilters = !!(keyword || selectedCity || selectedCategory || selectedCuisine || selectedBusinessType)
+  const commonCities = FALLBACK_CITIES.filter(name => !activeCities.some(city => city.name === name))
+  const opportunityScope = selectedCity ? `发现${selectedCity}机会` : '发现全国餐饮酒店机会'
 
   const sheetTitle = sheetKind === 'city'
-    ? '选择城市'
+    ? '选择在招城市'
     : sheetKind === 'category'
       ? '选择职位类别'
       : sheetKind === 'cuisine'
         ? '选择菜系'
         : '选择业态'
-  const sheetOptions: { id: string; name: string }[] = sheetKind === 'city'
-    ? [{ id: '', name: '全国职位' }, ...popularCities.map(name => ({ id: name, name }))]
-    : sheetKind === 'category'
+  const standardSheetOptions: { id: string; name: string }[] = sheetKind === 'category'
       ? [{ id: '', name: '全部职位类别' }, ...jobCategories]
-      : sheetKind === 'cuisine'
-        ? [{ id: '', name: '全部菜系' }, ...cuisines]
-        : [{ id: '', name: '全部业态' }, ...businessTypes]
+      : [{ id: '', name: '全部业态' }, ...businessTypes]
   const selectedSheetValue = sheetKind === 'city'
     ? selectedCity
     : sheetKind === 'category'
@@ -291,7 +299,7 @@ function TalentHome() {
         <View className='home-header-main'>
           <View className='home-title-row'>
             <Text className='home-title'>餐猎</Text>
-            <Text className='home-subtitle'>{talent?.realName ? `${talent.realName}，发现同城机会` : '发现同城餐饮酒店机会'}</Text>
+            <Text className='home-subtitle'>{talent?.realName ? `${talent.realName}，${opportunityScope}` : opportunityScope}</Text>
             <Button
               className='ui-button-reset home-city-entry'
               hoverClass='home-city-entry-pressed'
@@ -335,7 +343,9 @@ function TalentHome() {
       <View className='job-list-wrap'>
         <View className='job-list-meta'>
           <Text className='job-list-count'>{loading ? '正在查找职位' : `共 ${total} 个在招职位`}</Text>
-          <Text className='job-list-hint'>{selectedCity ? selectedCity : '全国'}</Text>
+          <Text className='job-list-hint'>
+            {selectedCity || (activeCities.length > 0 ? `全国 · ${activeCities.length} 个在招城市` : '全国')}
+          </Text>
         </View>
 
         {loading && jobs.length === 0 ? (
@@ -420,23 +430,145 @@ function TalentHome() {
       </View>
 
       <BottomSheet open={sheetKind !== null} title={sheetTitle} onClose={() => setSheetKind(null)}>
-        <View className='sheet-options'>
-          {sheetOptions.map(option => {
-            const active = option.id === selectedSheetValue
-            return (
-              <Button
-                key={`${sheetKind}-${option.id || 'all'}`}
-                className={`ui-button-reset sheet-option ${active ? 'sheet-option-active' : ''}`}
-                hoverClass='sheet-option-pressed'
-                aria-label={`${option.name}${active ? '，已选择' : ''}`}
-                onClick={() => chooseSheetOption(option.id)}
-              >
-                <Text className='sheet-option-label'>{option.name}</Text>
-                {active ? <Icon name='check' size={30} color='#C2410C' /> : null}
-              </Button>
-            )
-          })}
-        </View>
+        {sheetKind === 'cuisine' ? (
+          <View className='sheet-options cuisine-sheet-options'>
+            <Button
+              className={`ui-button-reset sheet-option ${selectedCuisine === '' ? 'sheet-option-active' : ''}`}
+              hoverClass='sheet-option-pressed'
+              aria-label={`全部菜系${selectedCuisine === '' ? '，已选择' : ''}`}
+              onClick={() => chooseSheetOption('')}
+            >
+              <Text className='sheet-option-label'>全部菜系</Text>
+              {selectedCuisine === '' ? <Icon name='check' size={30} color='#C2410C' /> : null}
+            </Button>
+
+            {cuisineIndex.hot.length > 0 ? (
+              <View className='sheet-section'>
+                <View className='sheet-section-heading'>
+                  <Text className='sheet-section-title'>热门菜系</Text>
+                  <Text className='sheet-section-caption'>八大菜系优先展示</Text>
+                </View>
+                <View className='cuisine-hot-grid'>
+                  {cuisineIndex.hot.map(option => {
+                    const active = option.id === selectedCuisine
+                    return (
+                      <Button
+                        key={`cuisine-hot-${option.id}`}
+                        className={`ui-button-reset cuisine-hot-option ${active ? 'cuisine-hot-option-active' : ''}`}
+                        hoverClass='cuisine-hot-option-pressed'
+                        aria-label={`${option.name}${active ? '，已选择' : ''}`}
+                        onClick={() => chooseSheetOption(option.id)}
+                      >
+                        <Text>{option.name}</Text>
+                        {active ? <Icon name='check' size={24} color='#C2410C' /> : null}
+                      </Button>
+                    )
+                  })}
+                </View>
+              </View>
+            ) : null}
+
+            <View className='sheet-section cuisine-indexed-section'>
+              <Text className='sheet-section-title'>全部菜系索引</Text>
+              {cuisineIndex.sections.map(section => (
+                <View key={`cuisine-section-${section.initial}`} className='cuisine-index-group'>
+                  <Text className='cuisine-index-letter'>{section.initial}</Text>
+                  <View className='cuisine-index-list'>
+                    {section.items.map(option => {
+                      const active = option.id === selectedCuisine
+                      return (
+                        <Button
+                          key={`cuisine-index-${option.id}`}
+                          className={`ui-button-reset sheet-option cuisine-index-option ${active ? 'sheet-option-active' : ''}`}
+                          hoverClass='sheet-option-pressed'
+                          aria-label={`${section.initial}，${option.name}${active ? '，已选择' : ''}`}
+                          onClick={() => chooseSheetOption(option.id)}
+                        >
+                          <Text className='sheet-option-label'>{option.name}</Text>
+                          {active ? <Icon name='check' size={30} color='#C2410C' /> : null}
+                        </Button>
+                      )
+                    })}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : sheetKind === 'city' ? (
+          <View className='sheet-options city-sheet-options'>
+            <Button
+              className={`ui-button-reset sheet-option ${selectedCity === '' ? 'sheet-option-active' : ''}`}
+              hoverClass='sheet-option-pressed'
+              aria-label={`全国职位${selectedCity === '' ? '，已选择' : ''}`}
+              onClick={() => chooseSheetOption('')}
+            >
+              <Text className='sheet-option-label'>全国职位</Text>
+              {selectedCity === '' ? <Icon name='check' size={30} color='#C2410C' /> : null}
+            </Button>
+            <Text className='city-sheet-explainer'>全国会展示所有在招职位；当前有职位的城市排在最前。</Text>
+
+            {activeCities.length > 0 ? (
+              <View className='sheet-section'>
+                <Text className='sheet-section-title'>当前在招城市</Text>
+                <View className='city-option-grid'>
+                  {activeCities.map(city => {
+                    const active = city.name === selectedCity
+                    return (
+                      <Button
+                        key={`active-city-${city.name}`}
+                        className={`ui-button-reset city-option ${active ? 'city-option-active' : ''}`}
+                        hoverClass='city-option-pressed'
+                        aria-label={`${city.name}，${city.count}个在招职位${active ? '，已选择' : ''}`}
+                        onClick={() => chooseSheetOption(city.name)}
+                      >
+                        <Text className='city-option-name'>{city.name}</Text>
+                        <Text className='city-option-count'>{city.count} 个</Text>
+                      </Button>
+                    )
+                  })}
+                </View>
+              </View>
+            ) : null}
+
+            <View className='sheet-section'>
+              <Text className='sheet-section-title'>其他常用城市</Text>
+              <View className='city-option-grid'>
+                {commonCities.map(name => {
+                  const active = name === selectedCity
+                  return (
+                    <Button
+                      key={`common-city-${name}`}
+                      className={`ui-button-reset city-option city-option-common ${active ? 'city-option-active' : ''}`}
+                      hoverClass='city-option-pressed'
+                      aria-label={`${name}${active ? '，已选择' : ''}`}
+                      onClick={() => chooseSheetOption(name)}
+                    >
+                      <Text className='city-option-name'>{name}</Text>
+                    </Button>
+                  )
+                })}
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View className='sheet-options'>
+            {standardSheetOptions.map(option => {
+              const active = option.id === selectedSheetValue
+              return (
+                <Button
+                  key={`${sheetKind}-${option.id || 'all'}`}
+                  className={`ui-button-reset sheet-option ${active ? 'sheet-option-active' : ''}`}
+                  hoverClass='sheet-option-pressed'
+                  aria-label={`${option.name}${active ? '，已选择' : ''}`}
+                  onClick={() => chooseSheetOption(option.id)}
+                >
+                  <Text className='sheet-option-label'>{option.name}</Text>
+                  {active ? <Icon name='check' size={30} color='#C2410C' /> : null}
+                </Button>
+              )
+            })}
+          </View>
+        )}
       </BottomSheet>
     </View>
   )
